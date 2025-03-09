@@ -1,30 +1,24 @@
-import { Database } from 'sqlite3'
-import { queryDatabase } from './database'
+import { Database } from 'sqlite3';
 
-export class Despesa {
-  constructor(
-    public descricao: string,
-    public valor: number,
-    public data: string
-  ) {}
+// Criar despesa
+export function createDespesa(db: Database, descricao: string, valor: number, data: string, tipo : string): void {
+  const query = `INSERT INTO despesas (descricao, valor, data, tipo) VALUES (?, ?, ?, ?)`;
+  db.run(query, [descricao, valor, data, tipo], function (err) {
+    if (err) {
+      console.error('Erro ao criar despesa:', err.message);
+    } else {
+      console.log(`Despesa criada com sucesso, ID: ${this.lastID}`);
+    }
+  });
+}
 
-  // Função para registrar uma despesa
-  static async registrarDespesa(db: Database, descricao: string, valor: number, data: string) {
-    await queryDatabase(
-      db,
-      `INSERT INTO despesas (descricao, valor, data) VALUES (?, ?, ?)`,
-      [descricao, valor, data]
-    )
-  }
-
-  // Função para buscar despesas no mês atual
-  static async buscarDespesasMensais(db: Database) {
-    const dataAtual = new Date()
-    const mesAtual = dataAtual.getMonth() + 1 // Mes é 0-based
-    return await queryDatabase(
-      db,
-      `SELECT * FROM despesas WHERE strftime('%m', data) = ?`,
-      [String(mesAtual).padStart(2, '0')]
-    )
-  }
+// Obter todas as despesas
+export function getAllDespesas(db: Database): Promise<any[]> {
+  const query = `SELECT * FROM despesas`;
+  return new Promise((resolve, reject) => {
+    db.all(query, [], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
 }

@@ -1,29 +1,24 @@
-import { Database } from 'sqlite3'
-import { queryDatabase } from './database'
+import { Database } from 'sqlite3';
 
-export class Fiado {
-  constructor(
-    public cliente_id: number,
-    public valor: number,
-    public descricao: string,
-    public data: string,
-    public status: string
-  ) {}
+// Criar fiado
+export function createFiado(db: Database, cliente_id: number, valor: number, data: string): void {
+  const query = `INSERT INTO fiado (cliente_id, valor, data) VALUES (?, ?, ?)`;
+  db.run(query, [cliente_id, valor, data], function (err) {
+    if (err) {
+      console.error('Erro ao criar fiado:', err.message);
+    } else {
+      console.log(`Fiado criado com sucesso, ID: ${this.lastID}`);
+    }
+  });
+}
 
-  // Função para registrar um fiado
-  static async registrarFiado(db: Database, cliente_id: number, valor: number, descricao: string, data: string, status: string) {
-    await queryDatabase(
-      db,
-      `INSERT INTO fiado (cliente_id, valor, descricao, data, status) VALUES (?, ?, ?, ?, ?)`,
-      [cliente_id, valor, descricao, data, status]
-    )
-  }
-
-  // Função para buscar fiados pendentes
-  static async buscarFiadosPendentes(db: Database) {
-    return await queryDatabase(
-      db,
-      `SELECT * FROM fiado WHERE status = 'pendente'`
-    )
-  }
+// Obter todos os fiados
+export function getAllFiados(db: Database): Promise<any[]> {
+  const query = `SELECT * FROM fiado`;
+  return new Promise((resolve, reject) => {
+    db.all(query, [], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
 }

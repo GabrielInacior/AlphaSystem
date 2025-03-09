@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
-import { initDB, createTables, queryDatabase } from './database' // Importação da função queryDatabase
+import { initDB, createTables } from './database'
 import { electronApp, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { Database } from 'sqlite3' // Importando o tipo Database do sqlite3
+import { Database } from 'sqlite3'
+import { registerIpcHandlers } from './ipcHandlers'
 
-let db: Database // Tipando a variável db
+let db: Database
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -14,11 +14,12 @@ function createWindow(): void {
     height: 670,
     show: false,
     autoHideMenuBar: true,
+    fullscreen: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
-    }
+      sandbox: false,
+    },
   })
 
   mainWindow.on('ready-to-show', () => {
@@ -30,23 +31,20 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-}
 
-// IPC handler para consulta ao banco de dados
-ipcMain.handle('query-database', async (_event, query: string, params: any[]) => {
-  try {
-    return await queryDatabase(db, query, params) // Executando a query no banco
-  } catch (error) {
-    console.error('Erro ao consultar o banco:', error)
-    throw error
-  }
-})
+  // Aqui você escuta o evento para fechar a janela
+  ipcMain.on('close-window', () => {
+    mainWindow.close() // Fecha a janela quando o evento é disparado
+  })
+}
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
   db = initDB() // Inicia o banco de dados
   createTables(db) // Cria as tabelas, caso não existam
+
+  registerIpcHandlers(db) // Registra os IPC handlers
 
   createWindow()
 

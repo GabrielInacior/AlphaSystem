@@ -96,7 +96,8 @@ export function createTables(db: sqlite3.Database): void {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       descricao TEXT,
       valor REAL,
-      data DATE
+      data DATE,
+      tipo TEXT
     );
   `)
 
@@ -115,7 +116,7 @@ export function createTables(db: sqlite3.Database): void {
   db.run(`
     CREATE TABLE IF NOT EXISTS fechamento_caixa (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tipo TEXT, -- Pode ser "barbearia", "loja", "perfume"
+      tipo TEXT,
       total_mes REAL,
       total_semana REAL,
       total_dia REAL,

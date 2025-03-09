@@ -1,24 +1,59 @@
-import { Database } from 'sqlite3'
-import { queryDatabase } from './database'
+import { Database } from 'sqlite3';
 
-export class Servico {
-  constructor(
-    public nome: string,
-    public preco: number,
-    public desconto: number
-  ) {}
+// Criar serviço
+export function createServico(db: Database, nome: string, preco: number, desconto: number): void {
+  const query = `INSERT INTO servicos (nome, preco, desconto) VALUES (?, ?, ?)`;
+  db.run(query, [nome, preco, desconto], function (err) {
+    if (err) {
+      console.error('Erro ao criar serviço:', err.message);
+    } else {
+      console.log(`Serviço criado com sucesso, ID: ${this.lastID}`);
+    }
+  });
+}
 
-  // Função para cadastrar um serviço
-  static async cadastrarServico(db: Database, nome: string, preco: number, desconto: number) {
-    await queryDatabase(
-      db,
-      `INSERT INTO servicos (nome, preco, desconto) VALUES (?, ?, ?)`,
-      [nome, preco, desconto]
-    )
-  }
+// Obter todos os serviços
+export function getAllServicos(db: Database): Promise<any[]> {
+  const query = `SELECT * FROM servicos`;
+  return new Promise((resolve, reject) => {
+    db.all(query, [], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
 
-  // Função para buscar todos os serviços
-  static async buscarServicos(db: Database) {
-    return await queryDatabase(db, `SELECT * FROM servicos`)
-  }
+// Obter serviço por ID
+export function getServicoById(db: Database, id: number): Promise<any> {
+  const query = `SELECT * FROM servicos WHERE id = ?`;
+  return new Promise((resolve, reject) => {
+    db.get(query, [id], (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+}
+
+// Atualizar serviço
+export function updateServico(db: Database, id: number, nome: string, preco: number, desconto: number): void {
+  const query = `UPDATE servicos SET nome = ?, preco = ?, desconto = ? WHERE id = ?`;
+  db.run(query, [nome, preco, desconto, id], function (err) {
+    if (err) {
+      console.error('Erro ao atualizar serviço:', err.message);
+    } else {
+      console.log(`Serviço com ID ${id} atualizado com sucesso.`);
+    }
+  });
+}
+
+// Deletar serviço
+export function deleteServico(db: Database, id: number): void {
+  const query = `DELETE FROM servicos WHERE id = ?`;
+  db.run(query, [id], function (err) {
+    if (err) {
+      console.error('Erro ao deletar serviço:', err.message);
+    } else {
+      console.log(`Serviço com ID ${id} deletado com sucesso.`);
+    }
+  });
 }
