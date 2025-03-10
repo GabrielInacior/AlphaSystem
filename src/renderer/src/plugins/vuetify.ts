@@ -28,8 +28,20 @@ const vuetify = createVuetify({
           warning: '#FB8C00',
         },
       },
+      dark: {
+        colors: {
+          primary: '#1E1E1E',
+          secondary: '#424242',
+          accent: '#FF4081',
+          error: '#FF5252',
+          info: '#2196F3',
+          success: '#4CAF50',
+          warning: '#FB8C00',
+        },
+      },
     },
   },
+
 })
 
 export default vuetify

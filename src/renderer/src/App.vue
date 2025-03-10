@@ -1,28 +1,28 @@
 <template>
   <v-app>
-    <Sidebar />
-    <v-main>
-      <Home />
-    </v-main>
+    <v-row>
+      <!-- Sidebar -->
+      <v-col cols="auto">
+        <Sidebar />
+      </v-col>
+
+      <!-- Conteúdo principal -->
+      <v-col cols="12" sm="9">
+        <router-view /> <!-- Exibe as views da rota -->
+      </v-col>
+    </v-row>
   </v-app>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 import Sidebar from './components/Sidebar.vue'
-import Home from './views/Home.vue'
 
 export default defineComponent({
   name: 'App',
   components: {
-    Sidebar,
-    Home
+    Sidebar
   }
 })
 </script>
 
-<style scoped>
-.v-application--wrap {
-  padding-top: 64px;
-}
-</style>

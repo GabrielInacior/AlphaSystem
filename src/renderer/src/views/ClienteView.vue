@@ -1,6 +1,6 @@
 <template>
-  <v-container>
-    <v-card>
+  <v-container style="height: 100vh;">
+    <v-card style="height: 98%;">
       <v-card-title>
         Clientes
         <v-spacer></v-spacer>
@@ -8,11 +8,8 @@
         <v-btn color="primary" @click="openModal(null)">Novo Cliente</v-btn>
       </v-card-title>
 
-      <v-data-table
-        :headers="headers"
-        :items="filteredClientes"
-        class="elevation-1"
-      >
+      <v-data-table style="height: 85%" :headers="headers" :items="filteredClientes"
+        class="elevation-1">
         <template v-slot:item.actions="{ item }">
           <v-icon small class="mr-2" @click="openModal(item)">mdi-pencil</v-icon>
           <v-icon small color="red" @click="deleteCliente(item.id)">mdi-delete</v-icon>
@@ -43,6 +40,7 @@
 import { defineComponent, ref, computed, onMounted } from 'vue';
 
 export default defineComponent({
+  name: 'ClienteView',
   setup() {
     const clientes = ref<any[]>([]);
     const search = ref('');

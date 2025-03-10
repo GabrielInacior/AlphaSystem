@@ -22,3 +22,28 @@ export function getAllFiados(db: Database): Promise<any[]> {
     });
   });
 }
+
+// Atualizar fiado
+export function updateFiado(db: Database, id: number, cliente_id: number, valor: number, data: string): void {
+  const query = `UPDATE fiado SET cliente_id = ?, valor = ?, data = ? WHERE id = ?`;
+  db.run(query, [cliente_id, valor, data, id], function (err) {
+    if (err) {
+      console.error('Erro ao atualizar fiado:', err.message);
+    } else {
+      console.log(`Fiado com ID ${id} atualizado com sucesso.`);
+    }
+  });
+}
+
+// Deletar fiado
+export function deleteFiado(db: Database, id: number): void {
+  const query = `DELETE FROM fiado WHERE id = ?`;
+  db.run(query, [id], function (err) {
+    if (err) {
+      console.error('Erro ao deletar fiado:', err.message);
+    } else {
+      console.log(`Fiado com ID ${id} deletado com sucesso.`);
+    }
+  });
+}
+

@@ -9,6 +9,10 @@
         <h1>Loja - Insights</h1>
         <!-- Exemplo de visualização de dados da loja -->
       </v-col>
+      <v-col v-if="!isBarbearia && !isLoja">
+        <h1>Bem-vindo!</h1>
+        <p>Selecione um módulo (Barbearia ou Loja) para ver os insights.</p>
+      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -18,7 +22,7 @@ import { defineComponent, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 export default defineComponent({
-  name: 'HomePage',
+  name: 'Home',
   setup() {
     const route = useRoute()
 

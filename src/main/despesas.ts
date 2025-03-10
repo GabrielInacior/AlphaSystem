@@ -22,3 +22,28 @@ export function getAllDespesas(db: Database): Promise<any[]> {
     });
   });
 }
+
+// Atualizar despesa
+export function updateDespesa(db: Database, id: number, descricao: string, valor: number, data: string, tipo: string): void {
+  const query = `UPDATE despesas SET descricao = ?, valor = ?, data = ?, tipo = ? WHERE id = ?`;
+  db.run(query, [descricao, valor, data, tipo, id], function (err) {
+    if (err) {
+      console.error('Erro ao atualizar despesa:', err.message);
+    } else {
+      console.log(`Despesa com ID ${id} atualizada com sucesso.`);
+    }
+  });
+}
+
+// Deletar despesa
+export function deleteDespesa(db: Database, id: number): void {
+  const query = `DELETE FROM despesas WHERE id = ?`;
+  db.run(query, [id], function (err) {
+    if (err) {
+      console.error('Erro ao deletar despesa:', err.message);
+    } else {
+      console.log(`Despesa com ID ${id} deletada com sucesso.`);
+    }
+  });
+}
+
