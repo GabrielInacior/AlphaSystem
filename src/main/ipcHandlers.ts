@@ -4,18 +4,16 @@ import * as Cliente from './clientes';
 import * as Servico from './servicos';
 import * as Produto from './produtos';
 import * as Venda from './vendas';
-import * as Fiado from './fiado';
 import * as Despesa from './despesas';
-import * as Pagamento from './pagamentos';
 import * as Fechamento from './fechamentoCaixa';
 import { Database } from 'sqlite3';
 
 // Função que recebe a instância do banco de dados e registra os handlers IPC
 export const registerIpcHandlers = (db: Database) => {
   // Clientes
-  ipcMain.handle('create-cliente', async (_event, nome: string, aniversario: string) => {
+  ipcMain.handle('create-cliente', async (_event, nome: string, aniversario: string, telefone: string) => {
     try {
-      await Cliente.createCliente(db, nome, aniversario);
+      await Cliente.createCliente(db, nome, aniversario, telefone);
     } catch (error) {
       console.error('Erro ao criar cliente:', error);
       throw error;
@@ -40,9 +38,9 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
-  ipcMain.handle('update-cliente', async (_event, id: number, nome: string, aniversario: string) => {
+  ipcMain.handle('update-cliente', async (_event, id: number, nome: string, aniversario: string, telefone:string) => {
     try {
-      await Cliente.updateCliente(db, id, nome, aniversario);
+      await Cliente.updateCliente(db, id, nome, aniversario, telefone);
     } catch (error) {
       console.error('Erro ao atualizar cliente:', error);
       throw error;
@@ -59,9 +57,9 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Serviços
-  ipcMain.handle('create-servico', async (_event, nome: string, preco: number, desconto: number) => {
+  ipcMain.handle('create-servico', async (_event, nome: string, preco: number) => {
     try {
-      await Servico.createServico(db, nome, preco, desconto);
+      await Servico.createServico(db, nome, preco);
     } catch (error) {
       console.error('Erro ao criar serviço:', error);
       throw error;
@@ -86,9 +84,9 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
-  ipcMain.handle('update-servico', async (_event, id: number, nome: string, preco: number, desconto: number) => {
+  ipcMain.handle('update-servico', async (_event, id: number, nome: string, preco: number) => {
     try {
-      await Servico.updateServico(db, id, nome, preco, desconto);
+      await Servico.updateServico(db, id, nome, preco);
     } catch (error) {
       console.error('Erro ao atualizar serviço:', error);
       throw error;
@@ -105,9 +103,9 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Produtos
-  ipcMain.handle('create-produto', async (_event, nome: string, custo: number) => {
+  ipcMain.handle('create-produto', async (_event, nome: string, custo: number, preco: number, qtdEstoque: number) => {
     try {
-      await Produto.createProduto(db, nome, custo);
+      await Produto.createProduto(db, nome, custo, preco, qtdEstoque);
     } catch (error) {
       console.error('Erro ao criar produto:', error);
       throw error;
@@ -132,9 +130,9 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
-  ipcMain.handle('update-produto', async (_event, id: number, nome: string, custo: number) => {
+  ipcMain.handle('update-produto', async (_event, id: number, nome: string, custo: number, preco: number, qtdEstoque: number) => {
     try {
-      await Produto.updateProduto(db, id, nome, custo);
+      await Produto.updateProduto(db, id, nome, custo, preco, qtdEstoque);
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
       throw error;
@@ -150,71 +148,121 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
-  /* Pagamentos */
-  ipcMain.handle('create-pagamento', async (_event, venda_id: number, metodo_pagamento: string, valor_pago: number, data: string) => {
-    try {
-      Pagamento.createPagamento(db, venda_id, metodo_pagamento, valor_pago, data)
-    } catch (error) {
-      console.error('Erro ao criar pagamento:', error)
-      throw error
-    }
-  })
-
-  ipcMain.handle('get-pagamentos-por-venda', async (_event, venda_id: number) => {
-    try {
-      return await Pagamento.getPagamentosPorVenda(db, venda_id)
-    } catch (error) {
-      console.error('Erro ao obter pagamentos por venda:', error)
-      throw error
-    }
-  })
 
   // Vendas
-  ipcMain.handle('create-venda-servico', async (_event, cliente_id: number, servico_id: number, valor_total: number, metodo_pagamento: string, data: string) => {
-    try {
-      await Venda.createVendaServico(db, cliente_id, servico_id, valor_total, metodo_pagamento, data);
-    } catch (error) {
-      console.error('Erro ao criar venda de serviço:', error);
-      throw error;
-    }
-  });
 
-  ipcMain.handle('create-venda-produto', async (_event, cliente_id: number, produto_id: number, quantidade: number, valor_total: number, metodo_pagamento: string, data: string) => {
+  // Obter todas as vendas
+  ipcMain.handle('get-todas-vendas', async () => {
     try {
-      await Venda.createVendaProduto(db, cliente_id, produto_id, quantidade, valor_total, metodo_pagamento, data);
-    } catch (error) {
-      console.error('Erro ao criar venda de produto:', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('get-all-vendas', async (_event, tabela: 'vendas_servicos' | 'vendas_produtos') => {
-    try {
-      return await Venda.getAllVendas(db, tabela);
+      return await Venda.getTodasVendas(db);
     } catch (error) {
       console.error('Erro ao obter todas as vendas:', error);
       throw error;
     }
   });
 
-  // Fiado
-  ipcMain.handle('create-fiado', async (_event, cliente_id: number, valor: number, data: string) => {
+  // Obter vendas pagas
+  ipcMain.handle('get-vendas-pagas', async () => {
     try {
-      await Fiado.createFiado(db, cliente_id, valor, data);
+      return await Venda.getVendasPagas(db);
     } catch (error) {
-      console.error('Erro ao criar fiado:', error);
+      console.error('Erro ao obter vendas pagas:', error);
       throw error;
     }
   });
 
-  ipcMain.handle('get-all-fiados', async () => {
+  // Obter vendas fiado (não pagas)
+  ipcMain.handle('get-vendas-fiado', async () => {
     try {
-      return await Fiado.getAllFiados(db);
+      return await Venda.getVendasFiado(db);
     } catch (error) {
-      console.error('Erro ao obter todos os fiados:', error);
+      console.error('Erro ao obter vendas fiado:', error);
       throw error;
     }
   });
+
+  // Obter todos os itens vendidos
+  ipcMain.handle('get-itens-vendidos', async () => {
+    try {
+      return await Venda.getItensVendidos(db);
+    } catch (error) {
+      console.error('Erro ao obter itens vendidos:', error);
+      throw error;
+    }
+  });
+
+  // Criar venda
+  ipcMain.handle('create-venda', async (_event, cliente_id, valor_total, metodo_pagamento, status, data, itens) => {
+    try {
+      return await Venda.createVenda(db, cliente_id, valor_total, metodo_pagamento, status, data, itens);
+    } catch (error) {
+      console.error('Erro ao criar venda:', error);
+      throw error;
+    }
+  });
+
+  // Obter total de vendas por tipo (serviço ou produto)
+  ipcMain.handle('get-total-vendas-por-tipo', async (_event, tipo) => {
+    try {
+      return await Venda.getTotalVendasPorTipo(db, tipo);
+    } catch (error) {
+      console.error('Erro ao obter total de vendas por tipo:', error);
+      throw error;
+    }
+  });
+
+  // Obter total de vendas por período (dia, mês, ano)
+  ipcMain.handle('get-total-vendas-por-periodo', async (_event, tipo, periodo) => {
+    try {
+      return await Venda.getTotalVendasPorPeriodo(db, tipo, periodo);
+    } catch (error) {
+      console.error('Erro ao obter total de vendas por período:', error);
+      throw error;
+    }
+  });
+
+  // Obter venda por ID
+  ipcMain.handle('get-venda-by-id', async (_event, venda_id) => {
+    try {
+      return await Venda.getVendaById(db, venda_id);
+    } catch (error) {
+      console.error('Erro ao obter venda por ID:', error);
+      throw error;
+    }
+  });
+
+  // Obter vendas por data
+  ipcMain.handle('get-vendas-por-data', async (_event, data) => {
+    try {
+      return await Venda.getVendasPorData(db, data);
+    } catch (error) {
+      console.error('Erro ao obter vendas por data:', error);
+      throw error;
+    }
+  });
+
+  // Atualizar venda
+  ipcMain.handle('update-venda', async (_event, venda_id, valor_pago, metodo_pagamento, status) => {
+    try {
+      await Venda.updateVenda(db, venda_id, valor_pago, metodo_pagamento, status);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao atualizar venda:', error);
+      throw error;
+    }
+  });
+
+  // Deletar venda
+  ipcMain.handle('delete-venda', async (_event, venda_id) => {
+    try {
+      await Venda.deleteVenda(db, venda_id);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao deletar venda:', error);
+      throw error;
+    }
+  });
+
 
   // Despesas
   ipcMain.handle('create-despesa', async (_event, descricao: string, valor: number, data: string, tipo: string) => {
@@ -253,4 +301,6 @@ export const registerIpcHandlers = (db: Database) => {
       throw error;
     }
   });
+
+
 };

@@ -6,52 +6,77 @@ import { electronAPI } from '@electron-toolkit/preload'
 const api = {
   closeWindow: () => ipcRenderer.send('close-window'),
 
-  createCliente: (nome: string, aniversario: string) =>
-    ipcRenderer.invoke('create-cliente', nome, aniversario),
+  createCliente: (nome: string, aniversario: string, telefone: string) =>
+    ipcRenderer.invoke('create-cliente', nome, aniversario, telefone),
   getAllClientes: () => ipcRenderer.invoke('get-all-clientes'),
 
   getClienteById: (id: number) => ipcRenderer.invoke('get-cliente-by-id', id),
 
-  updateCliente: (id: number, nome: string, aniversario: string) =>
-    ipcRenderer.invoke('update-cliente', id, nome, aniversario),
+  updateCliente: (id: number, nome: string, aniversario: string, telefone: string) =>
+    ipcRenderer.invoke('update-cliente', id, nome, aniversario, telefone),
 
   deleteCliente: (id: number) => ipcRenderer.invoke('delete-cliente', id),
 
-  createServico: (nome: string, preco: number, desconto: number) =>
-    ipcRenderer.invoke('create-servico', nome, preco, desconto),
+  createServico: (nome: string, preco: number) =>
+    ipcRenderer.invoke('create-servico', nome, preco),
 
   getAllServicos: () => ipcRenderer.invoke('get-all-servicos'),
 
   getServicoById: (id: number) => ipcRenderer.invoke('get-servico-by-id', id),
 
-  updateServico: (id: number, nome: string, preco: number, desconto: number) =>
-    ipcRenderer.invoke('update-servico', id, nome, preco, desconto),
+  updateServico: (id: number, nome: string, preco: number) =>
+    ipcRenderer.invoke('update-servico', id, nome, preco),
 
   deleteServico: (id: number) => ipcRenderer.invoke('delete-servico', id),
 
-  createProduto: (nome: string, custo: number) =>
-    ipcRenderer.invoke('create-produto', nome, custo),
+  createProduto: (nome: string, custo: number, preco: number, qtdEstoque: number) =>
+    ipcRenderer.invoke('create-produto', nome, custo, preco, qtdEstoque),
 
   getAllProdutos: () => ipcRenderer.invoke('get-all-produtos'),
 
   getProdutoById: (id: number) => ipcRenderer.invoke('get-produto-by-id', id),
 
-  updateProduto: (id: number, nome: string, custo: number) =>
-    ipcRenderer.invoke('update-produto', id, nome, custo),
+  updateProduto: (id: number, nome: string, custo: number, preco: number, qtdEstoque: number) =>
+    ipcRenderer.invoke('update-produto', id, nome, custo, preco, qtdEstoque),
 
   deleteProduto: (id: number) => ipcRenderer.invoke('delete-produto', id),
 
-  createVendaServico: (cliente_id: number, servico_id: number, valor_total: number, metodo_pagamento: string, data: string) =>
-    ipcRenderer.invoke('create-venda-servico', cliente_id, servico_id, valor_total, metodo_pagamento, data),
+  atualizarEstoqueProduto: (id: number, quantidadeVendida: number) =>
+    ipcRenderer.invoke('atualizar-estoque-produto', id, quantidadeVendida),
 
-  createVendaProduto: (cliente_id: number, produto_id: number, quantidade: number, valor_total: number, metodo_pagamento: string, data: string) =>
-    ipcRenderer.invoke('create-venda-produto', cliente_id, produto_id, quantidade, valor_total, metodo_pagamento, data),
+  createVenda: (cliente_id: number, valor_total: number, metodo_pagamento: string, status: string, data: string, itens: any[]) => {
+    ipcRenderer.invoke('create-venda', cliente_id, valor_total, metodo_pagamento, status, data, itens);
+  },
 
-  getAllVendas: (tabela: 'vendas_servicos' | 'vendas_produtos') =>
-    ipcRenderer.invoke('get-all-vendas', tabela),
+  getTodasVendas: () =>
+    ipcRenderer.invoke('get-all-vendas'),
 
-  getVendaById: (tabela: 'vendas_servicos' | 'vendas_produtos', id: number) =>
-    ipcRenderer.invoke('get-venda-by-id', tabela, id),
+  getVendasPagas: () =>
+    ipcRenderer.invoke('get-vendas-pagas'),
+
+  getVendasFiado: () =>
+    ipcRenderer.invoke('get-vendas-fiado'),
+
+  getItensVendidos: () =>
+    ipcRenderer.invoke('get-itens-vendidos'),
+
+  updateVenda: (id: number, valor_pago: number, metodo_pagamento: string, status: string) =>
+    ipcRenderer.invoke('update-venda', id, valor_pago, metodo_pagamento, status),
+
+  deleteVenda: (id: number) =>
+    ipcRenderer.invoke('delete-venda', id),
+
+  getTotalVendasPorTipo: (tipo: string) =>
+    ipcRenderer.invoke('get-total-vendas-por-tipo', tipo),
+
+  getTotalVendasPorPeriodo: (tipo: string, periodo: string) =>
+    ipcRenderer.invoke('get-total-vendas-por-periodo', tipo, periodo),
+
+  getVendaById: (venda_id: number) =>
+    ipcRenderer.invoke('get-venda-by-id', venda_id),
+
+  getVendasPorData: (data: string) =>
+    ipcRenderer.invoke('get-vendas-por-data', data),
 
   createDespesa: (descricao: string, valor: number, data: string, tipo: string) =>
     ipcRenderer.invoke('create-despesa', descricao, valor, data, tipo),
@@ -77,20 +102,6 @@ const api = {
   updateFechamentoCaixa: (id: number, total_vendas: number, total_despesas: number, total_cartao: number, total_pix: number, total_dinheiro: number, total_banco: number, data: string) =>
     ipcRenderer.invoke('update-fechamento-caixa', id, total_vendas, total_despesas, total_cartao, total_pix, total_dinheiro, total_banco, data),
 
-  createFiado: (cliente_id: number, valor: number, data: string) =>
-    ipcRenderer.invoke('create-fiado', cliente_id, valor, data),
-
-  getAllFiados: () => ipcRenderer.invoke('get-all-fiados'),
-  updateFiado: (id: number, cliente_id: number, valor: number, data: string) =>
-    ipcRenderer.invoke('update-fiado', id, cliente_id, valor, data),
-
-  deleteFiado: (id: number) => ipcRenderer.invoke('delete-fiado', id),
-
-  createPagamento: (venda_id: number, metodo_pagamento: string, valor_pago: number, data: string) =>
-    ipcRenderer.invoke('create-pagamento', venda_id, metodo_pagamento, valor_pago, data),
-
-  getPagamentosPorVenda: (venda_id: number) =>
-    ipcRenderer.invoke('get-pagamentos-por-venda', venda_id),
 };
 
 if (process.contextIsolated) {

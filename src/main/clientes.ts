@@ -1,9 +1,10 @@
 import { Database } from 'sqlite3';
 
 // Criar cliente
-export function createCliente(db: Database, nome: string, aniversario: string): void {
-  const query = `INSERT INTO clientes (nome, aniversario) VALUES (?, ?)`;
-  db.run(query, [nome, aniversario], function (err) {
+export function createCliente(db: Database, nome: string, aniversario: string, telefone: string): void {
+  const query = `INSERT INTO clientes (nome, aniversario, telefone) VALUES (?, ?, ?)`;
+  console.log(telefone)
+  db.run(query, [nome, aniversario, telefone], function (err) {
     if (err) {
       console.error('Erro ao criar cliente:', err.message);
     } else {
@@ -35,9 +36,11 @@ export function getClienteById(db: Database, id: number): Promise<any> {
 }
 
 // Atualizar cliente
-export function updateCliente(db: Database, id: number, nome: string, aniversario: string): void {
-  const query = `UPDATE clientes SET nome = ?, aniversario = ? WHERE id = ?`;
-  db.run(query, [nome, aniversario, id], function (err) {
+export function updateCliente(db: Database, id: number, nome: string, aniversario: string, telefone: string): void {
+  console.log(id);
+  console.log(telefone);
+  const query = `UPDATE clientes SET nome = ?, aniversario = ?, telefone = ? WHERE id = ?`;
+  db.run(query, [nome, aniversario, telefone, id], function (err) { // Correção na ordem dos parâmetros
     if (err) {
       console.error('Erro ao atualizar cliente:', err.message);
     } else {

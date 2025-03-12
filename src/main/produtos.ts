@@ -1,9 +1,12 @@
 import { Database } from 'sqlite3';
 
 // Criar produto
-export function createProduto(db: Database, nome: string, custo: number): void {
-  const query = `INSERT INTO produtos (nome, custo) VALUES (?, ?)`;
-  db.run(query, [nome, custo], function (err) {
+// Criar produto
+export function createProduto(db: Database, nome: string, custo: number, preco: number, qtdEstoque: number): void {
+  const lucroPorcentagem = ((preco - custo) / custo) * 100;
+
+  const query = `INSERT INTO produtos (nome, custo, preco, qtdEstoque, lucroPorcentagem) VALUES (?, ?, ?, ?, ?)`;
+  db.run(query, [nome, custo, preco, qtdEstoque, lucroPorcentagem], function (err) {
     if (err) {
       console.error('Erro ao criar produto:', err.message);
     } else {
@@ -11,6 +14,8 @@ export function createProduto(db: Database, nome: string, custo: number): void {
     }
   });
 }
+
+
 
 // Obter todos os produtos
 export function getAllProdutos(db: Database): Promise<any[]> {
@@ -35,9 +40,11 @@ export function getProdutoById(db: Database, id: number): Promise<any> {
 }
 
 // Atualizar produto
-export function updateProduto(db: Database, id: number, nome: string, custo: number): void {
-  const query = `UPDATE produtos SET nome = ?, custo = ? WHERE id = ?`;
-  db.run(query, [nome, custo, id], function (err) {
+export function updateProduto(db: Database, id: number, nome: string, custo: number, preco: number, qtdEstoque: number): void {
+  const lucroPorcentagem = ((preco - custo) / custo) * 100;
+
+  const query = `UPDATE produtos SET nome = ?, custo = ?, preco = ?, qtdEstoque = ?, lucroPorcentagem = ? WHERE id = ?`;
+  db.run(query, [nome, custo, preco, qtdEstoque, lucroPorcentagem, id], function (err) {
     if (err) {
       console.error('Erro ao atualizar produto:', err.message);
     } else {
@@ -57,3 +64,21 @@ export function deleteProduto(db: Database, id: number): void {
     }
   });
 }
+
+// Atualizar estoque após venda
+export function atualizarEstoqueProduto(db: Database, id: number, quantidadeVendida: number): void {
+  const query = `UPDATE produtos SET qtdEstoque = qtdEstoque - ? WHERE id = ? AND qtdEstoque >= ?`;
+  db.run(query, [quantidadeVendida, id, quantidadeVendida], function (err) {
+    if (err) {
+      console.error('Erro ao atualizar estoque:', err.message);
+    } else if (this.changes === 0) {
+      console.error('Estoque insuficiente para a venda.');
+    } else {
+      console.log(`Estoque do produto com ID ${id} atualizado com sucesso.`);
+    }
+  });
+}
+
+
+
+

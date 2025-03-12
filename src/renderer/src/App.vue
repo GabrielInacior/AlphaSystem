@@ -1,14 +1,12 @@
 <template>
   <v-app>
-    <v-row>
-      <!-- Sidebar -->
-      <v-col cols="auto">
+    <v-row no-gutters class="full-height">
+      <v-col cols="auto" class="sidebar">
         <Sidebar />
       </v-col>
 
-      <!-- Conteúdo principal -->
-      <v-col cols="12" sm="9">
-        <router-view /> <!-- Exibe as views da rota -->
+      <v-col class="content">
+        <router-view />
       </v-col>
     </v-row>
   </v-app>
@@ -25,4 +23,18 @@ export default defineComponent({
   }
 })
 </script>
+
+<style>
+.full-height {
+  min-height: 100vh;
+  display: flex;
+}
+
+.content {
+  flex-grow: 1;
+  min-height: 100%;
+}
+
+</style>
+
 

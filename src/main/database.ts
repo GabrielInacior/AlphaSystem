@@ -4,16 +4,17 @@ import { app } from 'electron'
 import fs from 'fs'
 import path from 'path'
 
-// Caminho do banco de dados
-const dbPath = path.join(app.getPath('userData'), 'myAppData')
 
-console.log('Caminho do banco de dados:', dbPath) // Verifique se o caminho está correto
+const dbPath = path.join(app.getPath('userData'), 'myAppData.sqlite')
 
-// Certifique-se de que o diretório existe
-const dirPath = path.dirname(dbPath) // O diretório onde o banco de dados será armazenado
+console.log('Caminho do banco de dados:', dbPath)
+
+
+const dirPath = path.dirname(dbPath)
 if (!fs.existsSync(dirPath)) {
   fs.mkdirSync(dirPath, { recursive: true })
 }
+
 
 export function initDB(): Database {
   const db = new sqlite3.Database(dbPath, (err) => {
@@ -26,107 +27,76 @@ export function initDB(): Database {
   return db
 }
 
-// Função para criar as tabelas
-export function createTables(db: sqlite3.Database): void {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS clientes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nome TEXT NOT NULL,
-      aniversario DATE
-    );
-  `)
 
-  db.run(`
+export async function createTables(db: sqlite3.Database): Promise<void> {
+  db.serialize(() => {
+    db.run(`
+      CREATE TABLE IF NOT EXISTS clientes (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       nome TEXT NOT NULL,
+       telefone TEXT,
+       aniversario DATE
+      );
+    `)
+
+    db.run(`
     CREATE TABLE IF NOT EXISTS servicos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
-      preco REAL,
-      desconto REAL
+      preco REAL
     );
-  `)
+    `)
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS vendas_servicos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      cliente_id INTEGER,
-      servico_id INTEGER,
-      valor_total REAL,
-      metodo_pagamento TEXT,
-      data DATE,
-      FOREIGN KEY(cliente_id) REFERENCES clientes(id),
-      FOREIGN KEY(servico_id) REFERENCES servicos(id)
-    );
-  `)
-
-  db.run(`
+    db.run(`
     CREATE TABLE IF NOT EXISTS produtos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
-      custo REAL
+      custo REAL,
+      preco REAL,
+      qtdEstoque INTEGER DEFAULT 0,
+      lucroPorcentagem REAL
     );
-  `)
+    `)
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS vendas_produtos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      cliente_id INTEGER,
-      produto_id INTEGER,
-      quantidade INTEGER,
-      valor_total REAL,
-      metodo_pagamento TEXT,
-      data DATE,
-      FOREIGN KEY(cliente_id) REFERENCES clientes(id),
-      FOREIGN KEY(produto_id) REFERENCES produtos(id)
-    );
-  `)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS vendas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cliente_id INTEGER,
+        valor_total REAL,
+        valor_pago REAL DEFAULT 0,
+        metodo_pagamento TEXT,
+        status TEXT,
+        data DATE,
+        FOREIGN KEY(cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+      );
+    `)
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS pagamentos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      venda_id INTEGER,
-      metodo_pagamento TEXT,
-      valor_pago REAL,
-      data DATE,
-      FOREIGN KEY(venda_id) REFERENCES vendas_servicos(id)
-    );
-  `)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS vendas_itens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        venda_id INTEGER,
+        produto_id INTEGER,
+        servico_id INTEGER,
+        quantidade INTEGER,
+        valor_unitario REAL,
+        valor_total REAL,
+        FOREIGN KEY(venda_id) REFERENCES vendas(id) ON DELETE CASCADE,
+        FOREIGN KEY(produto_id) REFERENCES produtos(id),
+        FOREIGN KEY(servico_id) REFERENCES servicos(id)
+      );
+    `)
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS despesas (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      descricao TEXT,
-      valor REAL,
-      data DATE,
-      tipo TEXT
-    );
-  `)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS despesas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        descricao TEXT,
+        valor REAL,
+        data DATE,
+        tipo TEXT
+      );
+    `)
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS fiado (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      cliente_id INTEGER,
-      valor REAL,
-      descricao TEXT,
-      data DATE,
-      status TEXT, -- Pode ser "pendente", "pago", etc.
-      FOREIGN KEY(cliente_id) REFERENCES clientes(id)
-    );
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS fechamento_caixa (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tipo TEXT,
-      total_mes REAL,
-      total_semana REAL,
-      total_dia REAL,
-      total_cartao REAL,
-      total_pix REAL,
-      total_dinheiro REAL,
-      total_banco REAL,
-      data DATE
-    );
-  `)
+  })
 }
 
 // Função para consultar o banco de dados

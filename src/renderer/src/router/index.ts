@@ -1,50 +1,81 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
-import ClienteView from '../views/ClienteView.vue'
-import ServicoView from '../views/ServicoView.vue'
-import ProdutoView from '../views/ProdutoView.vue'
-import FiadoView from '../views/FiadoView.vue'
+import ClienteView from '../views/Clientes/ClienteView.vue'
+import ServicoView from '../views/Barbearia/ServicoView.vue'
+import ProdutoView from '../views/Loja/ProdutoView.vue'
+import FiadoView from '../views/Vendas/FiadoView.vue'
+import VendasProdutosView from '@renderer/views/Vendas/VendasView.vue'
+import BarbeariaView from '../views/Barbearia/BarbeariaView.vue' // Nova rota para a home da barbearia
+import LojaView from '../views/Loja/LojaView.vue' // Nova rota para a home da loja
+import Inicio from '@renderer/views/Inicio.vue'
+import DespesaView from '@renderer/views/Loja/DespesaView.vue'
+import HistoricoVendas from '@renderer/views/Vendas/HistoricoVendas.vue'
+import VendasView from '@renderer/views/Vendas/VendasView.vue'
 
 const routes = [
   {
     path: '/',
-    name: 'inicio',
-    component: Home
-  },
-  {
-    path: '/barbearia',
-    name: 'barbearia',
+    name: 'home',
     component: Home,
+    redirect: '/inicio',
     children: [
       {
-        path: 'servicos',
-        name: 'servicos',
-        component: ServicoView
-      }
-    ]
-  },
-  {
-    path: '/loja',
-    name: 'loja',
-    component: Home,
-    children: [
+        path: 'inicio',
+        name: 'inicio',
+        component: Inicio,
+      },
       {
-        path: 'produtos',
-        name: 'produtos',
-        component: ProdutoView
-      }
-    ]
-  },
-  {
-    path: '/clientes',
-    name: 'clientes',
-    component: ClienteView,
-    children: [
+        path: 'clientes',
+        name: 'clientes',
+        component: ClienteView,
+      },
+
       {
         path: 'fiados',
         name: 'fiados',
         component: FiadoView
-      }
+      },
+      {
+        path: 'servicos',
+        name: 'servicos',
+        component: ServicoView
+      },
+      {
+        path: 'despesas',
+        name: 'despesas',
+        component: DespesaView
+      },
+      {
+        path: 'vendas',
+        name: 'vendas',
+        component: VendasView
+      },
+      {
+        path: 'historico-vendas',
+        name: 'historico-vendas',
+        component: HistoricoVendas
+      },
+      {
+        path: 'barbearia',
+        name: 'barbearia',
+        component: BarbeariaView, // Home do módulo Barbearia
+      },
+      {
+        path: 'produtos',
+        name: 'produtos',
+        component: ProdutoView
+      },
+
+      {
+        path: 'vendasProduto',
+        name: 'vendasProduto',
+        component: VendasProdutosView
+      },
+      {
+        path: 'loja',
+        name: 'loja',
+        component: LojaView, // Home do módulo Loja
+      },
     ]
   }
 ]
