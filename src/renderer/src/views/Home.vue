@@ -35,8 +35,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router'; // Importar useRoute para obter o caminho atual
+import { defineComponent, ref, onMounted } from 'vue';
 import Inicio from './Inicio.vue';
 import { useTheme } from 'vuetify/lib/framework.mjs';
 import axios from 'axios';
@@ -55,8 +54,6 @@ export default defineComponent({
       description: '---',
       icon: 'mdi-weather-sunset'
     });
-
-    const route = useRoute(); // Obter a rota atual
 
     const updateTime = () => {
       const now = new Date();

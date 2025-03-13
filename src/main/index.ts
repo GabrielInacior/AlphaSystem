@@ -26,7 +26,7 @@ function createWindow(): void {
     mainWindow.show()
   })
 
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {

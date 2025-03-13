@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent} from 'vue';
 
 export default defineComponent({
   name: 'BarbeariaView',

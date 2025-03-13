@@ -5,9 +5,9 @@
         Produtos
         <v-spacer></v-spacer>
         <!-- Filtro de busca -->
-        <v-row align="center" dense>
+        <v-row  density="compact">
           <v-col cols="12" sm="6" md="4">
-            <v-text-field v-model="search" label="Buscar produto" clearable dense outlined class="filter-input" />
+            <v-text-field density="compact" v-model="search" label="Buscar produto" clearable dense outlined class="filter-input" />
           </v-col>
           <v-col cols="12" sm="6" md="4">
             <v-btn color="primary" @click="openModal(null)">Novo Produto</v-btn>
@@ -31,7 +31,8 @@
           <span>R$ {{ item.preco.toFixed(2) || 'Não informado' }}</span>
         </template>
         <template v-slot:item.qtdEstoque="{ item }">
-          <span>{{ item.qtdEstoque + 'Unidade(s)' || 'Não informado' }} </span>
+          <span v-if="item.qtdEstoque === 0" style="color: red; font-weight: bold;">{{ item.qtdEstoque }} <v-icon style="font-size: 15px!important;" icon="mdi-alert"></v-icon></span>
+          <span v-else>{{ item.qtdEstoque + ' Unidade(s)' || 'Não informado' }} </span>
         </template>
         <template v-slot:item.lucroPorcentagem="{ item }">
           <td>
@@ -56,18 +57,18 @@
           {{ editingProduto ? 'Editar Produto' : 'Novo Produto' }}
         </v-card-title>
         <v-card-text>
-          <v-text-field v-model="produto.nome" label="Nome" required :rules="[val => !!val || 'Nome é obrigatório']"
+          <v-text-field density="compact" v-model="produto.nome" label="Nome" required :rules="[val => !!val || 'Nome é obrigatório']"
             :error-messages="nomeError"></v-text-field>
 
-          <v-number-input v-model="produto.custo" label="Custo de compra" required :min="0"
+          <v-number-input density="compact" v-model="produto.custo" label="Custo de compra" required :min="0"
             :rules="[val => val >= 0 || 'Custo deve ser maior ou igual a zero']" :error-messages="custoError"
             prefix="R$" :precision="2" control-variant="stacked"></v-number-input>
 
-          <v-number-input v-model="produto.preco" label="Preço de venda" required :min="0"
+          <v-number-input density="compact" v-model="produto.preco" label="Preço de venda" required :min="0"
             :rules="[val => val > 0 || 'Preço deve ser maior que zero']" :error-messages="precoError" prefix="R$"
             :precision="2" control-variant="stacked"></v-number-input>
 
-          <v-number-input v-model="produto.qtdEstoque" label="Quantidade em Estoque" required :min="0"
+          <v-number-input density="compact" v-model="produto.qtdEstoque" label="Quantidade em Estoque" required :min="0"
             :rules="[val => val >= 0 || 'Quantidade deve ser maior ou igual a zero']" :error-messages="estoqueError"
             suffix="UN" :precision="0" control-variant="stacked"></v-number-input>
         </v-card-text>
@@ -161,7 +162,7 @@ export default defineComponent({
 
       if (editingProduto.value) {
         await window.api.updateProduto(
-          editingProduto.value.id,
+          editingProduto.value.id || 0,
           produto.value.nome,
           produto.value.custo,
           produto.value.preco,
@@ -216,8 +217,5 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.filter-input {
-  width: 100%;
-  max-width: 400px;
-}
+
 </style>

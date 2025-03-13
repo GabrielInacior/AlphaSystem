@@ -7,12 +7,12 @@
         <v-row dense>
           <!-- Filtros existentes -->
           <v-col cols="12" sm="6" md="4">
-            <v-text-field v-model="searchCliente" label="Filtrar por Cliente" dense outlined color="grey"
-              class="search-input" />
+            <v-text-field density="compact" v-model="searchCliente" label="Filtrar por Cliente" dense outlined
+              color="grey" class="search-input" />
           </v-col>
           <v-col cols="12" sm="6" md="4">
-            <v-text-field v-model="searchData" label="Filtrar por Data" clearable dense outlined color="grey"
-              type="date" class="search-input" />
+            <v-text-field density="compact" v-model="searchData" label="Filtrar por Data" clearable dense outlined
+              color="grey" type="date" class="search-input" />
           </v-col>
           <v-col cols="12" sm="6" md="4">
             <v-select v-model="searchPagamento" :items="metodosPagamento" label="Filtrar por Método de Pagamento" dense
@@ -25,7 +25,6 @@
                 </v-list-item>
               </template>
             </v-select>
-
           </v-col>
         </v-row>
       </v-card-title>
@@ -39,7 +38,9 @@
         </template>
 
         <template v-slot:item.actions="{ item }">
-          <v-icon small class="mr-2" @click="openEditarVenda(item)">mdi-pencil</v-icon> <!-- Ícone de editar -->
+          <v-icon small class="mr-1" @click="openEditarVenda(item)">mdi-pencil</v-icon> <!-- Ícone de editar -->
+          <v-icon small class="mr-1" color="primary" @click="openVendaInfo(item)">mdi-information-variant</v-icon>
+          <!-- Ícone de editar -->
           <v-icon small color="red" @click="confirmarExclusao(item.id)">mdi-delete</v-icon> <!-- Ícone de excluir -->
         </template>
 
@@ -47,7 +48,7 @@
           <td>
             <div v-for="itens in item.itens" :key="itens.produto_id || itens.servico_id">
               <span v-if="itens.produto_id">{{ itens.nome_item }} - R$ {{ itens.valor_unitario }} x {{ itens.quantidade
-                }}</span>
+              }}</span>
               <span v-else>{{ itens.nome_item }} - R$ {{ itens.valor_unitario }} x {{ itens.quantidade }}</span>
             </div>
           </td>
@@ -84,14 +85,65 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="modalInfo" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h6">Detalhes da Venda</span>
+        </v-card-title>
+        <v-card-text class="mt-n4">
+          <v-list>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="font-weight-bold">Cliente: {{ vendaInfo?.nome_cliente
+                }}</v-list-item-title>
+                <v-list-item-title>Valor total da venda: <span style="font-weight: bold;">R$ {{
+                  vendaInfo?.valor_total.toFixed(2) || '0.00'
+                    }}</span></v-list-item-title>
+                <v-list-item-title>Valor pago pelo cliente: <span>R$ {{
+                  vendaInfo?.valor_pago.toFixed(2) || '0.00'
+                    }}</span></v-list-item-title>
+                <v-list-item-title v-if="vendaInfo?.data">Data: {{ formatData(vendaInfo?.data)
+                }}</v-list-item-title>
+                <v-list-item-title>Método de pagamento: {{ vendaInfo?.metodo_pagamento }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+
+          <v-divider></v-divider>
+
+          <!-- Seção de Dívida Atual -->
+
+          <v-divider></v-divider>
+
+          <v-list dense style="max-height: 200px; overflow-y: auto;">
+            <v-list-item v-for="item in vendaInfo?.itens" :key="item.produto_id || item.servico_id">
+              <v-list-item-content>
+                <v-list-item-title>{{ item.nome_item || 'Item excluído' }} - <span class="font-weight-bold"> {{  item.valor_unitario ? 'R$' +
+                  item.valor_unitario.toFixed(2) : '---' }} -
+                    {{ item.quantidade + ' Unidade(s)' }}</span></v-list-item-title>
+              </v-list-item-content>
+              <v-divider></v-divider>
+            </v-list-item>
+          </v-list>
+
+          <v-divider></v-divider>
+
+        </v-card-text>
+
+        <v-card-actions class="d-flex justify-end">
+          <v-btn @click="modalInfo = false" class="mr-2" outlined color="grey darken-1">Fechar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Modal para editar a venda -->
     <v-dialog v-model="modalEditar" max-width="500px">
       <v-card>
         <v-card-title>Editar Venda</v-card-title>
         <v-card-text>
           <v-form ref="formEditarVenda" v-model="formIsValid">
-            <v-text-field v-model="vendaEdicao.valor_pago" label="Valor Pago" type="number" required prefix="R$"
-              :rules="[(v) => v > 0 || 'Valor deve ser maior que zero']" />
+            <v-text-field density="compact" v-model="vendaEdicao.valor_total" label="Valor Total" prefix="R$" />
+            <v-text-field density="compact" v-model="vendaEdicao.data" label="Data" type="date" />
             <v-select v-model="vendaEdicao.metodo_pagamento" :items="metodosPagamento" label="Método de Pagamento"
               required />
             <v-select v-model="vendaEdicao.status" :items="['pago', 'pendente']" label="Status" required />
@@ -115,17 +167,18 @@ export default defineComponent({
   name: 'HistoricoVendas',
   setup() {
     const vendas = ref<VendaEntity[]>([]); // Lista de vendas
-    const searchCliente = ref(''); // Filtro de busca por nome de cliente
+    const searchCliente = ref('');
     const searchData = ref(''); // Filtro de busca por data
     const searchPagamento = ref(''); // Filtro de busca por método de pagamento
-    const modalOpen = ref(false); // Controle do modal
     const excluindoVenda = ref(false);
+    const modalInfo = ref(false);
     const modalConfirmacaoExclusao = ref(false);
     const modalEditar = ref(false); // Modal de edição
     const formIsValid = ref(false); // Validação do formulário de edição
     const vendaIdParaExcluir = ref<number | null>(null);
-    const vendaSelecionada = ref<VendaEntity | null>(null); // Venda selecionada para detalhes
     const vendaEdicao = ref<any>({}); // Venda para edição
+    const vendaInfo = ref<any>({}); // Venda para edição
+    const clientes = ref(['Cliente 1', 'Cliente 2']); // Exemplo de lista de clientes
 
     // Cabeçalhos da tabela de vendas
     const headers = [
@@ -141,7 +194,6 @@ export default defineComponent({
       vendaIdParaExcluir.value = id; // Guarda o ID da venda para exclusão
       modalConfirmacaoExclusao.value = true; // Abre o modal de confirmação
     };
-
 
     // Itens de método de pagamento para filtro
     const metodosPagamento = ref(['Dinheiro', 'Cartão', 'Pix',]);
@@ -179,15 +231,23 @@ export default defineComponent({
 
     // Abrir o modal para editar venda
     const openEditarVenda = (venda: VendaEntity) => {
-      vendaEdicao.value = { ...venda }; // Preenche os campos com os dados da venda
+      const dataFormatada = venda.data ? new Date(venda.data).toISOString().split('T')[0] : '';
+      vendaEdicao.value = { ...venda, data: dataFormatada };
       modalEditar.value = true;
+    };
+
+    const openVendaInfo = (venda: VendaEntity) => {
+      const dataFormatada = venda.data ? new Date(venda.data).toISOString().split('T')[0] : '';
+      vendaInfo.value = { ...venda, data: dataFormatada };
+      modalInfo.value = true;
     };
 
     // Função para editar a venda
     const editarVenda = async () => {
       try {
-        const { id, valor_pago, metodo_pagamento, status } = vendaEdicao.value;
-        await window.api.updateVenda(id, valor_pago, metodo_pagamento, status); // Atualiza a venda
+        const { id, valor_total, valor_pago, data, metodo_pagamento, status } = vendaEdicao.value;
+        vendaEdicao.value.valor_pago = vendaEdicao.value.valor_total;
+        await window.api.updateVenda(id, valor_total, valor_pago, metodo_pagamento, status, data); // Atualiza a venda
         modalEditar.value = false; // Fecha o modal
         carregarVendas(); // Recarrega as vendas
       } catch (error) {
@@ -231,6 +291,7 @@ export default defineComponent({
       searchData,
       searchPagamento,
       modalEditar,
+      vendaInfo,
       vendaEdicao,
       formIsValid,
       headers,
@@ -244,9 +305,9 @@ export default defineComponent({
       excluirVenda, // Adicionando a função de excluir
       formatData,
       carregarVendas,
+      openVendaInfo,
+      modalInfo,
     };
   }
 });
 </script>
-
-<style scoped></style>

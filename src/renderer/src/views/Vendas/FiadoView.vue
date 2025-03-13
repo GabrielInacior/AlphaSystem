@@ -6,12 +6,12 @@
         <v-spacer></v-spacer>
         <v-row dense>
           <v-col cols="12" sm="6" md="4">
-            <v-text-field v-model="searchCliente" label="Filtrar por Cliente" clearable dense outlined color="grey"
+            <v-text-field density="compact" v-model="searchCliente" label="Filtrar por Cliente" clearable dense outlined color="grey"
               class="search-input" />
           </v-col>
 
           <v-col cols="12" sm="6" md="4">
-            <v-text-field v-model="searchData" label="Filtrar por Data" clearable dense outlined color="grey"
+            <v-text-field density="compact" v-model="searchData" label="Filtrar por Data" clearable dense outlined color="grey"
               type="date" class="search-input" />
           </v-col>
         </v-row>
@@ -67,7 +67,7 @@
         <template v-slot:item.actions="{ item }">
           <v-row dense justify="start" align="center">
             <v-col cols="auto">
-              <v-btn color="success" @click="markAsPaid(item)" v-if="item.status !== 'pago'" elevation="2" size="small"
+              <v-btn color="success" @click="markAsPaid(item)" v-if="item.status !== 'pago'" elevation="2" size="x-small"
                 class="d-flex align-center justify-center" rounded>
                 <v-icon left>mdi-check</v-icon> Alterar status
               </v-btn>
@@ -88,7 +88,7 @@
             <v-list-item>
               <v-list-item-content>
                 <v-list-item-title class="font-weight-bold">Cliente: {{ fiadoSelecionado?.nome_cliente
-                  }}</v-list-item-title>
+                }}</v-list-item-title>
                 <v-list-item-title>Valor total da venda: <span class="text-primary">R$ {{
                   fiadoSelecionado?.valor_total.toFixed(2) || '0.00'
                     }}</span></v-list-item-title>
@@ -96,7 +96,7 @@
                   fiadoSelecionado?.valor_pago.toFixed(2) || '0.00'
                     }}</span></v-list-item-title>
                 <v-list-item-title v-if="fiadoSelecionado?.data">Data: {{ formatData(fiadoSelecionado?.data)
-                  }}</v-list-item-title>
+                }}</v-list-item-title>
                 <v-list-item-title>Método de pagamento: {{ fiadoSelecionado?.metodo_pagamento }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
@@ -110,7 +110,7 @@
               <v-list-item-content>
                 <v-list-item-title class="font-weight-bold">Dívida Atual</v-list-item-title>
                 <v-list-item-subtitle style="color: red;">
-                  R$ {{ (fiadoSelecionado?.valor_total - fiadoSelecionado?.valor_pago).toFixed(2) }}
+                  R$ {{ ((fiadoSelecionado?.valor_total ?? 0) - (fiadoSelecionado?.valor_pago ?? 0)).toFixed(2) }}
                 </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
@@ -130,13 +130,15 @@
 
           <v-divider></v-divider>
 
-          <v-autocomplete v-model="metodoPagamento" :items="metodosPagamento" label="Forma de Pagamento"
+          <v-autocomplete density="compact" v-model="metodoPagamento" :items="metodosPagamento" label="Forma de Pagamento"
             prepend-inner-icon="mdi-credit-card" required outlined dense color="grey" class="mt-2" />
 
-          <v-number-input v-model="valorPago" label="Valor Pago" required :min="0"
-            :max="fiadoSelecionado?.valor_total - fiadoSelecionado?.valor_pago" prefix="R$"
+          <v-number-input density="compact" v-model="valorPago" label="Valor Pago" required :min="0"
+            :max="(fiadoSelecionado?.valor_total ?? 0) - (fiadoSelecionado?.valor_pago ?? 0)" prefix="R$"
             :rules="[val => val >= 0 || 'Valor deve ser maior que zero']" :error-messages="valorPagoError"
-            :precision="2" control-variant="stacked" class="mt-2"></v-number-input>
+            :precision="2" control-variant="stacked" class="mt-2">
+          </v-number-input>
+
 
         </v-card-text>
 

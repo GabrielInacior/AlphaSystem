@@ -5,14 +5,14 @@
       <v-card-title>
         Clientes
 
-        <v-row dense align="center">
+        <v-row dense >
           <v-col cols="12" sm="6" md="4">
-            <v-text-field v-model="searchNome" label="Filtrar por Nome" dense outlined color="grey"
+            <v-text-field density="compact" v-model="searchNome" label="Filtrar por Nome" dense outlined color="grey"
               class="search-input" />
           </v-col>
 
           <v-col cols="12" sm="6" md="4">
-            <v-text-field v-model="searchTelefone" label="Filtrar por Telefone" dense outlined color="grey"
+            <v-text-field density="compact" v-model="searchTelefone" label="Filtrar por Telefone" dense outlined color="grey"
               class="search-input" />
           </v-col>
           <v-col cols="12" sm="6" md="4">
@@ -55,9 +55,9 @@
         </v-card-title>
         <v-card-text>
           <!-- Campo Nome com validação -->
-          <v-text-field v-model="cliente.nome" label="Nome" :rules="[nameRule]" required></v-text-field>
-          <v-text-field v-model="cliente.aniversario" label="Aniversário" type="date" required></v-text-field>
-          <v-text-field v-model="cliente.telefone" label="Telefone" @input="formatTelefone"
+          <v-text-field density="compact" v-model="cliente.nome" label="Nome" :rules="[nameRule]" required></v-text-field>
+          <v-text-field density="compact" v-model="cliente.aniversario" label="Aniversário" type="date" required></v-text-field>
+          <v-text-field density="compact" v-model="cliente.telefone" label="Telefone" @input="formatTelefone"
             :rules="telefoneRules"></v-text-field>
         </v-card-text>
         <v-card-actions>
@@ -124,9 +124,9 @@ export default defineComponent({
 
     const saveCliente = async () => {
       if (editingCliente.value) {
-        await window.api.updateCliente(editingCliente.value.id, cliente.value.nome, cliente.value.aniversario, cliente.value.telefone);
+        await window.api.updateCliente(editingCliente.value.id || 0, cliente.value.nome, cliente.value.aniversario || '', cliente.value.telefone || '');
       } else {
-        await window.api.createCliente(cliente.value.nome, cliente.value.aniversario, cliente.value.telefone);
+        await window.api.createCliente(cliente.value.nome, cliente.value.aniversario || '', cliente.value.telefone || '');
       }
       modalOpen.value = false;
       loadClientes();

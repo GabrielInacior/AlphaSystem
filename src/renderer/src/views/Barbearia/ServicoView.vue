@@ -5,9 +5,9 @@
         Serviços
         <v-spacer></v-spacer>
         <!-- Filtro de busca -->
-        <v-row align="center" dense>
+        <v-row dense>
           <v-col cols="12" sm="6" md="4">
-            <v-text-field v-model="search" label="Buscar serviço" clearable dense outlined class="filter-input" />
+            <v-text-field density="compact" v-model="search" label="Buscar serviço" clearable dense outlined class="filter-input" />
           </v-col>
           <v-col cols="12" sm="6" md="4">
             <v-btn color="primary" @click="openModal(null)">Novo Serviço</v-btn>
@@ -42,11 +42,11 @@
           {{ editingServico ? 'Editar Serviço' : 'Novo Serviço' }}
         </v-card-title>
         <v-card-text>
-          <v-text-field v-model="servico.nome" label="Nome" required :rules="[val => !!val || 'Nome é obrigatório']"
+          <v-text-field density="compact" v-model="servico.nome" label="Nome" required :rules="[val => !!val || 'Nome é obrigatório']"
             :error-messages="nomeError"></v-text-field>
 
           <!-- Preço (R$) -->
-          <v-number-input v-model="servico.preco" label="Preço (R$)" required :min="0"
+          <v-number-input density="compact" v-model="servico.preco" label="Preço (R$)" required :min="0"
             :rules="[val => !!val || 'Preço é obrigatório']" :error-messages="precoError" prefix="R$" :precision="2"
             control-variant="stacked"></v-number-input>
 
@@ -119,7 +119,7 @@ export default defineComponent({
 
 
       if (editingServico.value) {
-        await window.api.updateServico(editingServico.value.id, servico.value.nome, servico.value.preco);
+        await window.api.updateServico(editingServico.value.id || 0, servico.value.nome, servico.value.preco);
       } else {
         await window.api.createServico(servico.value.nome, servico.value.preco);
       }

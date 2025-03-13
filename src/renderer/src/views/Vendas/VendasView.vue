@@ -1,31 +1,17 @@
 <template>
   <v-container>
     <!-- Produtos e Serviços -->
-    <v-expansion-panels v-model="expanded" class="my-3">
-      <v-expansion-panel title="Nova venda">
+    <v-expansion-panels v-model="expanded" class="mb-3">
+      <v-expansion-panel title="Selecionar produtos e serviços">
         <v-expansion-panel-text class="pb-4" style="max-height: 450px; overflow-y: auto;">
-          <v-row class="align-center search-bar" style="max-height: 200px;">
-            <v-col cols="12" sm="6">
-              <v-autocomplete v-model="clienteSelecionado" :items="clientes" item-title="nome" item-value="id"
-                label="Cliente" prepend-inner-icon="mdi-account" required>
-              </v-autocomplete>
-            </v-col>
-            <v-col cols="12" sm="6" class="d-flex align-center pa-0 pr-3">
-              <v-btn color="primary" @click="openModalCliente" height="40" class="search-btn"
-                style="margin-bottom: 5px;">
-                <v-icon>mdi-plus</v-icon>
-                <v-tooltip activator="parent" location="start">Cadastrar novo cliente</v-tooltip>
-              </v-btn>
-            </v-col>
-          </v-row>
           <v-row class="elevation-4">
             <v-col cols="12" sm="6">
               <v-card class="scroll-card elevation-0">
                 <v-card-title class="text-h6">Produtos</v-card-title>
-                <v-row class="align-center search-bar" style="max-height: 200px;">
+                <v-row class="align-center search-bar pb-4" style="max-height: 200px;">
                   <v-col cols="9" class="px-5 ml-2">
-                    <v-text-field v-model="filtroProduto" label="Buscar Produto" prepend-inner-icon="mdi-magnify" dense
-                      hide-details class="search-input" />
+                    <v-text-field density="compact" v-model="filtroProduto" label="Buscar Produto"
+                      prepend-inner-icon="mdi-magnify" dense hide-details class="search-input" />
                   </v-col>
                   <v-col cols="auto" class="d-flex align-center pa-0 pr-3">
                     <v-btn color="primary" @click="openModalProduto" height="40" class="search-btn">
@@ -36,20 +22,23 @@
                 </v-row>
 
                 <v-list dense class="lista-scroll" style="height: 200px; overflow-y: auto;">
-                  <v-list-item v-for="produto in produtosFiltrados" :key="produto.id"
-                    @click="adicionarProduto(produto)">
+                  <v-list-item v-for="produto in produtosFiltrados" :key="produto.id" @click="adicionarProduto(produto)"
+                    :class="{ 'estoque-insuficiente': produto.qtdEstoque === 0 }">
                     <v-list-item-title>
                       {{ produto.nome }}
-                      <!-- Ícone de selecionado para produto -->
-                      <v-icon v-if="itensVenda.some(item => item.id === produto.id && item.tipo === 'produto')"
-                        class="ml-2" color="primary">
-                        mdi-plus
-                      </v-icon>
+                      <span class="qtd-estoque" :style="{ color: produto.qtdEstoque === 0 ? 'red' : '#888' }">
+                        ({{ produto.qtdEstoque }} em estoque)
+                      </span>
+                      <!-- Exibe a quantidade em estoque -->
+                      <v-btn icon class="ml-2" color="primary" variant="plain" height="20" size="small"
+                        v-if="itensVenda.some(item => item.id === produto.id && item.tipo === 'produto')">
+                        <v-icon>mdi-plus</v-icon>
+                        <v-tooltip activator="parent" location="start">Produto adicionado a venda</v-tooltip>
+                      </v-btn>
                     </v-list-item-title>
                     <v-list-item-subtitle class="text-right">R$ {{ produto.preco.toFixed(2) }}</v-list-item-subtitle>
                     <v-divider></v-divider>
                   </v-list-item>
-
                 </v-list>
               </v-card>
             </v-col>
@@ -59,10 +48,10 @@
             <v-col cols="12" sm="6">
               <v-card class="scroll-card elevation-0">
                 <v-card-title class="text-h6">Serviços</v-card-title>
-                <v-row class="align-center search-bar" style="max-height: 200px;">
+                <v-row class="align-center search-bar pb-4" style="max-height: 200px;">
                   <v-col cols="9" class="px-5 ml-2">
-                    <v-text-field v-model="filtroServico" label="Buscar Serviço" prepend-inner-icon="mdi-magnify" dense
-                      hide-details class="search-input" />
+                    <v-text-field density="compact" v-model="filtroServico" label="Buscar Serviço"
+                      prepend-inner-icon="mdi-magnify" dense hide-details class="search-input" />
                   </v-col>
                   <v-col cols="auto" class="d-flex align-center pa-0 pr-3">
                     <v-btn color="primary" @click="openModalServico" height="40" class="search-btn">
@@ -78,19 +67,20 @@
                     <v-list-item-title>
                       {{ servico.nome }}
                       <!-- Ícone de selecionado para serviço -->
-                      <v-icon v-if="itensVenda.some(item => item.id === servico.id && item.tipo === 'servico')"
-                        class="ml-2" color="primary">
-                        mdi-plus
-                      </v-icon>
+                      <v-btn icon class="ml-2" color="primary" variant="plain" size="small" height="20"
+                        v-if="itensVenda.some(item => item.id === servico.id && item.tipo === 'servico')">
+                        <v-icon>mdi-plus</v-icon>
+                        <v-tooltip activator="parent" location="start">Serviço adicionado a venda</v-tooltip>
+                      </v-btn>
                     </v-list-item-title>
                     <v-list-item-subtitle class="text-right">R$ {{ servico.preco.toFixed(2) }}</v-list-item-subtitle>
                     <v-divider></v-divider>
                   </v-list-item>
-
                 </v-list>
               </v-card>
             </v-col>
           </v-row>
+
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
@@ -99,16 +89,31 @@
     <v-row>
       <v-col cols="12">
         <v-card>
-          <v-card-title class="text-h6">Resumo da Venda</v-card-title>
+          <v-card-title class="text-h6">Resumo da Venda
+            <v-row>
+              <v-col cols="12" sm="6">
+                <v-autocomplete density="compact" v-model="clienteSelecionado" :items="clientes" item-title="nome"
+                  item-value="id" label="Cliente" prepend-inner-icon="mdi-account" required>
+                </v-autocomplete>
+              </v-col>
+              <v-col cols="12" sm="6">
+                <v-btn color="primary" @click="openModalCliente" height="40" class="search-btn">
+                  <v-icon>mdi-plus</v-icon>
+                  <v-tooltip activator="parent" location="start">Cadastrar novo cliente</v-tooltip>
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-card-title>
           <v-divider></v-divider>
 
           <!-- Lista rolável de itens -->
-          <v-table dense style="max-height: 300px; overflow-y: auto;">
+          <v-table dense style="max-height: 300px; overflow-y: auto;" fixed-header>
             <thead>
               <tr>
                 <th>Produto/Serviço</th>
                 <th>Tipo</th>
-                <th>Quantidade</th>
+                <th>Estoque</th>
+                <th>Qtd</th>
                 <th>Preço Unitário</th>
                 <th>Preço Total</th>
                 <th></th>
@@ -118,15 +123,22 @@
               <tr v-for="item in itensVenda" :key="item.id">
                 <td>{{ item.nome }}</td>
                 <td>{{ item.tipo === 'produto' ? 'Produto' : 'Serviço' }}</td>
-                <td class="d-flex align-center">
-                  <v-btn icon size="small" @click="alterarQuantidade(item, -1)" :disabled="item.quantidade <= 1"
-                    class="mr-2" variant="text">
-                    <v-icon>mdi-minus</v-icon>
-                  </v-btn>
-                  {{ item.quantidade }}
-                  <v-btn icon size="small" @click="alterarQuantidade(item, 1)" class="ml-2" variant="text">
-                    <v-icon>mdi-plus</v-icon>
-                  </v-btn>
+                <td> {{ item.tipo === 'produto' ? item.qtdEstoque + ' Unidade(s)' : 'Indisponível' }}</td>
+                <td class="d-flex align-center" style="justify-content: center; max-width: 70px;">
+                  <template v-if="item.tipo === 'produto'">
+                    <v-btn icon size="small" @click="alterarQuantidade(item, -1)" :disabled="item.quantidade <= 1"
+                      class="mr-2" variant="text">
+                      <v-icon>mdi-minus</v-icon>
+                    </v-btn>
+                    {{ item.quantidade }}
+                    <v-btn icon size="small" @click="alterarQuantidade(item, 1)" class="ml-2" variant="text">
+                      <v-icon>mdi-plus</v-icon>
+                    </v-btn>
+                  </template>
+                  <!-- Exibir quantidade fixa de 1 para serviços -->
+                  <template v-else>
+                    1
+                  </template>
                 </td>
                 <td>R$ {{ item.preco.toFixed(2) }}</td>
                 <td>R$ {{ (item.preco * item.quantidade).toFixed(2) }}</td>
@@ -149,15 +161,16 @@
           <!-- Informações de Pagamento -->
           <v-row class="pt-3 px-4">
             <v-col cols="12" sm="5">
-              <v-number-input v-model="valorPago" label="Valor Pago" prefix="R$" :precision="2"
-                hint="O valor pago pelo cliente. Se for menor que o valor total a venda  será pendente (fiado)"
+              <v-number-input density="compact" v-model="valorPago" label="Valor Pago" prefix="R$" :precision="2"
+                :min="0" :max="totalVenda"
+                hint="O valor pago pelo cliente. Se for menor que o valor total a venda será pendente (fiado)"
                 prepend-inner-icon="mdi-cash" required>
               </v-number-input>
             </v-col>
 
             <v-col cols="12" sm="4">
-              <v-autocomplete v-model="metodoPagamento" :items="metodosPagamento" label="Forma de Pagamento"
-                prepend-inner-icon="mdi-credit-card" required>
+              <v-autocomplete density="compact" v-model="metodoPagamento" :items="metodosPagamento"
+                label="Forma de Pagamento" prepend-inner-icon="mdi-credit-card" required>
               </v-autocomplete>
             </v-col>
 
@@ -171,6 +184,7 @@
         </v-card>
       </v-col>
     </v-row>
+
     <v-dialog v-model="showModalSucesso" max-width="400px">
       <v-card>
         <v-card-title class="text-h6">Venda Finalizada com Sucesso</v-card-title>
@@ -270,13 +284,13 @@ export default defineComponent({
     const carregarProdutosServicos = async () => {
       try {
         const responseProdutos = await window.api.getAllProdutos();
-        produtos.value = responseProdutos;
+        produtos.value = [...responseProdutos]; // Crie uma nova referência
         const responseServicos = await window.api.getAllServicos();
-        servicos.value = responseServicos;
+        servicos.value = [...responseServicos]; // Crie uma nova referência
       } catch (error) {
         console.error(error);
       }
-    }
+    };
 
     onMounted(() => {
       carregarClientes();
@@ -292,14 +306,23 @@ export default defineComponent({
     });
 
     const adicionarProduto = (produto: ProdutoEntity) => {
-      const item = itensVenda.value.find(i => i.id === produto.id && i.tipo === 'produto');
-      if (item) {
-        item.quantidade++;
+      if (produto.id && produtoEmEstoque(produto.id)) {
+        const item = itensVenda.value.find(i => i.id === produto.id && i.tipo === 'produto');
+        const estoqueDisponivel = produtoEmEstoque(produto.id);
+        if (item) {
+          if (item.quantidade < estoqueDisponivel) {
+            item.quantidade++;
+          }
+
+        } else {
+          itensVenda.value.push({ ...produto, quantidade: 1, tipo: 'produto' });
+        }
+        atualizarTotalVenda();
       } else {
-        itensVenda.value.push({ ...produto, quantidade: 1, tipo: 'produto' });
+        alert('Produto sem estoque disponível!');
       }
-      atualizarTotalVenda();
-    }
+    };
+
 
     const adicionarServico = (servico: ServicoEntity) => {
       const item = itensVenda.value.find(i => i.id === servico.id && i.tipo === 'servico');
@@ -316,16 +339,25 @@ export default defineComponent({
       atualizarTotalVenda();
     }
 
+    const produtoEmEstoque = (produtoId: number): number => {
+      const produto = produtos.value.find(p => p.id === produtoId);
+      return produto ? produto.qtdEstoque : 0;
+    };
+
     const alterarQuantidade = (item: any, quantidade: number) => {
       const itemVenda = itensVenda.value.find(i => i.id === item.id);
       if (itemVenda) {
-        itemVenda.quantidade += quantidade;
-        if (itemVenda.quantidade <= 0) {
-          itensVenda.value = itensVenda.value.filter(i => i.id !== item.id);
+        const quantidadeAtual = itemVenda.quantidade + quantidade;
+        const estoqueDisponivel = produtoEmEstoque(item.id);
+
+        if (quantidadeAtual <= estoqueDisponivel && quantidadeAtual >= 0) {
+          itemVenda.quantidade += quantidade;
+          atualizarTotalVenda();
+        } else {
+          alert('Quantidade excede o estoque disponível!');
         }
       }
-      atualizarTotalVenda();
-    }
+    };
 
     const atualizarTotalVenda = () => {
       totalVenda.value = itensVenda.value.reduce((total, item) => total + (item.preco * item.quantidade), 0);
@@ -335,60 +367,78 @@ export default defineComponent({
       return valor.toFixed(2).replace('.', ',');
     }
 
+
     const finalizarVenda = async () => {
       try {
-        const itensComValorTotal = itensVenda.value.map(item => {
-          if (item.tipo === 'produto') {
-            const valorTotal = item.preco * item.quantidade;
-            return {
-              produto_id: item.id,
-              servico_id: null,
-              quantidade: item.quantidade,
-              nome_item: item.nome,
-              valor_unitario: item.preco,
-              valor_total: valorTotal,
-            };
-          } else if (item.tipo === 'servico') {
-            return {
-              produto_id: null,
-              servico_id: item.id,
-              nome_item: item.nome,
-              quantidade: 1,
-              valor_unitario: item.preco,
-              valor_total: item.preco,
-            };
-          }
-        }).filter(Boolean);
+        if (!clienteSelecionado.value) {
+          console.error("Nenhum cliente selecionado.");
+          return;
+        }
+
+        const itensComValorTotal = itensVenda.value
+          .map(item => {
+            if (item.tipo === "produto") {
+              return {
+                produto_id: item.id,
+                servico_id: null,
+                quantidade: item.quantidade,
+                nome_item: item.nome,
+                valor_unitario: item.preco,
+                valor_total: item.preco * item.quantidade,
+              };
+            } else if (item.tipo === "servico") {
+              return {
+                produto_id: null,
+                servico_id: item.id,
+                nome_item: item.nome,
+                quantidade: 1,
+                valor_unitario: item.preco,
+                valor_total: item.preco,
+              };
+            }
+            return null; // Evita undefined no array final
+          })
+          .filter(Boolean); // Remove valores nulos
+
+        atualizarTotalVenda();
+        console.log(totalVenda.value);
 
         const venda: VendaEntity = {
           id: 0,
-          cliente_id: clienteSelecionado.value!,
-          nome_cliente: '',
+          cliente_id: clienteSelecionado.value,
+          nome_cliente: "",
           metodo_pagamento: metodoPagamento.value,
-          status: valorPago.value >= totalVenda.value ? 'pago' : 'pendente',
+          status: valorPago.value >= totalVenda.value ? "pago" : "pendente",
           valor_pago: valorPago.value,
           valor_total: totalVenda.value,
           data: new Date().toISOString(),
-          itens: itensComValorTotal,
+          itens: itensComValorTotal as any,
         };
 
-        const vendaCriada = await window.api.createVenda(
+        console.log(venda.valor_total)
+
+        // Aguarda a criação da venda antes de continuar
+        await window.api.createVenda(
           venda.cliente_id,
           venda.valor_total,
+          venda.valor_pago,
           venda.metodo_pagamento,
           venda.status,
           venda.data,
-          venda.itens
+          venda.itens as any
         );
 
-        console.log('Venda finalizada com sucesso', vendaCriada);
       } catch (error) {
-        console.error('Erro ao finalizar venda:', error);
+        console.error("Erro ao finalizar venda:", error);
       } finally {
-        resetarVenda();
         showModalSucesso.value = true;
+        resetarVenda();
+        carregarProdutosServicos();
+        carregarClientes();
       }
     };
+
+
 
     return {
       filtroProduto,
@@ -430,5 +480,11 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Adicionar estilo personalizado aqui */
+.qtd-estoque {
+  font-size: 0.75rem;
+}
+
+.estoque-insuficiente {
+  background-color: rgba(255, 0, 0, 0.1);
+}
 </style>

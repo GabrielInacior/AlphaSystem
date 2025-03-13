@@ -3,18 +3,18 @@
     <v-card>
       <v-card-title>Adicionar Produto</v-card-title>
       <v-card-text>
-        <v-text-field v-model="produto.nome" label="Nome" required :rules="[val => !!val || 'Nome é obrigatório']"
+        <v-text-field density="compact" v-model="produto.nome" label="Nome" required :rules="[val => !!val || 'Nome é obrigatório']"
           :error-messages="nomeError"></v-text-field>
 
-        <v-number-input v-model="produto.custo" label="Custo de compra" required :min="0"
+        <v-number-input density="compact" v-model="produto.custo" label="Custo de compra" required :min="0"
           :rules="[val => val >= 0 || 'Custo deve ser maior ou igual a zero']" :error-messages="custoError" prefix="R$"
           :precision="2" control-variant="stacked"></v-number-input>
 
-        <v-number-input v-model="produto.preco" label="Preço de venda" required :min="0"
+        <v-number-input density="compact" v-model="produto.preco" label="Preço de venda" required :min="0"
           :rules="[val => val > 0 || 'Preço deve ser maior que zero']" :error-messages="precoError" prefix="R$"
           :precision="2" control-variant="stacked"></v-number-input>
 
-        <v-number-input v-model="produto.qtdEstoque" label="Quantidade em Estoque" required :min="0"
+        <v-number-input density="compact" v-model="produto.qtdEstoque" label="Quantidade em Estoque" required :min="0"
           :rules="[val => val >= 0 || 'Quantidade deve ser maior ou igual a zero']" :error-messages="estoqueError"
           suffix="UN" :precision="0" control-variant="stacked"></v-number-input>
 

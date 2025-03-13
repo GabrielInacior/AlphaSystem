@@ -6,9 +6,10 @@
       </v-card-title>
       <v-card-text>
         <!-- Campo Nome com validação -->
-        <v-text-field v-model="cliente.nome" label="Nome" :rules="[nameRule]" required></v-text-field>
-        <v-text-field v-model="cliente.aniversario" label="Aniversário" type="date" required></v-text-field>
-        <v-text-field v-model="cliente.telefone" label="Telefone" @input="formatTelefone" :rules="telefoneRules"></v-text-field>
+        <v-text-field density="compact" v-model="cliente.nome" label="Nome" :rules="[nameRule]" required></v-text-field>
+        <v-text-field density="compact" v-model="cliente.aniversario" label="Aniversário" type="date" required></v-text-field>
+        <v-text-field density="compact" v-model="cliente.telefone" label="Telefone" @input="formatTelefone"
+          :rules="telefoneRules"></v-text-field>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -55,7 +56,11 @@ export default defineComponent({
     };
 
     const saveCliente = async () => {
-      await window.api.createCliente(cliente.value.nome, cliente.value.aniversario, cliente.value.telefone);
+      window.api.createCliente(
+        cliente.value.nome,
+        cliente.value.aniversario ?? '',
+        cliente.value.telefone ?? ''
+      );
       closeModal();
       emit('sucesso');
     };

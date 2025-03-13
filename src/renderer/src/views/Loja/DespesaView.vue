@@ -5,12 +5,14 @@
         Despesas
         <v-spacer></v-spacer>
         <!-- Filtros -->
-        <v-row align="center">
+        <v-row>
           <v-col cols="12" md="4">
-            <v-text-field v-model="descricaoFilter" label="Filtrar por Descrição" clearable dense></v-text-field>
+            <v-text-field density="compact" v-model="descricaoFilter" label="Filtrar por Descrição" clearable
+              dense></v-text-field>
           </v-col>
           <v-col cols="12" md="4">
-            <v-text-field v-model="dataFilter" label="Filtrar por Data" type="date" dense></v-text-field>
+            <v-text-field density="compact" v-model="dataFilter" label="Filtrar por Data" type="date"
+              dense></v-text-field>
           </v-col>
           <v-col cols="12" md="4">
             <v-btn color="primary" @click="openModal(null)">Nova Despesa</v-btn>
@@ -20,15 +22,8 @@
 
       </v-card-title>
 
-      <v-data-table
-        density="compact"
-        style="height: 74%; width: 100%"
-        :headers="headers"
-        :items="filteredDespesas"
-        no-data-text="Nenhum despesa encontrada"
-        class="elevation-1"
-        items-per-page-text="Itens por página"
-      >
+      <v-data-table density="compact" style="height: 74%; width: 100%" :headers="headers" :items="filteredDespesas"
+        no-data-text="Nenhum despesa encontrada" class="elevation-1" items-per-page-text="Itens por página">
         <template v-slot:headers>
           <tr>
             <th v-for="header in headers" :key="header.value" class="font-weight-bold text-left">
@@ -55,19 +50,12 @@
           {{ editingDespesa ? 'Editar Despesa' : 'Nova Despesa' }}
         </v-card-title>
         <v-card-text>
-          <v-text-field v-model="despesa.descricao" label="Descrição" required></v-text-field>
-          <v-number-input
-            v-model="despesa.valor"
-            label="Valor"
-            required
-            :min="0"
-            :rules="[val => val >= 0 || 'Valor deve ser maior ou igual a zero']"
-            prefix="R$"
-            :precision="2"
-            control-variant="stacked"
-          ></v-number-input>
-          <v-text-field v-model="despesa.data" label="Data" type="date" required></v-text-field>
-          <v-text-field v-model="despesa.tipo" label="Tipo" required></v-text-field>
+          <v-text-field density="compact" v-model="despesa.descricao" label="Descrição" required></v-text-field>
+          <v-number-input density="compact" v-model="despesa.valor" label="Valor" required :min="0"
+            :rules="[val => val >= 0 || 'Valor deve ser maior ou igual a zero']" prefix="R$" :precision="2"
+            control-variant="stacked"></v-number-input>
+          <v-text-field density="compact" v-model="despesa.data" label="Data" type="date" required></v-text-field>
+          <v-text-field density="compact" v-model="despesa.tipo" label="Tipo" required></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -114,6 +102,10 @@ export default defineComponent({
 
     const openModal = (editItem: any) => {
       editingDespesa.value = editItem;
+      if (editingDespesa.value) {
+        const dataFormatada = editItem.data ? new Date(editItem.data).toISOString().split('T')[0] : '';
+        editingDespesa.value = { ...editItem, data: dataFormatada };
+      }
       despesa.value = editItem ? { ...editItem } : { descricao: '', valor: 0, data: '', tipo: '' };
       modalOpen.value = true;
     };

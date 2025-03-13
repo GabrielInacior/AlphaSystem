@@ -186,24 +186,47 @@ export function getItensVendidos(db: Database): Promise<any[]> {
 }
 
 // Criar venda
-export function createVenda(db: Database, cliente_id: number, valor_total: number, metodo_pagamento: string, status: string, data: string, itens: any[]): Promise<any> {
+export function createVenda(db: Database, cliente_id: number, valor_total: number, valor_pago: number, metodo_pagamento: string, status:
+  string, data: string, itens: any[]): Promise<any> {
   return new Promise((resolve, reject) => {
     try {
-      const queryVenda = `INSERT INTO vendas (cliente_id, valor_total, valor_pago, metodo_pagamento, status, data) VALUES (?, ?, 0, ?, ?, ?)`;
-      db.run(queryVenda, [cliente_id, valor_total, metodo_pagamento, status, data], function (err) {
+      const queryVenda = `INSERT INTO vendas (cliente_id, valor_total, valor_pago, metodo_pagamento, status, data) VALUES (?, ?, ?, ?, ?, ?)`;
+      db.run(queryVenda, [cliente_id, valor_total, valor_pago, metodo_pagamento, status, data], function (err) {
         if (err) {
           console.error('Erro ao criar venda:', err.message);
           return reject(err);
         } else {
           const venda_id = this.lastID;
+
+          // Para cada item da venda
           itens.forEach(item => {
-            const queryItem = `INSERT INTO vendas_itens (venda_id, produto_id, servico_id, quantidade, valor_unitario, valor_total) VALUES (?, ?, ?, ?, ?, ?)`;
-            db.run(queryItem, [venda_id, item.produto_id, item.servico_id, item.quantidade, item.valor_unitario, item.valor_total], (err) => {
-              if (err) {
-                console.error('Erro ao adicionar item na venda:', err.message);
-              }
-            });
+            if (item.produto_id) {
+              // Adiciona o item na tabela de itens da venda (produto)
+              const queryItem = `INSERT INTO vendas_itens (venda_id, produto_id, servico_id, quantidade, valor_unitario, valor_total) VALUES (?, ?, ?, ?, ?, ?)`;
+              db.run(queryItem, [venda_id, item.produto_id, null, item.quantidade, item.valor_unitario, item.valor_total], (err) => {
+                if (err) {
+                  console.error('Erro ao adicionar item na venda (produto):', err.message);
+                }
+              });
+
+              // Atualiza a quantidade do produto no estoque
+              const queryAtualizaEstoque = `UPDATE produtos SET qtdEstoque = qtdEstoque - ? WHERE id = ?`;
+              db.run(queryAtualizaEstoque, [item.quantidade, item.produto_id], (err) => {
+                if (err) {
+                  console.error('Erro ao atualizar estoque do produto:', err.message);
+                }
+              });
+            } else if (item.servico_id) {
+              // Adiciona o item na tabela de itens da venda (serviço)
+              const queryItem = `INSERT INTO vendas_itens (venda_id, produto_id, servico_id, quantidade, valor_unitario, valor_total) VALUES (?, ?, ?, ?, ?, ?)`;
+              db.run(queryItem, [venda_id, null, item.servico_id, 1, item.valor_unitario, item.valor_total], (err) => {
+                if (err) {
+                  console.error('Erro ao adicionar item na venda (serviço):', err.message);
+                }
+              });
+            }
           });
+
           console.log(`Venda criada com sucesso, ID: ${venda_id}`);
           resolve({ id: venda_id });
         }
@@ -305,9 +328,9 @@ export function getVendasPorData(db: Database, data: string): Promise<any[]> {
 }
 
 
-export function updateVenda(db: Database, venda_id: number, valor_pago: number, metodo_pagamento: string, status: string): void {
-  const query = `UPDATE vendas SET valor_pago = ?, metodo_pagamento = ?, status = ? WHERE id = ?`;
-  db.run(query, [valor_pago, metodo_pagamento, status, venda_id], function (err) {
+export function updateVenda(db: Database, venda_id: number, valor_total: number, valor_pago: number, metodo_pagamento: string, status: string, data: string): void {
+  const query = `UPDATE vendas SET valor_total = ?, valor_pago = ?, metodo_pagamento = ?, status = ?, data = ? WHERE id = ?`;
+  db.run(query, [valor_total, valor_pago, metodo_pagamento, status, data, venda_id], function (err) {
     if (err) {
       console.error('Erro ao atualizar venda:', err.message);
     } else {

@@ -3,11 +3,11 @@
     <v-card>
       <v-card-title>Adicionar Serviço</v-card-title>
       <v-card-text>
-        <v-text-field v-model="servico.nome" label="Nome" required :rules="[val => !!val || 'Nome é obrigatório']"
+        <v-text-field density="compact" v-model="servico.nome" label="Nome" required :rules="[val => !!val || 'Nome é obrigatório']"
           :error-messages="nomeError"></v-text-field>
 
         <!-- Preço (R$) -->
-        <v-number-input v-model="servico.preco" label="Preço (R$)" required :min="0"
+        <v-number-input density="compact" v-model="servico.preco" label="Preço (R$)" required :min="0"
           :rules="[val => !!val || 'Preço é obrigatório']" :error-messages="precoError" prefix="R$" :precision="2"
           control-variant="stacked"></v-number-input>
 
@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, nextTick, ref, watch } from 'vue';
+import { computed, defineComponent, ref, watch } from 'vue';
 import { ServicoEntity } from '@renderer/entities/ServicoEntity';
 
 export default defineComponent({

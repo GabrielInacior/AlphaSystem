@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { getClientesMaisCompraramProdutos, getQuantidadeEReceitaProdutos } from '../main/fechamentoCaixa';
 
 // Custom APIs for renderer
 const api = {
@@ -44,8 +45,8 @@ const api = {
   atualizarEstoqueProduto: (id: number, quantidadeVendida: number) =>
     ipcRenderer.invoke('atualizar-estoque-produto', id, quantidadeVendida),
 
-  createVenda: (cliente_id: number, valor_total: number, metodo_pagamento: string, status: string, data: string, itens: any[]) => {
-    ipcRenderer.invoke('create-venda', cliente_id, valor_total, metodo_pagamento, status, data, itens);
+  createVenda: (cliente_id: number, valor_total: number, valor_pago: number, metodo_pagamento: string, status: string, data: string, itens: any[]) => {
+    ipcRenderer.invoke('create-venda', cliente_id, valor_total, valor_pago, metodo_pagamento, status, data, itens);
   },
 
   getTodasVendas: () =>
@@ -60,8 +61,8 @@ const api = {
   getItensVendidos: () =>
     ipcRenderer.invoke('get-itens-vendidos'),
 
-  updateVenda: (id: number, valor_pago: number, metodo_pagamento: string, status: string) =>
-    ipcRenderer.invoke('update-venda', id, valor_pago, metodo_pagamento, status),
+  updateVenda: (id: number, valor_total:number, valor_pago: number, metodo_pagamento: string, status: string, data: string) =>
+    ipcRenderer.invoke('update-venda', id, valor_total, valor_pago, metodo_pagamento, status, data),
 
   deleteVenda: (id: number) =>
     ipcRenderer.invoke('delete-venda', id),
@@ -102,6 +103,46 @@ const api = {
   updateFechamentoCaixa: (id: number, total_vendas: number, total_despesas: number, total_cartao: number, total_pix: number, total_dinheiro: number, total_banco: number, data: string) =>
     ipcRenderer.invoke('update-fechamento-caixa', id, total_vendas, total_despesas, total_cartao, total_pix, total_dinheiro, total_banco, data),
 
+  //Apis de Insights
+  getVendasProdutosPorData: (periodo: string) => ipcRenderer.invoke('get-vendas-produtos-por-data', periodo),
+
+  // Função para obter os melhores clientes
+  getMelhoresClientes: (limite: number) => ipcRenderer.invoke('get-melhores-clientes', limite),
+
+  // Função para obter os produtos mais vendidos
+  getProdutosMaisVendidos: (periodo: string) => ipcRenderer.invoke('get-produtos-mais-vendidos', periodo),
+
+  // Função para obter os serviços mais vendidos
+  getServicosMaisVendidos: (periodo: string) => ipcRenderer.invoke('get-servicos-mais-vendidos', periodo),
+
+  // Função para obter o lucro total da loja
+  getLucroTotalLoja: (periodo: string) => ipcRenderer.invoke('get-lucro-total-loja', periodo),
+
+  // Função para obter o lucro total
+  getLucroTotal: (periodo: string) => ipcRenderer.invoke('get-lucro-total', periodo),
+
+  // Função para obter as vendas por método de pagamento
+  getVendasPorMetodoPagamento: (periodo: string) => ipcRenderer.invoke('get-vendas-por-metodo-pagamento', periodo),
+
+  // Função para obter as despesas por tipo
+  getDespesasPorTipo: (periodo: string) => ipcRenderer.invoke('get-despesas-por-tipo', periodo),
+
+  // Função para obter vendas por cliente
+  getVendasPorCliente: (periodo: string) => ipcRenderer.invoke('get-vendas-por-cliente', periodo),
+
+  // Função para comparar vendas de produtos vs serviços
+  getVendasProdutosVsServicos: (periodo: string) => ipcRenderer.invoke('get-vendas-produtos-vs-servicos', periodo),
+
+  // Função para comparar custo vs lucro
+  getCustoVsLucro: (periodo: string) => ipcRenderer.invoke('get-custo-vs-lucro', periodo),
+    // Função para comparar custo vs lucro
+  getClientesMaisCompraramProdutos: (periodo: string, limite: number) => ipcRenderer.invoke('get-clientes-mais-compraram-produtos', periodo, limite),
+
+  getVendasProdutosPorMetodoPagamento: (periodo: string) => ipcRenderer.invoke('get-vendas-produtos-por-metodo-pagamento', periodo),
+
+  getProdutosSemEstoque: () => ipcRenderer.invoke('get-produtos-sem-estoque'),
+
+  getQuantidadeEReceitaProdutos: () => ipcRenderer.invoke("get-quantidade-e-receita-produtos"),
 };
 
 if (process.contextIsolated) {
