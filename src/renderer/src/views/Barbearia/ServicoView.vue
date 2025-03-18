@@ -7,7 +7,8 @@
         <!-- Filtro de busca -->
         <v-row dense>
           <v-col cols="12" sm="6" md="4">
-            <v-text-field density="compact" v-model="search" label="Buscar serviço" clearable dense outlined class="filter-input" />
+            <v-text-field density="compact" v-model="search" label="Buscar serviço" clearable dense outlined
+              class="filter-input" />
           </v-col>
           <v-col cols="12" sm="6" md="4">
             <v-btn color="primary" @click="openModal(null)">Novo Serviço</v-btn>
@@ -30,7 +31,7 @@
         </template>
         <template v-slot:item.actions="{ item }">
           <v-icon small class="mr-2" @click="openModal(item)">mdi-pencil</v-icon>
-          <v-icon small color="red" @click="deleteServico(item.id)" v-if="item.id">mdi-delete</v-icon>
+          <v-icon small color="red" @click="confirmarExclusao(item.id)" v-if="item.id">mdi-delete</v-icon>
         </template>
       </v-data-table>
 
@@ -42,8 +43,8 @@
           {{ editingServico ? 'Editar Serviço' : 'Novo Serviço' }}
         </v-card-title>
         <v-card-text>
-          <v-text-field density="compact" v-model="servico.nome" label="Nome" required :rules="[val => !!val || 'Nome é obrigatório']"
-            :error-messages="nomeError"></v-text-field>
+          <v-text-field density="compact" v-model="servico.nome" label="Nome" required
+            :rules="[val => !!val || 'Nome é obrigatório']" :error-messages="nomeError"></v-text-field>
 
           <!-- Preço (R$) -->
           <v-number-input density="compact" v-model="servico.preco" label="Preço (R$)" required :min="0"
@@ -55,6 +56,16 @@
           <v-spacer></v-spacer>
           <v-btn @click="modalOpen = false">Cancelar</v-btn>
           <v-btn color="primary" :disabled="isSaveDisabled" @click="saveServico">Salvar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="modalConfirmacaoExclusao" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h6">Deseja realmente excluir esse serviço?</v-card-title>
+        <v-card-actions>
+          <v-btn @click="modalConfirmacaoExclusao = false" color="grey">Cancelar</v-btn>
+          <v-btn @click="deleteServico()" color="red" :disabled="excluindoVenda">Excluir</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -72,11 +83,20 @@ export default defineComponent({
     const search = ref('');
     const modalOpen = ref(false);
     const editingServico = ref<ServicoEntity | null>(null);
-    const servico = ref<ServicoEntity>(new ServicoEntity({ nome: '', preco: 0,}));
+    const excluindoVenda = ref(false);
+    const modalConfirmacaoExclusao = ref(false);
+    const servico = ref<ServicoEntity>(new ServicoEntity({ nome: '', preco: 0, }));
+    const servicoIdParaExcluir = ref<number | null>(null);
 
     // Erros
     const nomeError = ref<string | null>(null);
     const precoError = ref<string | null>(null);
+
+    const confirmarExclusao = (id: number) => {
+      servicoIdParaExcluir.value = id; // Guarda o ID da venda para exclusão
+      modalConfirmacaoExclusao.value = true; // Abre o modal de confirmação
+    };
+
 
     const headers = [
       { text: 'Nome', value: 'nome' },
@@ -117,19 +137,38 @@ export default defineComponent({
         precoError.value = null;
       }
 
+      // Verificação de duplicidade
+      const isDuplicate = servicos.value.some(s => s.nome.toLowerCase() === servico.value.nome.toLowerCase());
+      if (isDuplicate) {
+        nomeError.value = 'Já existe um serviço com este nome.';
+        return;
+      } else {
+        nomeError.value = null;
+      }
 
+      // Se está editando, atualiza o serviço, caso contrário, cria um novo
       if (editingServico.value) {
         await window.api.updateServico(editingServico.value.id || 0, servico.value.nome, servico.value.preco);
       } else {
         await window.api.createServico(servico.value.nome, servico.value.preco);
       }
+
       modalOpen.value = false;
       loadServicos();
     };
 
-    const deleteServico = async (id: number) => {
-      await window.api.deleteServico(id);
-      loadServicos();
+
+    const deleteServico = async () => {
+      if (servicoIdParaExcluir.value !== null) {
+        excluindoVenda.value = true;
+        modalConfirmacaoExclusao.value = false;
+        await window.api.deleteServico(servicoIdParaExcluir.value);
+        loadServicos();
+        excluindoVenda.value = false;
+      } else {
+        return
+      }
+
     };
 
     const isSaveDisabled = computed(() => {
@@ -167,7 +206,10 @@ export default defineComponent({
       openModal,
       saveServico,
       deleteServico,
+      excluindoVenda,
       isSaveDisabled,
+      confirmarExclusao,
+      modalConfirmacaoExclusao,
       valorReais,
       valorPorcentagem
     };

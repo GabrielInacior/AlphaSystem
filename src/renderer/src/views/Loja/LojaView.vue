@@ -245,15 +245,16 @@ export default defineComponent({
     const lucroTotal = ref({ lucroTotal: 0, cor: '#42A5F5' }); // Definindo lucroTotal como um objeto reativo
     const produtosMaisVendidos = ref<any[]>([]);
     const produtosSemEstoque = ref<any[]>([]);
+    const chartOptionVendas = ref<any>();
     const quantidadeReceitaProdutos = ref<any>([]);
     const melhoresClientes = ref<any[]>([]);
     const exemploData = ref<any>({ labels: [], datasets: [] });
     const chartOptionsLucroGasto = ref<any>();
-    const periodoVendasProdutos = ref('dia');
-    const periodoMaisVendidos = ref('dia');
-    const periodoVClientesCompraram = ref('dia');
-    const periogoPagamentos = ref('dia');
-    const periodoLucroGasto = ref('dia');
+    const periodoVendasProdutos = ref('semana');
+    const periodoMaisVendidos = ref('semana');
+    const periodoVClientesCompraram = ref('semana');
+    const periogoPagamentos = ref('semana');
+    const periodoLucroGasto = ref('semana');
     const periodos = [
       { value: 'dia', text: 'Hoje' },
       { value: 'semana', text: 'Última Semana' },
@@ -263,53 +264,125 @@ export default defineComponent({
     ];
 
     const getVendasProdutosPorData = async (periodo: string) => {
-      const vendasProdutosResponse = await window.api.getVendasProdutosPorData(periodo);
-      console.log(vendasProdutosResponse)
-      let labels: string[] = [];
-      let data: number[] = [];
+      try {
+        const vendasProdutosResponse = await window.api.getVendasProdutosPorData(periodo)
+        console.log('[VENDAS RESPONSE]', vendasProdutosResponse)
 
-      vendasProdutosResponse.forEach((item: any) => {
-        let label: string;
-        switch (periodo) {
-          case 'dia':
-            label = new Date(item.periodo + ":00").toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            break;
-          case 'semana':
-            label = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][parseInt(item.periodo)];
-            break;
-          case 'mes':
-            const date = new Date(item.periodo);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            label = `${day}/${month}`;
-            break;
-          case 'ano':
-            label = new Date(item.periodo).toLocaleString('default', { month: 'long' });
-            break;
-          case 'todos':
-            label = item.periodo;
-            break;
-          default:
-            label = new Date(item.periodo).toLocaleDateString();
+        const labels: string[] = []
+        const dataQuantidade: number[] = []
+        const dataTotalVendido: number[] = []
+
+        vendasProdutosResponse.forEach((item: any) => {
+          let label = ''
+
+          switch (periodo) {
+            case 'dia':
+              label = new Date(item.periodo + ':00').toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+              break
+
+            case 'semana':
+              let diaSemana = new Date(item.periodo).getDay()
+              diaSemana = (diaSemana + 1) % 7;
+              label = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][diaSemana]
+              break
+
+            case 'mes':
+              const dataInicio = new Date(item.periodo)
+              const dataFim = new Date(dataInicio)
+              dataFim.setDate(dataFim.getDate() + 1)
+
+              const formatarData = (data: Date) =>
+                data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+
+              label = `${formatarData(dataInicio)} a ${formatarData(dataFim)}`
+              break
+
+            case 'ano':
+              const mesAno = new Date(item.periodo)
+              label = mesAno.toLocaleString('default', { month: 'long' })
+              break
+
+            case 'todos':
+              label = item.periodo
+              break
+
+            default:
+              label = new Date(item.periodo).toLocaleDateString()
+          }
+
+          labels.push(label)
+          dataQuantidade.push(Number(item.quantidade_total_vendida))
+          dataTotalVendido.push(Number(item.total_vendido))
+        })
+
+        vendasProdutosData.value = {
+          labels,
+          datasets: [
+            {
+              label: 'Quantidade Vendida',
+              data: dataQuantidade,
+              backgroundColor: 'rgba(66, 165, 245, 0.2)',
+              borderColor: '#42A5F5',
+              borderWidth: 2,
+              hoverBackgroundColor: '#42A5F5',
+              hoverBorderColor: '#1E88E5',
+              tension: 0.3,
+              fill: false,
+              yAxisID: 'y',
+            },
+            {
+              label: 'Valor Total Vendido (R$)',
+              data: dataTotalVendido,
+              backgroundColor: 'rgba(76, 175, 80, 0.2)',
+              borderColor: '#4CAF50',
+              borderWidth: 2,
+              hoverBackgroundColor: '#4CAF50',
+              hoverBorderColor: '#2E7D32',
+              tension: 0.3,
+              fill: false,
+              yAxisID: 'y1',
+            },
+          ],
         }
 
-        labels.push(label);
-        data.push(item.quantidade_total_vendida);
-      });
+        chartOptionVendas.value = {
+          responsive: true,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: {
+                display: true,
+                text: 'Quantidade',
+              },
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              grid: {
+                drawOnChartArea: false,
+              },
+              title: {
+                display: true,
+                text: 'Valor Total (R$)',
+              },
+            },
+          },
+        }
 
-      vendasProdutosData.value = {
-        labels: labels,
-        datasets: [{
-          label: 'Vendas de Produtos',
-          data: data,
-          backgroundColor: 'rgba(66, 165, 245, 0.2)',  // Cor de fundo das barras
-          borderColor: '#42A5F5',  // Cor da borda das barras
-          borderWidth: 1,  // Largura da borda
-          hoverBackgroundColor: '#42A5F5',  // Cor ao passar o mouse
-          hoverBorderColor: '#1E88E5',  // Cor da borda ao passar o mouse
-        }]
-      };
-    };
+      } catch (error) {
+        console.error('Erro ao buscar dados de vendas:', error)
+      }
+    }
 
     const getProdutosMaisVendidos = async (periodo: string) => {
       const produtosResponse = await window.api.getProdutosMaisVendidos(periodo);
@@ -365,7 +438,7 @@ export default defineComponent({
       console.log(lucroVsGastoResponse);
 
       // Calculando o lucro total
-      const lucroTotalValor = lucroVsGastoResponse.lucro_produtos - lucroVsGastoResponse.total_custo_produtos;
+      const lucroTotalValor = lucroVsGastoResponse.lucro_produtos;
 
       // Definindo a cor do lucro total
       const lucroTotalCor = lucroTotalValor >= 0 ? '#42A5F5' : '#EF5350';
@@ -375,7 +448,7 @@ export default defineComponent({
         datasets: [
           {
             label: 'Vendas vs Gasto',
-            data: [lucroVsGastoResponse.lucro_produtos, lucroVsGastoResponse.total_custo_produtos],
+            data: [lucroVsGastoResponse.total_bruto_produtos, lucroVsGastoResponse.total_custo_produtos],
             backgroundColor: ['#1976D2', '#EF5350'],
             hoverBackgroundColor: ['#12589e', '#FF7043'],
           },

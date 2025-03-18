@@ -161,14 +161,22 @@
           <!-- Informações de Pagamento -->
           <v-row class="pt-3 px-4">
             <v-col cols="12" sm="5">
-              <v-number-input density="compact" v-model="valorPago" label="Valor Pago" prefix="R$" :precision="2"
-                :min="0" :max="totalVenda"
-                hint="O valor pago pelo cliente. Se for menor que o valor total a venda será pendente (fiado)"
-                prepend-inner-icon="mdi-cash" required>
-              </v-number-input>
+                <v-number-input density="compact" v-model="valorPago" label="Valor Pago" prefix="R$" :precision="2"
+                  :min="0" :max="totalVenda"
+                  hint="O valor pago pelo cliente. Se for menor que o valor total a venda será pendente (fiado)"
+                  prepend-inner-icon="mdi-cash" required>
+                </v-number-input>
             </v-col>
 
-            <v-col cols="12" sm="4">
+            <v-col cols="auto">
+              <v-btn @click="pagarDeUmaVez" color="success" variant="flat"
+                  :disabled="!clienteSelecionado || itensVenda.length === 0" style="margin-left: 4px;">
+                  <v-icon>mdi-plus</v-icon>
+                  <v-tooltip activator="parent" location="start">Adicionar valor</v-tooltip>
+                </v-btn>
+            </v-col>
+
+            <v-col cols="10" sm="3">
               <v-autocomplete density="compact" v-model="metodoPagamento" :items="metodosPagamento"
                 label="Forma de Pagamento" prepend-inner-icon="mdi-credit-card" required>
               </v-autocomplete>
@@ -246,6 +254,10 @@ export default defineComponent({
       metodoPagamento.value = 'Cartão';
       totalVenda.value = 0;
     };
+
+    const pagarDeUmaVez = () => {
+      valorPago.value = totalVenda.value
+    }
 
 
     const openModalProduto = () => {
@@ -455,6 +467,7 @@ export default defineComponent({
       metodosPagamento,
       metodoPagamento,
       valorPago,
+      pagarDeUmaVez,
       alterarQuantidade,
       showModalProduto,
       showModalServico,

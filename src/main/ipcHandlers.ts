@@ -283,6 +283,16 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
+
+  ipcMain.handle('delete-despesa', async (_event, id: number) => {
+    try {
+      await Despesa.deleteDespesa(db, id);
+    } catch (error) {
+      console.error('Erro ao criar despesa:', error);
+      throw error;
+    }
+  });
+
   ipcMain.handle('get-all-despesas', async () => {
     try {
       return await Despesa.getAllDespesas(db);
@@ -420,9 +430,27 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
+  ipcMain.handle('get-clientes-mais-compraram-servicos', async (_event, periodo: string, limite: number) => {
+    try {
+      return await Fechamento.getClientesMaisCompraramServicos(db, periodo, limite);
+    } catch (error) {
+      console.error('Erro ao comparar custo vs lucro:', error);
+      throw error;
+    }
+  });
+
   ipcMain.handle('get-vendas-produtos-por-metodo-pagamento', async (_event, periodo: string) => {
     try {
       return await Fechamento.getVendasProdutosPorMetodoPagamento(db, periodo);
+    } catch (error) {
+      console.error('Erro ao buscar dados', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-vendas-servicos-por-metodo-pagamento', async (_event, periodo: string) => {
+    try {
+      return await Fechamento.getVendasServicosPorMetodoPagamento(db, periodo);
     } catch (error) {
       console.error('Erro ao buscar dados', error);
       throw error;
@@ -441,6 +469,15 @@ export const registerIpcHandlers = (db: Database) => {
   ipcMain.handle('get-quantidade-e-receita-produtos', async (_event) => {
     try {
       return await Fechamento.getQuantidadeEReceitaProdutos(db);
+    } catch (error) {
+      console.error('Erro ao buscar dados', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-quantidade-e-receita-servicos', async (_event) => {
+    try {
+      return await Fechamento.getQuantidadeEReceitaServicos(db);
     } catch (error) {
       console.error('Erro ao buscar dados', error);
       throw error;

@@ -162,6 +162,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import { VendaEntity } from '@renderer/entities/VendaEntity';
+import { useDate } from 'vuetify';
 
 export default defineComponent({
   name: 'HistoricoVendas',
@@ -247,7 +248,7 @@ export default defineComponent({
       try {
         const { id, valor_total, valor_pago, data, metodo_pagamento, status } = vendaEdicao.value;
         vendaEdicao.value.valor_pago = vendaEdicao.value.valor_total;
-        await window.api.updateVenda(id, valor_total, valor_pago, metodo_pagamento, status, data); // Atualiza a venda
+        await window.api.updateVenda(id, valor_total, valor_pago, metodo_pagamento, status, new Date(data).toISOString()); // Atualiza a venda
         modalEditar.value = false; // Fecha o modal
         carregarVendas(); // Recarrega as vendas
       } catch (error) {

@@ -6,46 +6,35 @@ function calcularPeriodo(periodo: string) {
   let dataInicio = new Date();
   let dataFim = hoje;
 
+  dataFim.setDate(dataFim.getDate() + 1);
+
   switch (periodo) {
     case 'dia':
-      dataInicio.setHours(0, 0, 0, 0);
-      dataFim.setHours(23, 59, 59, 999);
+      dataInicio = new Date(hoje.getTime() - 24 * 60 * 60 * 1000); // últimas 24h
       break;
     case 'semana':
-      const diaDaSemana = hoje.getDay();
-      const primeiroDiaDaSemana = new Date(hoje);
-      primeiroDiaDaSemana.setDate(hoje.getDate() - diaDaSemana);
-      primeiroDiaDaSemana.setHours(0, 0, 0, 0);
-      dataInicio = primeiroDiaDaSemana;
+      dataInicio = new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000); // últimos 7 dias
       break;
     case 'mes':
-      dataInicio.setMonth(hoje.getMonth(), 1);
-      dataInicio.setHours(0, 0, 0, 0);
-      dataFim.setMonth(hoje.getMonth() + 1, 0);
-      dataFim.setHours(23, 59, 59, 999);
+      dataInicio = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000); // últimos 30 dias
       break;
     case 'ano':
-      dataInicio.setMonth(0, 1);
-      dataInicio.setHours(0, 0, 0, 0);
-      dataFim.setMonth(11, 31);
-      dataFim.setHours(23, 59, 59, 999);
+      dataInicio.setFullYear(hoje.getFullYear() - 1);
       break;
-    case 'todos':  // Caso "Todos", sem limite de data
-      dataInicio = new Date(1970, 0, 1);  // Data de início: 1º de janeiro de 1970
-      dataFim = hoje;  // Data final: data atual
+    case 'todos':
+      dataInicio = new Date(1970, 0, 1);
       break;
     default:
       throw new Error('Período inválido');
   }
 
-  // Retorna as datas no formato YYYY-MM-DD
   return {
     dataInicio: dataInicio.toISOString().split('T')[0],
     dataFim: dataFim.toISOString().split('T')[0]
   };
 }
 
-// Função para retornar as vendas de serviços por data
+
 // Função para retornar as vendas de serviços por data
 export function getVendasServicosPorData(
   db: Database,
@@ -53,31 +42,24 @@ export function getVendasServicosPorData(
 ): Promise<any[]> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
-  let formatStr = '';
   let groupBy = '';
+  let formatStr = '';
   switch (periodo) {
     case 'dia':
-      formatStr = '%Y-%m-%d %H';
-      groupBy = 'strftime("%Y-%m-%d %H", v.data)';
+      groupBy = 'strftime("%Y-%m-%d %H", v.data)'; // por hora
       break;
     case 'semana':
-      formatStr = '%Y-%m-%d';
-      groupBy = 'strftime("%w", v.data)';
+      groupBy = 'strftime("%Y-%m-%d", v.data)'; // por dia
       break;
     case 'mes':
-      formatStr = '%Y-%m';
-      groupBy = 'strftime("%Y-%m", v.data)';
+      groupBy = `date(v.data, '-' || ((cast(strftime('%d', v.data) as integer)) % 2) || ' days')`;
       break;
     case 'ano':
-      formatStr = '%Y';
-      groupBy = 'strftime("%Y", v.data)';
+      groupBy = 'strftime("%Y-%m", v.data)'; // por mês
       break;
-    case 'todos': // Para o caso 'todos', vamos agrupar por ano para facilitar a análise global
-      formatStr = '%Y';
-      groupBy = 'strftime("%Y", v.data)';
+    case 'todos':
+      groupBy = 'strftime("%Y", v.data)'; // por ano
       break;
-    default:
-      throw new Error('Período inválido');
   }
 
   const query = `
@@ -89,9 +71,14 @@ export function getVendasServicosPorData(
     JOIN servicos s ON vi.servico_id = s.id
     JOIN vendas v ON vi.venda_id = v.id
     WHERE v.data BETWEEN ? AND ?
+    AND vi.servico_id IS NOT NULL
+    AND vi.produto_id IS NULL
     GROUP BY periodo, s.id
     ORDER BY periodo ASC, total_vendido DESC
   `;
+
+  console.log(dataInicio)
+  console.log(dataFim)
 
   return new Promise((resolve, reject) => {
     db.all(query, [dataInicio, dataFim], (err, rows) => {
@@ -107,41 +94,36 @@ export function getVendasProdutosPorData(
 ): Promise<any[]> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
-  let formatStr = '';
   let groupBy = '';
+  let formatStr = '';
   switch (periodo) {
     case 'dia':
-      formatStr = '%Y-%m-%d %H';
-      groupBy = 'strftime("%Y-%m-%d %H", v.data)';
+      groupBy = 'strftime("%Y-%m-%d %H", v.data)'; // por hora
       break;
     case 'semana':
-      formatStr = '%Y-%m-%d';
-      groupBy = 'strftime("%w", v.data)';
+      groupBy = 'strftime("%Y-%m-%d", v.data)'; // por dia
       break;
     case 'mes':
-      formatStr = '%Y-%m';
-      groupBy = 'strftime("%Y-%m", v.data)';
+      groupBy = `date(v.data, '-' || ((cast(strftime('%d', v.data) as integer)) % 2) || ' days')`;
       break;
     case 'ano':
-      formatStr = '%Y';
-      groupBy = 'strftime("%Y", v.data)';
+      groupBy = 'strftime("%Y-%m", v.data)'; // por mês
       break;
     case 'todos':
-      formatStr = '%Y';
-      groupBy = 'strftime("%Y", v.data)';
+      groupBy = 'strftime("%Y", v.data)'; // por ano
       break;
-    default:
-      throw new Error('Período inválido');
   }
 
   const query = `
     SELECT ${groupBy} AS periodo,
-           SUM(vi.quantidade) AS quantidade_total_vendida,
-           SUM(vi.valor_total) AS total_vendido
+          SUM(vi.quantidade) AS quantidade_total_vendida,
+          SUM(vi.valor_total) AS total_vendido
     FROM vendas_itens vi
     JOIN vendas v ON vi.venda_id = v.id
+    LEFT JOIN produtos p ON vi.produto_id = p.id
     WHERE v.data BETWEEN ? AND ?
-      AND vi.produto_id IS NOT NULL
+    AND vi.produto_id IS NOT NULL
+    AND vi.servico_id IS NULL
     GROUP BY periodo
     ORDER BY periodo ASC
   `;
@@ -153,6 +135,7 @@ export function getVendasProdutosPorData(
     });
   });
 }
+
 
 // Função para retornar os melhores clientes (maiores compras)
 export function getMelhoresClientes(
@@ -236,12 +219,15 @@ export function getLucroTotalLoja(
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
   const query = `
-    SELECT SUM(vi.valor_total) AS total_vendido, SUM(p.custo * vi.quantidade) AS total_custo,
-           SUM(vi.valor_total) - SUM(p.custo * vi.quantidade) AS lucro_total
+    SELECT
+      SUM(vi.valor_total) AS total_vendido,
+      SUM(COALESCE(p.custo, 0) * vi.quantidade) AS total_custo,
+      SUM(vi.valor_total) - SUM(COALESCE(p.custo, 0) * vi.quantidade) AS lucro_total
     FROM vendas_itens vi
     JOIN produtos p ON vi.produto_id = p.id
     JOIN vendas v ON vi.venda_id = v.id
     WHERE v.data BETWEEN ? AND ?
+    AND vi.produto_id IS NOT NULL
   `;
 
   return new Promise((resolve, reject) => {
@@ -377,17 +363,19 @@ export function getVendasProdutosVsServicos(
 
 export function getCustoVsLucro(
   db: Database,
-  periodo: string, // "dia", "semana", "mes", "ano"
+  periodo: string // "dia", "semana", "mes", "ano"
 ): Promise<any> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
+
   const query = `
     SELECT
+      SUM(vi.valor_total) AS total_bruto_produtos,
       SUM(p.custo * vi.quantidade) AS total_custo_produtos,
       SUM(vi.valor_total) - SUM(p.custo * vi.quantidade) AS lucro_produtos
     FROM vendas_itens vi
     JOIN produtos p ON vi.produto_id = p.id
     JOIN vendas v ON vi.venda_id = v.id
-    WHERE v.data BETWEEN ? AND ?
+    WHERE v.data BETWEEN ? AND ? AND p.id IS NOT NULL
   `;
 
   return new Promise((resolve, reject) => {
@@ -397,6 +385,7 @@ export function getCustoVsLucro(
     });
   });
 }
+
 
 // Função para retornar os clientes que mais compraram produtos
 export function getClientesMaisCompraramProdutos(
@@ -417,6 +406,35 @@ export function getClientesMaisCompraramProdutos(
     WHERE v.data BETWEEN ? AND ? AND vi.produto_id IS NOT NULL
     GROUP BY c.id
     ORDER BY total_comprado_produtos DESC
+    LIMIT ?
+  `;
+
+  return new Promise((resolve, reject) => {
+    db.all(query, [dataInicio, dataFim, limite], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
+export function getClientesMaisCompraramServicos(
+  db: Database,
+  periodo: string, // "dia", "semana", "mes", "ano"
+  limite: number // Número máximo de clientes a retornar
+): Promise<any[]> {
+  const { dataInicio, dataFim } = calcularPeriodo(periodo);
+
+  const query = `
+    SELECT c.nome AS cliente_nome,
+           SUM(vi.valor_total) AS total_comprado_servicos,
+           SUM(vi.quantidade) AS quantidade_servicos_comprados
+    FROM vendas v
+    JOIN clientes c ON v.cliente_id = c.id
+    LEFT JOIN vendas_itens vi ON v.id = vi.venda_id
+    LEFT JOIN servicos s ON vi.servico_id = s.id
+    WHERE v.data BETWEEN ? AND ? AND vi.produto_id IS NULL
+    GROUP BY c.id
+    ORDER BY total_comprado_servicos DESC
     LIMIT ?
   `;
 
@@ -453,6 +471,31 @@ export function getVendasProdutosPorMetodoPagamento(
   });
 }
 
+export function getVendasServicosPorMetodoPagamento(
+  db: Database,
+  periodo: string
+): Promise<any[]> {
+  const { dataInicio, dataFim } = calcularPeriodo(periodo);
+
+  const query = `
+    SELECT v.metodo_pagamento AS metodo,
+           SUM(vi.valor_total) AS total_vendas
+    FROM vendas v
+    JOIN vendas_itens vi ON v.id = vi.venda_id
+    WHERE v.data BETWEEN ? AND ?
+      AND vi.produto_id IS NULL
+    GROUP BY v.metodo_pagamento
+    ORDER BY total_vendas DESC
+  `;
+
+  return new Promise((resolve, reject) => {
+    db.all(query, [dataInicio, dataFim], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
 export function getProdutosSemEstoque(db: Database): Promise<any[]> {
   const query = `
     SELECT id, nome, qtdEstoque
@@ -475,7 +518,28 @@ export function getQuantidadeEReceitaProdutos(db: Database): Promise<any> {
       SUM(vi.quantidade) AS total_produtos_vendidos,
       SUM(vi.valor_total) AS receita_total_produtos
     FROM vendas_itens vi
+     JOIN vendas v ON vi.venda_id = v.id
     WHERE vi.produto_id IS NOT NULL
+    AND vi.servico_id IS NULL
+  `;
+
+  return new Promise((resolve, reject) => {
+    db.get(query, (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+}
+
+export function getQuantidadeEReceitaServicos(db: Database): Promise<any> {
+  const query = `
+    SELECT
+      SUM(vi.quantidade) AS total_servicos_vendidos,
+      SUM(vi.valor_total) AS receita_total_servicos
+    FROM vendas_itens vi
+     JOIN vendas v ON vi.venda_id = v.id
+    WHERE vi.produto_id IS NULL
+     AND vi.servico_id IS NOT NULL
   `;
 
   return new Promise((resolve, reject) => {

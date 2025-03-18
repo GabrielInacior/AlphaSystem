@@ -106,6 +106,8 @@ const api = {
   //Apis de Insights
   getVendasProdutosPorData: (periodo: string) => ipcRenderer.invoke('get-vendas-produtos-por-data', periodo),
 
+  getVendasServicosPorData: (periodo: string) => ipcRenderer.invoke('get-vendas-servicos-por-data', periodo),
+
   // Função para obter os melhores clientes
   getMelhoresClientes: (limite: number) => ipcRenderer.invoke('get-melhores-clientes', limite),
 
@@ -138,11 +140,17 @@ const api = {
     // Função para comparar custo vs lucro
   getClientesMaisCompraramProdutos: (periodo: string, limite: number) => ipcRenderer.invoke('get-clientes-mais-compraram-produtos', periodo, limite),
 
+  getClientesMaisCompraramServicos: (periodo: string, limite: number) => ipcRenderer.invoke('get-clientes-mais-compraram-servicos', periodo, limite),
+
   getVendasProdutosPorMetodoPagamento: (periodo: string) => ipcRenderer.invoke('get-vendas-produtos-por-metodo-pagamento', periodo),
+
+  getVendasServicosPorMetodoPagamento: (periodo: string) => ipcRenderer.invoke('get-vendas-servicos-por-metodo-pagamento', periodo),
 
   getProdutosSemEstoque: () => ipcRenderer.invoke('get-produtos-sem-estoque'),
 
   getQuantidadeEReceitaProdutos: () => ipcRenderer.invoke("get-quantidade-e-receita-produtos"),
+
+  getQuantidadeEReceitaServicos: () => ipcRenderer.invoke("get-quantidade-e-receita-servicos"),
 };
 
 if (process.contextIsolated) {
