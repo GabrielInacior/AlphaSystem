@@ -38,6 +38,16 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
+
+  ipcMain.handle('get-clientes-aniversariantes', async (_event) => {
+    try {
+      return await Cliente.getClientesAniversariantes(db);
+    } catch (error) {
+      console.error('Erro ao obter cliente:', error);
+      throw error;
+    }
+  });
+
   ipcMain.handle('update-cliente', async (_event, id: number, nome: string, aniversario: string, telefone:string) => {
     try {
       await Cliente.updateCliente(db, id, nome, aniversario, telefone);
@@ -475,9 +485,9 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
-  ipcMain.handle('get-quantidade-e-receita-servicos', async (_event) => {
+  ipcMain.handle('get-quantidade-e-receita-servicos', async (_event, periodo:string) => {
     try {
-      return await Fechamento.getQuantidadeEReceitaServicos(db);
+      return await Fechamento.getQuantidadeEReceitaServicos(db, periodo);
     } catch (error) {
       console.error('Erro ao buscar dados', error);
       throw error;

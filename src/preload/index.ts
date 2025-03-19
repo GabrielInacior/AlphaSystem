@@ -2,6 +2,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { getClientesMaisCompraramProdutos, getQuantidadeEReceitaProdutos } from '../main/fechamentoCaixa';
+import { getClientesAniversariantes } from '../main/clientes';
 
 // Custom APIs for renderer
 const api = {
@@ -12,6 +13,8 @@ const api = {
   getAllClientes: () => ipcRenderer.invoke('get-all-clientes'),
 
   getClienteById: (id: number) => ipcRenderer.invoke('get-cliente-by-id', id),
+
+  getClientesAniversariantes: () => ipcRenderer.invoke('get-clientes-aniversariantes'),
 
   updateCliente: (id: number, nome: string, aniversario: string, telefone: string) =>
     ipcRenderer.invoke('update-cliente', id, nome, aniversario, telefone),
@@ -150,7 +153,7 @@ const api = {
 
   getQuantidadeEReceitaProdutos: () => ipcRenderer.invoke("get-quantidade-e-receita-produtos"),
 
-  getQuantidadeEReceitaServicos: () => ipcRenderer.invoke("get-quantidade-e-receita-servicos"),
+  getQuantidadeEReceitaServicos: (periodo: string) => ipcRenderer.invoke("get-quantidade-e-receita-servicos", periodo),
 };
 
 if (process.contextIsolated) {

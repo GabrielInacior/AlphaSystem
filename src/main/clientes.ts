@@ -60,3 +60,20 @@ export function deleteCliente(db: Database, id: number): void {
     }
   });
 }
+
+export function getClientesAniversariantes(db: Database): Promise<any[]> {
+  const query = `
+    SELECT *
+    FROM clientes
+    WHERE strftime('%m-%d', aniversario) = strftime('%m-%d', 'now')
+    AND aniversario <= strftime('%Y-%m-%d', 'now') -- Garantir que o aniversário é até a meia-noite de hoje
+  `;
+
+  return new Promise((resolve, reject) => {
+    db.all(query, [], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+

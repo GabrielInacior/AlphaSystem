@@ -170,7 +170,7 @@
 
             <v-col cols="auto">
               <v-btn @click="pagarDeUmaVez" color="success" variant="flat"
-                  :disabled="!clienteSelecionado || itensVenda.length === 0" style="margin-left: 4px;">
+                  :disabled="itensVenda.length === 0" style="margin-left: 4px;">
                   <v-icon>mdi-plus</v-icon>
                   <v-tooltip activator="parent" location="start">Adicionar valor</v-tooltip>
                 </v-btn>

@@ -146,7 +146,6 @@
             <v-text-field density="compact" v-model="vendaEdicao.data" label="Data" type="date" />
             <v-select v-model="vendaEdicao.metodo_pagamento" :items="metodosPagamento" label="Método de Pagamento"
               required />
-            <v-select v-model="vendaEdicao.status" :items="['pago', 'pendente']" label="Status" required />
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -162,7 +161,6 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import { VendaEntity } from '@renderer/entities/VendaEntity';
-import { useDate } from 'vuetify';
 
 export default defineComponent({
   name: 'HistoricoVendas',

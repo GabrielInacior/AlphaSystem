@@ -6,6 +6,11 @@
         <v-card class="pa-1" style="min-height: 150px;">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Top clientes - Produtos
+            <v-btn variant="plain" size="small">
+              <v-icon icon="mdi-information"> </v-icon>
+              <v-tooltip activator="parent" location="start">Clientes que mais gastaram com produtos, ranqueados por
+                valor gasto</v-tooltip>
+            </v-btn>
           </v-card-title>
           <v-row style="max-height: 90px;">
             <v-col style="width: 100%;">
@@ -13,7 +18,7 @@
                 label="Selecione o Período" density="compact" outlined />
             </v-col>
           </v-row>
-          <v-list style="width: 100%;">
+          <v-list style="width: 100%; overflow-y: auto; max-height: 300px;">
             <v-list-item-group v-for="(cliente, index) in melhoresClientes" :key="index">
               <v-list-item>
                 <v-list-item-content>
@@ -86,6 +91,11 @@
         <v-card class="pa-1" style="min-height: 100px;">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Produtos mais vendidos
+            <v-btn variant="plain" size="small">
+              <v-icon icon="mdi-information"> </v-icon>
+              <v-tooltip activator="parent" location="start">Produtos mais vendidos, ranqueados por
+                quantidade de vendas.</v-tooltip>
+            </v-btn>
           </v-card-title>
           <v-row style="max-height: 90px;"> <!-- Adicionando flex-wrap para se ajustar ao espaço -->
             <v-col style="width: 100%;">
@@ -93,31 +103,31 @@
                 label="Selecione o Período" density="compact" outlined />
             </v-col>
           </v-row>
-          <v-list>
+          <v-list style="overflow-y: auto; max-height: 300px;">
             <v-list-item-group v-for="(produto, index) in produtosMaisVendidos" :key="index">
               <v-list-item>
                 <v-list-item-content>
-                  <v-row class="d-flex align-center" style="gap: 8px; flex-wrap: wrap;">
+                  <v-row class="d-flex align-center" style="flex-wrap: nowrap;">
                     <!-- Flex wrap e gap entre os itens -->
                     <!-- Posição de Ranking -->
-                    <v-col cols="2" class="text-center">
-                      <v-icon :class="getRankingClass(index)" small>{{ getMedalIcon(index) }}</v-icon>
-                      <span class="font-weight-bold">{{ index + 1 }}º</span>
+                    <v-col cols="2" class="text-center" style="min-width: 56px;">
+                      <v-icon :class="getRankingClass(index)" size="small">{{ getMedalIcon(index) }}</v-icon>
+                      <span class="font-weight-bold" style="font-size: 13px;">{{ index + 1 }}º</span>
                     </v-col>
 
                     <!-- Nome do Produto -->
-                    <v-col cols="3" class="text-truncate">
+                    <v-col cols="3" class="text-truncate" style="min-width: 85px;">
                       <v-list-item-title style="font-size: 14px;">{{ produto.produto_nome }}</v-list-item-title>
                     </v-col>
 
                     <!-- Quantidade de Vendas -->
-                    <v-col cols="2" class="text-right">
+                    <v-col cols="2" class="text-right" style="display: flex; align-items: start; min-width: 60px;">
                       <v-list-item-subtitle style="font-size: 12px;">{{ produto.quantidade_vendida }}
                         vendas</v-list-item-subtitle>
                     </v-col>
 
                     <!-- Total Vendido -->
-                    <v-col cols="3" class="text-right">
+                    <v-col cols="3" class="text-right" style="min-width: 120px; display: flex; align-items: start;">
                       <v-list-item-subtitle style="font-size: 12px;">{{ 'R$' + produto.total_vendido.toFixed(2) || '---'
                       }}</v-list-item-subtitle>
                     </v-col>
@@ -152,7 +162,7 @@
         <v-card class="pa-1" style="min-height: 300px; width: 100%;">
           <v-row no-gutters>
             <!-- Gráfico do Método de Pagamento (50%) -->
-            <v-col cols="6" md="5">
+            <v-col cols="6" md="6">
               <v-card-title style="font-size: 14px; font-weight: bold;">
                 Vendas de produtos<br> p/ Método de Pagamento
               </v-card-title>
@@ -165,7 +175,7 @@
 
             <v-divider class="mx-2" vertical></v-divider>
 
-            <v-col cols="6" md="6" style="min-width: 260px;">
+            <v-col cols="6" md="5" style="min-width: 220px;">
               <v-card-title style="font-size: 16px; font-weight: bold;">
                 Informações adicionais
               </v-card-title>
@@ -256,7 +266,7 @@ export default defineComponent({
     const periogoPagamentos = ref('semana');
     const periodoLucroGasto = ref('semana');
     const periodos = [
-      { value: 'dia', text: 'Hoje' },
+      { value: 'dia', text: 'Últimas 24 horas' },
       { value: 'semana', text: 'Última Semana' },
       { value: 'mes', text: 'Último Mês' },
       { value: 'ano', text: 'Último Ano' },
@@ -499,7 +509,7 @@ export default defineComponent({
     const carregarDados = async () => {
       await getVendasProdutosPorData(periodoVendasProdutos.value);
       await getProdutosMaisVendidos(periodoMaisVendidos.value);
-      await getClientesMaisCompraramProdutos(periodoVClientesCompraram.value, 5);
+      await getClientesMaisCompraramProdutos(periodoVClientesCompraram.value, 50);
       await getLucroVsGasto(periodoLucroGasto.value);
       await getProdutosSemEstoque();
       await getQuantidadeEReceitaProdutos();
@@ -524,7 +534,7 @@ export default defineComponent({
 
     watch(() => periodoVClientesCompraram.value, async (val) => {
       if (val) {
-        await getClientesMaisCompraramProdutos(val, 5);
+        await getClientesMaisCompraramProdutos(val, 50);
       }
     });
 

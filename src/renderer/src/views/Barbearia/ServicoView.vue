@@ -138,13 +138,18 @@ export default defineComponent({
       }
 
       // Verificação de duplicidade
-      const isDuplicate = servicos.value.some(s => s.nome.toLowerCase() === servico.value.nome.toLowerCase());
+      const isDuplicate = servicos.value.some(s =>
+        s.nome?.toLowerCase() === servico.value.nome?.toLowerCase() &&
+        s.id !== editingServico.value?.id
+      );
+
       if (isDuplicate) {
         nomeError.value = 'Já existe um serviço com este nome.';
         return;
       } else {
         nomeError.value = null;
       }
+
 
       // Se está editando, atualiza o serviço, caso contrário, cria um novo
       if (editingServico.value) {

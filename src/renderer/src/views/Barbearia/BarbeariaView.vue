@@ -4,8 +4,13 @@
       <!-- Gráfico de Vendas de Servicos por Data -->
       <v-col cols="7" md="4" lg="4">
         <v-card class="pa-1" style="min-height: 150px;">
-          <v-card-title style="font-size: 16px; font-weight: bold;">
+          <v-card-title style="font-size: 16px; font-weight: bold;justify-content: space-between; width: 100%;">
             Top clientes - Serviços
+            <v-btn variant="plain" size="small">
+              <v-icon icon="mdi-information"> </v-icon>
+              <v-tooltip activator="parent" location="start">Clientes que mais gastaram com serviços, ranqueados por
+                valor gasto</v-tooltip>
+            </v-btn>
           </v-card-title>
           <v-row style="max-height: 90px;">
             <v-col style="width: 100%;">
@@ -13,7 +18,7 @@
                 label="Selecione o Período" density="compact" outlined />
             </v-col>
           </v-row>
-          <v-list style="width: 100%;">
+          <v-list style="width: 100%; overflow-y: auto; max-height: 300px;">
             <v-list-item-group v-for="(cliente, index) in melhoresClientes" :key="index">
               <v-list-item>
                 <v-list-item-content>
@@ -50,6 +55,13 @@
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Informações adicionais
           </v-card-title>
+
+          <v-row style="max-height: 90px;">
+            <v-col style="width: 100%;">
+              <v-select v-model="periodoTotal" :items="periodos" item-title="text" item-value="value"
+                label="Selecione o Período" density="compact" outlined />
+            </v-col>
+          </v-row>
 
           <v-row style="max-height: 70px;">
             <v-col cols="6" md="6" style="min-width: 260px;">
@@ -91,6 +103,11 @@
         <v-card class="pa-1" style="min-height: 100px;">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Serviços mais vendidos
+            <v-btn variant="plain" size="small">
+              <v-icon icon="mdi-information"> </v-icon>
+              <v-tooltip activator="parent" location="start">Serviços mais vendidos, ranqueados por
+                quantidade de vendas</v-tooltip>
+            </v-btn>
           </v-card-title>
           <v-row style="max-height: 90px;"> <!-- Adicionando flex-wrap para se ajustar ao espaço -->
             <v-col style="width: 100%;">
@@ -98,7 +115,7 @@
                 label="Selecione o Período" density="compact" outlined />
             </v-col>
           </v-row>
-          <v-list>
+          <v-list style="overflow-y: auto; max-height: 300px;">
             <v-list-item-group v-for="(produto, index) in servicosMaisVendidos" :key="index">
               <v-list-item>
                 <v-list-item-content>
@@ -106,12 +123,12 @@
                     <!-- Flex wrap e gap entre os itens -->
                     <!-- Posição de Ranking -->
                     <v-col cols="2" class="text-center">
-                      <v-icon :class="getRankingClass(index)" small>{{ getMedalIcon(index) }}</v-icon>
-                      <span class="font-weight-bold">{{ index + 1 }}º</span>
+                      <v-icon :class="getRankingClass(index)" size="small">{{ getMedalIcon(index) }}</v-icon>
+                      <span class="font-weight-bold" style="font-size: 13px;">{{ index + 1 }}º</span>
                     </v-col>
 
                     <!-- Nome do Produto -->
-                    <v-col cols="3" class="text-truncate">
+                    <v-col cols="3" class="text-truncate" style="min-width: 120px;">
                       <v-list-item-title style="font-size: 14px;">{{ produto.servico_nome }}</v-list-item-title>
                     </v-col>
 
@@ -143,7 +160,7 @@
       <v-col cols="12" md="6" lg="6">
         <v-card class="pa-1" style="min-height: 300px; width: 100%;">
           <v-card-title style="font-size: 16px;font-weight: bold;">
-            Evoluçao de servicos vendidos
+            Evoluçao de serviços vendidos
           </v-card-title>
           <v-row cols="auto" class="px-8 my-1" style="max-height: 80px;">
             <v-select item-title="text" item-value="value" v-model="periodoVendasServicos" :items="periodos"
@@ -159,7 +176,7 @@
             <!-- Gráfico do Método de Pagamento (50%) -->
             <v-col cols="12" md="12">
               <v-card-title style="font-size: 14px; font-weight: bold;">
-                Vendas de serviços <br> p/ Método de Pagamento
+                Vendas de serviços p/ Método de Pagamento
               </v-card-title>
               <v-row cols="auto" class="px-4 my-1" style="max-height: 80px;">
                 <v-select item-title="text" item-value="value" v-model="periogoPagamentos" :items="periodos"
@@ -207,15 +224,15 @@ export default defineComponent({
     const periodoVendasServicos = ref('semana');
     const periodoMaisVendidos = ref('semana');
     const periodoVClientesCompraram = ref('semana');
+    const periodoTotal = ref('semana');
     const periogoPagamentos = ref('semana');
     const periodos = [
-      { value: 'dia', text: 'Hoje' },
+      { value: 'dia', text: 'Últimas 24 horas' },
       { value: 'semana', text: 'Última Semana' },
       { value: 'mes', text: 'Último Mês' },
       { value: 'ano', text: 'Último Ano' },
       { value: 'todos', text: 'Todos' },
     ];
-
     const getVendasServicosPorData = async (periodo: string) => {
       try {
         const vendasServicosResponse = await window.api.getVendasServicosPorData(periodo);
@@ -223,39 +240,55 @@ export default defineComponent({
 
         const labels: string[] = [];
         const dataTotalVendido: number[] = [];
+        const dataQuantidadeServicos: number[] = [];
 
-        let lastPeriod = ''; // Variável para acompanhar o período anterior
-        let periodSum = 0; // Variável para somar os valores no mesmo período
+        let lastPeriod = '';
+        let periodSumTotal = 0;
+        let periodSumQuantidade = 0;
 
         vendasServicosResponse.forEach((item: any) => {
           let label = '';
 
           switch (periodo) {
             case 'dia':
-              label = new Date(item.periodo + ':00').toLocaleTimeString([], {
+              // Ajuste no formato de hora para garantir que ele seja tratado como data válida
+              const periodoDate = new Date(item.periodo + ":00"); // Certifique-se de adicionar ':00' para os minutos
+              console.log(item.periodo);
+
+              // Criação do label com a hora
+              label = periodoDate.toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit',
               });
+
+              // Verifica se o label já existe para somar os valores
+              if (!labels.includes(label)) {
+                labels.push(label);
+                dataTotalVendido.push(0); // Inicia com 0 para somar depois
+                dataQuantidadeServicos.push(0); // Inicia com 0 para somar depois
+              }
+
+              const indexDia = labels.indexOf(label);
+              dataTotalVendido[indexDia] += Number(item.total_vendido);
+              dataQuantidadeServicos[indexDia] += Number(item.quantidade_vendida);
               break;
 
             case 'semana':
               const diasDaSemana: string[] = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
               const dataPeriodo = new Date(item.periodo);
-              let diaSemana = dataPeriodo.getDay();
-
-              // Adiciona 1 ao valor de getDay(), mas se for 7, faz reset para 0
-              diaSemana = (diaSemana + 1) % 7;
+              let diaSemana = (dataPeriodo.getDay() + 1) % 7;
 
               label = diasDaSemana[diaSemana];
 
               if (!labels.includes(label)) {
                 labels.push(label);
-                dataTotalVendido.push(0);  // Inicializa o valor para este dia da semana
+                dataTotalVendido.push(0);
+                dataQuantidadeServicos.push(0);
               }
 
-              // Encontra o índice do dia da semana e soma os valores
               const dayIndex = labels.indexOf(label);
               dataTotalVendido[dayIndex] += Number(item.total_vendido);
+              dataQuantidadeServicos[dayIndex] += Number(item.quantidade_vendida);
               break;
 
             case 'mes':
@@ -269,13 +302,16 @@ export default defineComponent({
               label = `${formatarData(dataInicio)} a ${formatarData(dataFim)}`;
 
               if (lastPeriod === label) {
-                periodSum += Number(item.total_vendido);
+                periodSumTotal += Number(item.total_vendido);
+                periodSumQuantidade += Number(item.quantidade_vendida);
               } else {
                 if (lastPeriod !== '') {
                   labels.push(lastPeriod);
-                  dataTotalVendido.push(periodSum);
+                  dataTotalVendido.push(periodSumTotal);
+                  dataQuantidadeServicos.push(periodSumQuantidade);
                 }
-                periodSum = Number(item.total_vendido);
+                periodSumTotal = Number(item.total_vendido);
+                periodSumQuantidade = Number(item.quantidade_vendida);
               }
 
               lastPeriod = label;
@@ -284,10 +320,28 @@ export default defineComponent({
             case 'ano':
               const mesAno = new Date(item.periodo);
               label = mesAno.toLocaleString('default', { month: 'long' });
+
+              if (!labels.includes(label)) {
+                labels.push(label);
+                dataTotalVendido.push(0);
+                dataQuantidadeServicos.push(0);
+              }
+
+              const idxAno = labels.indexOf(label);
+              dataTotalVendido[idxAno] += Number(item.total_vendido);
+              dataQuantidadeServicos[idxAno] += Number(item.quantidade_vendida);
               break;
 
             case 'todos':
               label = item.periodo;
+              if (!labels.includes(label)) {
+                labels.push(label);
+                dataTotalVendido.push(0);
+                dataQuantidadeServicos.push(0);
+              }
+              const idxTodos = labels.indexOf(label);
+              dataTotalVendido[idxTodos] += Number(item.total_vendido);
+              dataQuantidadeServicos[idxTodos] += Number(item.quantidade_vendida);
               break;
 
             default:
@@ -295,12 +349,14 @@ export default defineComponent({
           }
         });
 
-        // Adiciona o último valor após o loop
-        if (lastPeriod !== '') {
+        // Adiciona os últimos valores se estiver no modo 'mes'
+        if (lastPeriod !== '' && periodo === 'mes') {
           labels.push(lastPeriod);
-          dataTotalVendido.push(periodSum);
+          dataTotalVendido.push(periodSumTotal);
+          dataQuantidadeServicos.push(periodSumQuantidade);
         }
 
+        // Atualiza os dados do gráfico
         vendasServicosData.value = {
           labels,
           datasets: [
@@ -316,9 +372,22 @@ export default defineComponent({
               fill: false,
               yAxisID: 'y1',
             },
+            {
+              label: 'Quantidade de Serviços Vendidos',
+              data: dataQuantidadeServicos,
+              backgroundColor: 'rgba(33, 150, 243, 0.2)',
+              borderColor: '#2196F3',
+              borderWidth: 2,
+              hoverBackgroundColor: '#2196F3',
+              hoverBorderColor: '#1565C0',
+              tension: 0.3,
+              fill: false,
+              yAxisID: 'y2',
+            },
           ],
         };
 
+        // Atualiza opções do gráfico
         chartOptionVendas.value = {
           responsive: true,
           interaction: {
@@ -326,16 +395,28 @@ export default defineComponent({
             intersect: false,
           },
           scales: {
-            y: {
+            y1: {
               type: 'linear',
               display: true,
               position: 'right',
-              grid: {
-                drawOnChartArea: false,
-              },
               title: {
                 display: true,
                 text: 'Valor Total (R$)',
+              },
+              grid: {
+                drawOnChartArea: false,
+              },
+            },
+            y2: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: {
+                display: true,
+                text: 'Quantidade de Serviços',
+              },
+              grid: {
+                drawOnChartArea: true,
               },
             },
           },
@@ -351,8 +432,9 @@ export default defineComponent({
       servicosMaisVendidos.value = produtosResponse;
     };
 
-    const getQuantidadeEReceitaServicos = async () => {
-      const produtosResponse = await window.api.getQuantidadeEReceitaServicos();
+    const getQuantidadeEReceitaServicos = async (periodo: string) => {
+      const produtosResponse = await window.api.getQuantidadeEReceitaServicos(periodo);
+      console.log(produtosResponse)
       quantidadeReceitaServicos.value = produtosResponse;
     };
 
@@ -415,9 +497,9 @@ export default defineComponent({
     const carregarDados = async () => {
       await getVendasServicosPorData(periodoVendasServicos.value);
       await getServicosMaisVendidos(periodoMaisVendidos.value);
-      await getClientesMaisCompraramServicos(periodoVClientesCompraram.value, 5);
+      await getClientesMaisCompraramServicos(periodoVClientesCompraram.value, 50);
       await getProdutosSemEstoque();
-      await getQuantidadeEReceitaServicos();
+      await getQuantidadeEReceitaServicos(periodoTotal.value);
       await getVendasServicosPorMetodoPagamento(periogoPagamentos.value);
     };
 
@@ -425,6 +507,11 @@ export default defineComponent({
       carregarDados();
     });
 
+    watch(() => periodoTotal.value, async (val) => {
+      if (val) {
+        await getQuantidadeEReceitaServicos(val);
+      }
+    });
 
     watch(() => periodoMaisVendidos.value, async (val) => {
       if (val) {
@@ -434,7 +521,7 @@ export default defineComponent({
 
     watch(() => periodoVClientesCompraram.value, async (val) => {
       if (val) {
-        await getClientesMaisCompraramServicos(val, 5);
+        await getClientesMaisCompraramServicos(val, 50);
       }
     });
 
@@ -510,6 +597,7 @@ export default defineComponent({
       goToProdutos,
       servicosSemEstoque,
       getMedalIcon,
+      periodoTotal,
       getRankingClass,
       periodos,
       periogoPagamentos,
