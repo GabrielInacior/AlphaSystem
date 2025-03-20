@@ -1,10 +1,10 @@
 <template>
   <v-container>
     <!-- Produtos e Serviços -->
-    <v-expansion-panels v-model="expanded" class="mb-3">
+    <v-expansion-panels v-model="expanded" class="mb-3" elevation="10">
       <v-expansion-panel title="Selecionar produtos e serviços">
         <v-expansion-panel-text class="pb-4" style="max-height: 450px; overflow-y: auto;">
-          <v-row class="elevation-4">
+          <v-row class="elevation-0">
             <v-col cols="12" sm="6">
               <v-card class="scroll-card elevation-0">
                 <v-card-title class="text-h6">Produtos</v-card-title>
@@ -87,8 +87,8 @@
 
     <!-- Resumo da Venda -->
     <v-row>
-      <v-col cols="12">
-        <v-card>
+      <v-col cols="12" >
+        <v-card elevation="10">
           <v-card-title class="text-h6">Resumo da Venda
             <v-row>
               <v-col cols="12" sm="6">

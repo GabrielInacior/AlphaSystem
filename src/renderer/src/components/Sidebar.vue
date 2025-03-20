@@ -215,7 +215,7 @@ export default defineComponent({
 }
 
 .botaozao {
-  position: absolute;
+  position: fixed;
   top: 2%;
   width: 10px !important;
   z-index: 1001 !important;

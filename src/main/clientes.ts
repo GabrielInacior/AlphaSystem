@@ -63,10 +63,9 @@ export function deleteCliente(db: Database, id: number): void {
 
 export function getClientesAniversariantes(db: Database): Promise<any[]> {
   const query = `
-    SELECT *
+    SELECT *, strftime('%Y-%m-%d', aniversario) AS aniversario_formatado
     FROM clientes
-    WHERE strftime('%m-%d', aniversario) = strftime('%m-%d', 'now')
-    AND aniversario <= strftime('%Y-%m-%d', 'now') -- Garantir que o aniversário é até a meia-noite de hoje
+    WHERE strftime('%m', aniversario) = strftime('%m', 'now')  -- Verifica se o mês do aniversário é o mês atual
   `;
 
   return new Promise((resolve, reject) => {
@@ -76,4 +75,6 @@ export function getClientesAniversariantes(db: Database): Promise<any[]> {
     });
   });
 }
+
+
 

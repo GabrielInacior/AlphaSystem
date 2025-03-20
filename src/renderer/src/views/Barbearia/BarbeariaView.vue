@@ -3,7 +3,7 @@
     <v-row>
       <!-- Gráfico de Vendas de Servicos por Data -->
       <v-col cols="7" md="4" lg="4">
-        <v-card class="pa-1" style="min-height: 150px;">
+        <v-card class="pa-1" style="min-height: 150px;" elevation="10">
           <v-card-title style="font-size: 16px; font-weight: bold;justify-content: space-between; width: 100%;">
             Top clientes - Serviços
             <v-btn variant="plain" size="small">
@@ -30,8 +30,13 @@
                     </v-col>
 
                     <v-col cols="4">
-                      <v-list-item-title style="font-size: 14px;" class="text-truncate">{{ cliente.cliente_nome
+                      <v-tooltip :text="cliente.cliente_nome">
+                        <template v-slot:activator="{ props }">
+                          <v-list-item-title v-bind="props" style="font-size: 14px;" class="text-truncate">{{ cliente.cliente_nome
                       }}</v-list-item-title>
+                        </template>
+                      </v-tooltip>
+
                     </v-col>
 
                     <v-col cols="5" class="text-right">
@@ -51,7 +56,7 @@
 
       <!-- Gráfico Comparação Lucro x Gasto -->
       <v-col cols="3" md="3" lg="3">
-        <v-card class="pa-1" style="min-height: 250px; position: relative;">
+        <v-card class="pa-1" style="min-height: 250px; position: relative;" elevation="10">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Informações adicionais
           </v-card-title>
@@ -100,7 +105,7 @@
 
       <!-- Ranking dos Servicos Mais Vendidos -->
       <v-col cols="12" md="6" lg="5">
-        <v-card class="pa-1" style="min-height: 100px;">
+        <v-card class="pa-1" style="min-height: 100px;" elevation="10">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Serviços mais vendidos
             <v-btn variant="plain" size="small">
@@ -129,7 +134,12 @@
 
                     <!-- Nome do Produto -->
                     <v-col cols="3" class="text-truncate" style="min-width: 120px;">
-                      <v-list-item-title style="font-size: 14px;">{{ produto.servico_nome }}</v-list-item-title>
+                      <v-tooltip :text="produto.servico_nome">
+                        <template v-slot:activator="{ props }">
+                          <v-list-item-title v-bind="props" style="font-size: 14px;">{{ produto.servico_nome }}</v-list-item-title>
+                        </template>
+                      </v-tooltip>
+
                     </v-col>
 
                     <!-- Quantidade de Vendas -->
@@ -158,7 +168,7 @@
 
     <v-row>
       <v-col cols="12" md="6" lg="6">
-        <v-card class="pa-1" style="min-height: 300px; width: 100%;">
+        <v-card class="pa-1" style="min-height: 300px; width: 100%;" elevation="10">
           <v-card-title style="font-size: 16px;font-weight: bold;">
             Evoluçao de serviços vendidos
           </v-card-title>
@@ -171,7 +181,7 @@
       </v-col>
 
       <v-col cols="12" md="6" lg="6">
-        <v-card class="pa-1" style="min-height: 300px; width: 100%;">
+        <v-card class="pa-1" style="min-height: 300px; width: 100%;" elevation="10">
           <v-row no-gutters>
             <!-- Gráfico do Método de Pagamento (50%) -->
             <v-col cols="12" md="12">

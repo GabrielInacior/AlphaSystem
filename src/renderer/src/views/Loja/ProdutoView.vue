@@ -1,13 +1,13 @@
 <template>
   <v-container style="height: 90vh; width: 100%;">
-    <v-card style="height: 100%; width: 100%;">
+    <v-card style="height: 100%; width: 100%;" elevation="10">
       <v-card-title>
         Produtos
         <v-spacer></v-spacer>
         <!-- Filtro de busca -->
         <v-row density="compact">
           <v-col cols="12" sm="6" md="4">
-            <v-text-field density="compact" v-model="search" label="Buscar produto" clearable dense outlined
+            <v-text-field density="compact" v-model="search" label="Buscar produto" dense outlined
               class="filter-input" />
           </v-col>
           <v-col cols="12" sm="6" md="4">

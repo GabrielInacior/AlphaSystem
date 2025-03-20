@@ -1,13 +1,13 @@
 <template>
   <v-container style="height: 90vh; width: 100%;">
-    <v-card style="height: 100%; width: 100%;">
+    <v-card style="height: 100%; width: 100%;" elevation="10">
       <v-card-title>
         Despesas
         <v-spacer></v-spacer>
         <!-- Filtros -->
         <v-row>
           <v-col cols="12" md="4">
-            <v-text-field density="compact" v-model="descricaoFilter" label="Filtrar por Descrição" clearable
+            <v-text-field density="compact" v-model="descricaoFilter" label="Filtrar por Descrição"
               dense></v-text-field>
           </v-col>
           <v-col cols="12" md="4">

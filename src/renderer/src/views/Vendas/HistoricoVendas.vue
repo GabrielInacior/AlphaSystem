@@ -1,6 +1,6 @@
 <template>
   <v-container style="height: 90vh; width: 100%; display: flex; flex-direction: column;">
-    <v-card style="height: 100%; width: 100%; display: flex; flex-direction: column;">
+    <v-card style="height: 100%; width: 100%; display: flex; flex-direction: column;" elevation="10">
       <v-card-title>
         Histórico de Vendas
         <v-spacer></v-spacer>

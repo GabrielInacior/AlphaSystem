@@ -1,6 +1,6 @@
 <template>
   <v-container style="height: 90vh; width: 100%;">
-    <v-card class="elevation-2" style="height: 100%; width: 100%; border-radius: 12px;">
+    <v-card class="elevation-2" style="height: 100%; width: 100%; border-radius: 12px;" elevation="10">
       <v-card-title>
         <span class="text-h6">Vendas pendentes (Fiado)</span>
         <v-spacer></v-spacer>

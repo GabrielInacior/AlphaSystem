@@ -3,7 +3,7 @@
     <v-row>
       <!-- Gráfico de Vendas de Produtos por Data -->
       <v-col cols="7" md="4" lg="4">
-        <v-card class="pa-1" style="min-height: 150px;">
+        <v-card class="pa-1" style="min-height: 150px;" elevation="10">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Top clientes - Produtos
             <v-btn rounded="0" variant="plain" size="small">
@@ -30,8 +30,16 @@
                     </v-col>
 
                     <v-col cols="4">
-                      <v-list-item-title style="font-size: 14px;" class="text-truncate">{{ cliente.cliente_nome
-                        }}</v-list-item-title>
+                      <v-col cols="3" class="text-truncate" style="min-width: 85px;">
+                        <v-tooltip :text="cliente.cliente_nome">
+                          <template v-slot:activator="{ props }">
+                            <v-list-item-title v-bind="props" style="font-size: 14px;" class="text-truncate">{{
+                              cliente.cliente_nome
+                              }}</v-list-item-title>
+                          </template>
+                        </v-tooltip>
+                      </v-col>
+
                     </v-col>
 
                     <v-col cols="5" class="text-right">
@@ -51,7 +59,7 @@
 
       <!-- Gráfico Comparação Lucro x Gasto -->
       <v-col cols="4" md="6" lg="4">
-        <v-card class="pa-1" style="min-height: 250px; position: relative;">
+        <v-card class="pa-1" style="min-height: 250px; position: relative;" elevation="10">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Comparação Lucro vs Gasto
           </v-card-title>
@@ -88,7 +96,7 @@
 
       <!-- Ranking dos Produtos Mais Vendidos -->
       <v-col cols="12" md="6" lg="4">
-        <v-card class="pa-1" style="min-height: 100px;">
+        <v-card class="pa-1" style="min-height: 100px;" elevation="10">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Produtos mais vendidos
             <v-btn variant="plain" size="small">
@@ -117,7 +125,12 @@
 
                     <!-- Nome do Produto -->
                     <v-col cols="3" class="text-truncate" style="min-width: 85px;">
-                      <v-list-item-title style="font-size: 14px;">{{ produto.produto_nome }}</v-list-item-title>
+                      <v-tooltip :text="produto.produto_nome">
+                        <template v-slot:activator="{ props }">
+                          <v-list-item-title v-bind="props" style="font-size: 14px;">{{ produto.produto_nome
+                            }}</v-list-item-title>
+                        </template>
+                      </v-tooltip>
                     </v-col>
 
                     <!-- Quantidade de Vendas -->
@@ -129,7 +142,7 @@
                     <!-- Total Vendido -->
                     <v-col cols="3" class="text-right" style="min-width: 120px; display: flex; align-items: start;">
                       <v-list-item-subtitle style="font-size: 12px;">{{ 'R$' + produto.total_vendido.toFixed(2) || '---'
-                      }}</v-list-item-subtitle>
+                        }}</v-list-item-subtitle>
                     </v-col>
                   </v-row>
                 </v-list-item-content>
@@ -146,7 +159,7 @@
 
     <v-row>
       <v-col cols="12" md="6" lg="6">
-        <v-card class="pa-1" style="min-height: 300px; width: 100%;">
+        <v-card class="pa-1" style="min-height: 300px; width: 100%;" elevation="10">
           <v-card-title style="font-size: 16px;font-weight: bold;">
             Quantidade de produtos vendidos
           </v-card-title>
@@ -159,7 +172,7 @@
       </v-col>
 
       <v-col cols="12" md="6" lg="6">
-        <v-card class="pa-1" style="min-height: 300px; width: 100%;">
+        <v-card class="pa-1" style="min-height: 300px; width: 100%;" elevation="10">
           <v-row no-gutters>
             <!-- Gráfico do Método de Pagamento (50%) -->
             <v-col cols="6" md="6">

@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-card class="pa-2">
+        <v-card class="pa-2" elevation="10">
           <v-card-text class="text-h6">
             {{ saudacao }}, Bia e Raphael! Sejam bem-vindos ao <strong>AlphaSystem</strong>!
           </v-card-text>
@@ -13,7 +13,7 @@
     <v-row>
       <!-- Gráfico de Vendas de Produtos por Data -->
       <v-col cols="4" md="6" lg="4">
-        <v-card class="pa-1" style="min-height: 250px; position: relative;">
+        <v-card class="pa-1" style="min-height: 250px; position: relative;" elevation="10">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Comparação Seviços vs Produtos
           </v-card-title>
@@ -32,9 +32,9 @@
       </v-col>
 
       <v-col cols="8" md="8" lg="8">
-        <v-card class="pa-1" style="min-height: 250px; position: relative;">
+        <v-card class="pa-1" style="min-height: 250px; position: relative;" elevation="10">
           <v-card-title style="font-size: 16px; font-weight: bold;">
-            Comparação Seviços vs Produtos
+            Informações Gerais
           </v-card-title>
 
           <v-row style="max-height: 70px;">
@@ -124,8 +124,8 @@
             <v-col cols="12">
               <v-list class="w-100">
                 <v-list-item class="w-100">
-                  <v-list-item-content class="d-flex justify-center w-100" style="align-items: center;">
-                    <v-list-item-title class="text-subtitle-1 font-weight-bold mb-1">Lucro Total:</v-list-item-title>
+                  <v-list-item-content class="d-flex justify-center align-center w-100" style="align-items: center;">
+                    <v-list-item-title class="text-subtitle-1 font-weight-bold ">Lucro Total:</v-list-item-title>
                     <span class="font-weight-bold text-h5" style="color: green; margin-left: 10px;">
                       R$ {{ infoGerais?.lucro_total?.toFixed(2) || '---' }}
                     </span>
@@ -142,13 +142,13 @@
     </v-row>
     <v-row>
       <v-col cols="4" md="4" lg="4">
-        <v-card class="pa-1" style="min-height: 250px;">
+        <v-card class="pa-1" style="min-height: 250px;" elevation="10">
           <v-card-title style="font-size: 16px; font-weight: bold;">
-            Clientes Aniversariantes
+            Aniversariantes do Mês
           </v-card-title>
 
           <!-- Lista de Clientes Aniversariantes com Scroll -->
-          <v-list style="width: 100%; max-height: 300px; overflow-y: auto;" v-if="clientesAniversariantes.length > 0">
+          <v-list style="width: 100%; max-height: 250px; min-height: 250px; overflow-y: auto;" v-if="clientesAniversariantes.length > 0">
             <v-list-item-group v-for="(cliente, index) in clientesAniversariantes" :key="index">
               <v-list-item>
                 <v-list-item-content>
@@ -158,13 +158,28 @@
                     </v-col>
 
                     <v-col cols="4">
-                      <v-list-item-title style="font-size: 14px;" class="text-truncate">{{ cliente.nome
-                        }}</v-list-item-title>
+                      <v-tooltip :text="cliente.nome">
+                        <template v-slot:activator="{ props }">
+                          <v-list-item-title v-bind="props" style="font-size: 14px;" class="text-truncate">{{
+                            cliente.nome
+                            }}</v-list-item-title>
+                        </template>
+                      </v-tooltip>
+
                     </v-col>
 
-                    <v-col cols="6">
-                      <v-list-item-subtitle style="font-size: 12px;">{{ cliente.telefone }}</v-list-item-subtitle>
+                    <v-col cols="6"
+                      style="min-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <v-tooltip :text="cliente.aniversario + ' ' + calcularIdade(cliente.aniversario) + ' anos'">
+                        <template v-slot:activator="{ props }">
+                          <v-list-item-subtitle v-bind="props" style="font-size: 12px;">
+                            {{ cliente.aniversario }}: <strong>{{ calcularIdade(cliente.aniversario) }} anos </strong>
+                          </v-list-item-subtitle>
+                        </template>
+                      </v-tooltip>
+
                     </v-col>
+
                   </v-row>
                 </v-list-item-content>
               </v-list-item>
@@ -173,19 +188,20 @@
           </v-list>
           <v-card-text class="text-subtitle-2"
             style="height: 250px; display: flex; justify-content: center; align-items: center;" v-else>
-            Nenhum cliente aniversariante hoje...
+            Nenhum cliente aniversariante nesse mês...
           </v-card-text>
         </v-card>
       </v-col>
       <!-- Gráfico Comparação Lucro x Gasto -->
 
       <v-col cols="8" md="8" lg="8">
-        <v-card class="pa-1" style="min-height: 250px;">
+        <v-card class="pa-1" style="min-height: 250px;" elevation="10">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Maiores Devedores
           </v-card-title>
 
-          <v-list style="width: 100%;min-height: 250px; max-height: 250px; overflow-y: auto;" v-if="clientesDevendo.length > 0">
+          <v-list style="width: 100%;min-height: 250px; max-height: 250px; overflow-y: auto;"
+            v-if="clientesDevendo.length > 0">
             <v-list-item-group v-for="(cliente, index) in clientesDevendo" :key="index">
               <v-list-item>
                 <v-list-item-content>
@@ -196,14 +212,18 @@
 
                     <v-col cols="3">
                       <v-list-item-title style="font-size: 14px;" class="text-truncate">
-                        {{ cliente.cliente_nome}}</v-list-item-title>
+                        {{ cliente.cliente_nome }}</v-list-item-title>
                     </v-col>
 
                     <v-col cols="4">
-                      <v-list-item-subtitle style="font-size: 14px;"><v-icon small icon="mdi-phone"></v-icon> {{ cliente.cliente_telefone || "Não cadastrado" }}</v-list-item-subtitle>
+                      <v-list-item-subtitle style="font-size: 14px;"><v-icon small icon="mdi-phone"></v-icon> {{
+                        cliente.cliente_telefone || "Não cadastrado" }}</v-list-item-subtitle>
                     </v-col>
                     <v-col cols="3">
-                      <v-list-item-title style="font-size: 15px;">Deve: <span style="font-weight: bold; font-size: 16px;"> {{'R$ ' + cliente.total_devido.toFixed(2) || '---'}}</span></v-list-item-title >
+                      <v-list-item-title style="font-size: 15px;">Deve: <span
+                          style="font-weight: bold; font-size: 16px;"> {{
+                            'R$ ' + cliente.total_devido.toFixed(2) ||
+                            '---' }}</span></v-list-item-title>
                     </v-col>
                   </v-row>
                 </v-list-item-content>
@@ -287,6 +307,26 @@ export default defineComponent({
       } else {
         saudacao.value = 'Boa noite';
       }
+    };
+
+    const calcularIdade = (aniversario: string) => {
+      const nascimento = new Date(aniversario);
+      const hoje = new Date();
+
+      let idade = hoje.getFullYear() - nascimento.getFullYear();
+
+      // Verificar se o aniversário já passou neste ano
+      const mesNascimento = nascimento.getMonth();
+      const diaNascimento = nascimento.getDate();
+      const mesAtual = hoje.getMonth();
+      const diaAtual = hoje.getDate();
+
+      // Se o aniversário ainda não aconteceu este ano, subtrai 1 da idade
+      if (mesAtual < mesNascimento || (mesAtual === mesNascimento && diaAtual < diaNascimento)) {
+        idade--;
+      }
+
+      return idade;
     };
 
     const getClientesAniversariantes = async () => {
@@ -383,6 +423,7 @@ export default defineComponent({
       getClientesDevendo,
       produtosXServicosData,
       clientesDevendo,
+      calcularIdade,
       periodos,
       periodoInfoGerais,
     }
