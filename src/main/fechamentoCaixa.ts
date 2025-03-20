@@ -235,6 +235,30 @@ export function getLucroTotalLoja(
   });
 }
 
+export function getClientesComVendasPendentes(db: Database): Promise<any> {
+  const query = `
+    SELECT
+      c.id AS cliente_id,
+      c.nome AS cliente_nome,
+      c.telefone AS cliente_telefone,
+      SUM(vi.valor_total) - SUM(v.valor_pago) AS total_devido
+    FROM vendas v
+    JOIN clientes c ON v.cliente_id = c.id
+    LEFT JOIN vendas_itens vi ON v.id = vi.venda_id
+    WHERE v.status = 'pendente'
+    GROUP BY c.id
+    ORDER BY total_devido DESC
+  `;
+
+  return new Promise((resolve, reject) => {
+    db.all(query, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
+
 // Função para retornar o lucro total (Produtos + Serviços - Despesas - Custo de Produto)
 export function getLucroTotal(
   db: Database,
@@ -244,21 +268,43 @@ export function getLucroTotal(
 
   const query = `
     SELECT
-      SUM(vi.valor_total) AS total_produtos_vendidos,
-      SUM(si.valor_total) AS total_servicos_vendidos,
-      SUM(p.custo * vi.quantidade) AS total_custo_produtos,
-      SUM(d.valor) AS total_despesas,
-      (SUM(vi.valor_total) + SUM(si.valor_total)) - (SUM(p.custo * vi.quantidade) + SUM(d.valor)) AS lucro_total
+      -- Quantidade e valor total de produtos vendidos
+      SUM(CASE WHEN vi.produto_id IS NOT NULL THEN vi.quantidade ELSE 0 END) AS qtd_produtos_vendidos,
+      SUM(CASE WHEN vi.produto_id IS NOT NULL THEN vi.valor_total ELSE 0 END) AS total_produtos_vendidos,
+
+      -- Quantidade e valor total de serviços vendidos
+      SUM(CASE WHEN vi.servico_id IS NOT NULL THEN vi.quantidade ELSE 0 END) AS qtd_servicos_vendidos,
+      SUM(CASE WHEN vi.servico_id IS NOT NULL THEN vi.valor_total ELSE 0 END) AS total_servicos_vendidos,
+
+      -- Custo total dos produtos vendidos
+      SUM(CASE WHEN vi.produto_id IS NOT NULL THEN (p.custo * vi.quantidade) ELSE 0 END) AS total_custo_produtos,
+
+      -- Total de despesas no período
+      (SELECT COUNT(*) FROM despesas d WHERE d.data BETWEEN ? AND ?) AS qtd_despesas,
+      (SELECT IFNULL(SUM(d.valor), 0) FROM despesas d WHERE d.data BETWEEN ? AND ?) AS total_despesas,
+
+      -- Lucro total = (produtos vendidos - custo produtos) + serviços vendidos - despesas
+      (
+        (SUM(CASE WHEN vi.produto_id IS NOT NULL THEN vi.valor_total ELSE 0 END) -
+         SUM(CASE WHEN vi.produto_id IS NOT NULL THEN (p.custo * vi.quantidade) ELSE 0 END)
+        ) + SUM(CASE WHEN vi.servico_id IS NOT NULL THEN vi.valor_total ELSE 0 END)
+        - (SELECT IFNULL(SUM(d.valor), 0) FROM despesas d WHERE d.data BETWEEN ? AND ?)
+      ) AS lucro_total
     FROM vendas_itens vi
-    LEFT JOIN servicos si ON vi.servico_id = si.id
     LEFT JOIN produtos p ON vi.produto_id = p.id
     LEFT JOIN vendas v ON vi.venda_id = v.id
-    LEFT JOIN despesas d ON v.data = d.data
     WHERE v.data BETWEEN ? AND ?
   `;
 
+  const params = [
+    dataInicio, dataFim, // qtd_despesas
+    dataInicio, dataFim, // total_despesas
+    dataInicio, dataFim, // lucro_total -> despesas
+    dataInicio, dataFim  // where principal
+  ];
+
   return new Promise((resolve, reject) => {
-    db.get(query, [dataInicio, dataFim], (err, row) => {
+    db.get(query, params, (err, row) => {
       if (err) reject(err);
       else resolve(row);
     });

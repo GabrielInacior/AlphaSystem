@@ -13,14 +13,23 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, onMounted } from 'vue'
 import Sidebar from './components/Sidebar.vue'
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'App',
   components: {
     Sidebar
-  }
+  },
+  setup() {
+    const router = useRouter();
+
+    onMounted(() => {
+      router.push({ name: 'inicio' });
+    });
+
+  },
 })
 </script>
 

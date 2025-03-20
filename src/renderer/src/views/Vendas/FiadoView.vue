@@ -6,13 +6,13 @@
         <v-spacer></v-spacer>
         <v-row dense>
           <v-col cols="12" sm="6" md="4">
-            <v-text-field density="compact" v-model="searchCliente" label="Filtrar por Cliente" clearable dense outlined color="grey"
-              class="search-input" />
+            <v-text-field density="compact" v-model="searchCliente" label="Filtrar por Cliente" clearable dense outlined
+              color="grey" class="search-input" />
           </v-col>
 
           <v-col cols="12" sm="6" md="4">
             <v-text-field density="compact" v-model="searchData" label="Filtrar por Data" clearable dense outlined color="grey"
-              type="date" class="search-input" />
+            type="date" class="search-input" />
           </v-col>
         </v-row>
       </v-card-title>
@@ -67,8 +67,8 @@
         <template v-slot:item.actions="{ item }">
           <v-row dense justify="start" align="center">
             <v-col cols="auto">
-              <v-btn color="success" @click="markAsPaid(item)" v-if="item.status !== 'pago'" elevation="2" size="x-small"
-                class="d-flex align-center justify-center" rounded>
+              <v-btn color="success" @click="markAsPaid(item)" v-if="item.status !== 'pago'" elevation="2"
+                size="x-small" class="d-flex align-center justify-center" rounded>
                 <v-icon left>mdi-check</v-icon> Alterar status
               </v-btn>
             </v-col>
@@ -130,8 +130,9 @@
 
           <v-divider></v-divider>
 
-          <v-autocomplete density="compact" v-model="metodoPagamento" :items="metodosPagamento" label="Forma de Pagamento"
-            prepend-inner-icon="mdi-credit-card" required outlined dense color="grey" class="mt-2" />
+          <v-autocomplete density="compact" v-model="metodoPagamento" :items="metodosPagamento"
+            label="Forma de Pagamento" prepend-inner-icon="mdi-credit-card" required outlined dense color="grey"
+            class="mt-2" />
 
           <v-number-input density="compact" v-model="valorPago" label="Valor Pago" required :min="0"
             :max="(fiadoSelecionado?.valor_total ?? 0) - (fiadoSelecionado?.valor_pago ?? 0)" prefix="R$"
@@ -168,7 +169,7 @@ export default defineComponent({
     const valorPago = ref(0); // Valor pago pelo cliente
     const valorPagoError = ref(''); // Erro de valor pago
     const searchCliente = ref('');
-    const searchData = ref('');
+    const searchData = ref(null);
 
     const headers = [
       { text: 'Cliente', value: 'nome_cliente' },
@@ -182,11 +183,27 @@ export default defineComponent({
     ];
 
     const filteredFiados = computed(() =>
-      fiados.value.filter(f =>
-        f.nome_cliente.toLowerCase().includes(searchCliente.value.toLowerCase()) &&
-        (searchData.value ? f.data.startsWith(searchData.value) : true)
-      )
+      fiados.value.filter(f => {
+        const filtroCliente = searchCliente.value
+          ? f.nome_cliente.toLowerCase().includes(searchCliente.value.toLowerCase())
+          : true;
+
+        const filtroData = searchData.value
+          ? formatDateForComparison(f.data) === searchData.value
+          : true;
+
+        return filtroCliente && filtroData;
+      })
     );
+
+    // Função para formatar a data para comparação, retirando hora, minuto e segundo
+    const formatDateForComparison = (data: string) => {
+      const date = new Date(data);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
 
     const loadFiados = async () => {
       try {
@@ -218,10 +235,10 @@ export default defineComponent({
       if (item) {
         const valorRestante = item.valor_total - item.valor_pago;
         if (valorPago.value >= valorRestante) {
-          await window.api.updateVenda(item.id, item.valor_total, metodoPagamento.value, 'pago');
+          await window.api.updateVenda(item.id, item.valor_total, item.valor_pago + valorPago.value, metodoPagamento.value, 'pago', item.data);
         } else {
           // Caso contrário, apenas atualiza o valor pago
-          await window.api.updateVenda(item.id, item.valor_pago + valorPago.value, metodoPagamento.value, 'pendente');
+          await window.api.updateVenda(item.id, item.valor_total, item.valor_pago + valorPago.value, metodoPagamento.value, 'pendente', item.data);
         }
         loadFiados();
         modalOpen.value = false;

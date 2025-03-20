@@ -1,7 +1,7 @@
 import { createVuetify } from 'vuetify'
 import 'vuetify/styles'
 import { VNumberInput } from 'vuetify/labs/VNumberInput'  // Importando o componente do Vuetify Labs
-import { md2 } from 'vuetify/blueprints'
+import { md3 } from 'vuetify/blueprints'
 import '@mdi/font/css/materialdesignicons.css' // Certifique-se de importar os estilos dos ícones MDI
 
 // Importar componentes e diretivas do Vuetify
@@ -10,10 +10,10 @@ import * as directives from 'vuetify/directives'
 
 // Criar a instância do Vuetify com os componentes e a configuração necessária
 const vuetify = createVuetify({
-  blueprint: md2,
+  blueprint: md3,
   components: {
     ...components,
-    VNumberInput, // Registrar o componente do Vuetify Labs aqui
+    VNumberInput,
   },
   directives,
   icons: {
@@ -48,6 +48,11 @@ const vuetify = createVuetify({
           icon: "#FFFFFF",
         },
       },
+    },
+  },
+  defaults: {
+    VBtn: {
+      rounded: 0, // Adicionando a propriedade default para os botões
     },
   },
 })

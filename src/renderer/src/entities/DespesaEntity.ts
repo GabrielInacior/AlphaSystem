@@ -2,7 +2,7 @@ export class DespesaEntity {
   id?: number;
   descricao: string;
   valor: number;
-  data: string;
+  data: string | null;
   tipo: string;
 
   constructor(data: any) {

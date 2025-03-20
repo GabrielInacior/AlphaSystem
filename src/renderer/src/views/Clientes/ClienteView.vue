@@ -5,15 +5,15 @@
       <v-card-title>
         Clientes
 
-        <v-row dense >
+        <v-row dense>
           <v-col cols="12" sm="6" md="4">
             <v-text-field density="compact" v-model="searchNome" label="Filtrar por Nome" dense outlined color="grey"
               class="search-input" />
           </v-col>
 
           <v-col cols="12" sm="6" md="4">
-            <v-text-field density="compact" v-model="searchTelefone" label="Filtrar por Telefone" dense outlined color="grey"
-              class="search-input" />
+            <v-text-field density="compact" v-model="searchTelefone" label="Filtrar por Telefone" dense outlined
+              color="grey" class="search-input" @input="formatTelefoneFiltro()" />
           </v-col>
           <v-col cols="12" sm="6" md="4">
             <v-btn color="primary" @click="openModal(null)">Novo Cliente</v-btn>
@@ -55,8 +55,10 @@
         </v-card-title>
         <v-card-text>
           <!-- Campo Nome com validação -->
-          <v-text-field density="compact" v-model="cliente.nome" label="Nome" :rules="[nameRule]" required></v-text-field>
-          <v-text-field density="compact" v-model="cliente.aniversario" label="Aniversário" type="date" required></v-text-field>
+          <v-text-field density="compact" v-model="cliente.nome" label="Nome" :rules="[nameRule]"
+            required></v-text-field>
+          <v-text-field density="compact" v-model="cliente.aniversario" label="Aniversário" type="date"
+            required></v-text-field>
           <v-text-field density="compact" v-model="cliente.telefone" label="Telefone" @input="formatTelefone"
             :rules="telefoneRules"></v-text-field>
         </v-card-text>
@@ -82,7 +84,7 @@ export default defineComponent({
     const search = ref('');
     const modalOpen = ref(false);
     const editingCliente = ref<ClienteEntity | null>(null);
-    const cliente = ref<ClienteEntity>(new ClienteEntity({ nome: '', aniversario: '', telefone: '' }));
+    const cliente = ref<ClienteEntity>(new ClienteEntity({ nome: '', aniversario: null, telefone: '' }));
 
     const headers = [
       { text: 'Nome', value: 'nome' },
@@ -101,7 +103,6 @@ export default defineComponent({
       )
     );
 
-
     const nameRule = (v: string) => !!v || 'O nome é obrigatório';
 
     const telefoneRules = [
@@ -118,15 +119,15 @@ export default defineComponent({
 
     const openModal = (editItem: ClienteEntity | null) => {
       editingCliente.value = editItem;
-      cliente.value = editItem ? new ClienteEntity(editItem) : new ClienteEntity({ nome: '', aniversario: '', telefone: '' });
+      cliente.value = editItem ? new ClienteEntity(editItem) : new ClienteEntity({ nome: '', aniversario: null, telefone: '' });
       modalOpen.value = true;
     };
 
     const saveCliente = async () => {
       if (editingCliente.value) {
-        await window.api.updateCliente(editingCliente.value.id || 0, cliente.value.nome, cliente.value.aniversario || '', cliente.value.telefone || '');
+        await window.api.updateCliente(editingCliente.value.id || 0, cliente.value.nome, cliente.value.aniversario || null, cliente.value.telefone || '');
       } else {
-        await window.api.createCliente(cliente.value.nome, cliente.value.aniversario || '', cliente.value.telefone || '');
+        await window.api.createCliente(cliente.value.nome, cliente.value.aniversario || null, cliente.value.telefone || '');
       }
       modalOpen.value = false;
       loadClientes();
@@ -153,6 +154,27 @@ export default defineComponent({
       }
     };
 
+    const formatTelefoneFiltro = () => {
+      let telefone = searchTelefone.value.replace(/\D/g, ''); // Remover caracteres não numéricos
+
+      if (telefone.length === 0) {
+        searchTelefone.value = ''; // Permitir apagar tudo
+        return;
+      }
+
+      if (telefone.length <= 2) {
+        searchTelefone.value = `(${telefone}`;
+      } else if (telefone.length <= 6) {
+        searchTelefone.value = `(${telefone.slice(0, 2)}) ${telefone.slice(2)}`;
+      } else if (telefone.length <= 10) {
+        searchTelefone.value = `(${telefone.slice(0, 2)}) ${telefone.slice(2, 7)}-${telefone.slice(7)}`;
+      } else {
+        searchTelefone.value = `(${telefone.slice(0, 2)}) ${telefone.slice(2, 7)}-${telefone.slice(7, 11)}`;
+      }
+    };
+
+
+
     onMounted(loadClientes);
 
     return {
@@ -169,6 +191,7 @@ export default defineComponent({
       saveCliente,
       deleteCliente,
       formatTelefone,
+      formatTelefoneFiltro,
       telefoneRules,
       nameRule
     };

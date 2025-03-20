@@ -493,4 +493,13 @@ export const registerIpcHandlers = (db: Database) => {
       throw error;
     }
   });
+
+  ipcMain.handle('get-clientes-com-vendas-pendentes', async (_event) => {
+    try {
+      return await Fechamento.getClientesComVendasPendentes(db);
+    } catch (error) {
+      console.error('Erro ao buscar dados', error);
+      throw error;
+    }
+  });
 };

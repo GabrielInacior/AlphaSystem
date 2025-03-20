@@ -47,9 +47,9 @@ declare global {
       getVendasPorData: (data: string) => Promise<any[]>;
 
       // Despesas
-      createDespesa: (descricao: string, valor: number, data: string, tipo: string) => Promise<void>;
+      createDespesa: (descricao: string, valor: number, data: string | null, tipo: string) => Promise<void>;
       getAllDespesas: () => Promise<any[]>;
-      updateDespesa: (id: number, descricao: string, valor: number, data: string, tipo: string) => Promise<void>;
+      updateDespesa: (id: number, descricao: string, valor: number, data: string | null, tipo: string) => Promise<void>;
       deleteDespesa: (id: number) => Promise<void>;
 
       // Fechamento de Caixa

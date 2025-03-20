@@ -15,8 +15,8 @@
               color="grey" type="date" class="search-input" />
           </v-col>
           <v-col cols="12" sm="6" md="4">
-            <v-select v-model="searchPagamento" :items="metodosPagamento" label="Filtrar por Método de Pagamento" dense
-              outlined color="grey" class="search-input">
+            <v-select v-model="searchPagamento" :items="metodosPagamento" label="Filtrar por Método de Pagamento"
+              outlined color="grey" class="search-input" density="compact">
               <template v-slot:prepend-item>
                 <v-list-item ripple @click="searchPagamento = ''">
                   <v-list-item-content>
@@ -118,8 +118,9 @@
           <v-list dense style="max-height: 200px; overflow-y: auto;">
             <v-list-item v-for="item in vendaInfo?.itens" :key="item.produto_id || item.servico_id">
               <v-list-item-content>
-                <v-list-item-title>{{ item.nome_item || 'Item excluído' }} - <span class="font-weight-bold"> {{  item.valor_unitario ? 'R$' +
-                  item.valor_unitario.toFixed(2) : '---' }} -
+                <v-list-item-title>{{ item.nome_item || 'Item excluído' }} - <span class="font-weight-bold"> {{
+                  item.valor_unitario ? 'R$' +
+                    item.valor_unitario.toFixed(2) : '---' }} -
                     {{ item.quantidade + ' Unidade(s)' }}</span></v-list-item-title>
               </v-list-item-content>
               <v-divider></v-divider>
@@ -143,7 +144,8 @@
         <v-card-text>
           <v-form ref="formEditarVenda" v-model="formIsValid">
             <v-text-field density="compact" v-model="vendaEdicao.valor_total" label="Valor Total" prefix="R$" />
-            <v-text-field density="compact" v-model="vendaEdicao.data" label="Data" type="date" />
+            <v-text-field density="compact" v-model="vendaEdicao.data" label="Data e Hora" type="datetime-local"
+              :rules="[validaData]" required />
             <v-select v-model="vendaEdicao.metodo_pagamento" :items="metodosPagamento" label="Método de Pagamento"
               required />
           </v-form>
@@ -167,7 +169,7 @@ export default defineComponent({
   setup() {
     const vendas = ref<VendaEntity[]>([]); // Lista de vendas
     const searchCliente = ref('');
-    const searchData = ref(''); // Filtro de busca por data
+    const searchData = ref(null); // Filtro de busca por data
     const searchPagamento = ref(''); // Filtro de busca por método de pagamento
     const excluindoVenda = ref(false);
     const modalInfo = ref(false);
@@ -205,7 +207,7 @@ export default defineComponent({
           : true;
 
         const filtroData = searchData.value
-          ? formatData(venda.data).includes(searchData.value)
+          ? formatDateForComparison(venda.data) === searchData.value
           : true;
 
         const filtroPagamento = searchPagamento.value
@@ -215,6 +217,24 @@ export default defineComponent({
         return filtroCliente && filtroData && filtroPagamento;
       })
     );
+
+    const formatDateForComparison = (data: string) => {
+      const date = new Date(data);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const validaData = (value: string) => {
+      if (!value) return 'A data é obrigatória.';
+      const regexDataHora = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+      if (!regexDataHora.test(value)) return 'Data e hora inválidas.';
+      const data = new Date(value);
+      if (isNaN(data.getTime())) return 'Data e hora inválidas.';
+      return true;
+    };
+
 
     // Carregar as vendas
     const carregarVendas = async () => {
@@ -230,10 +250,17 @@ export default defineComponent({
 
     // Abrir o modal para editar venda
     const openEditarVenda = (venda: VendaEntity) => {
-      const dataFormatada = venda.data ? new Date(venda.data).toISOString().split('T')[0] : '';
-      vendaEdicao.value = { ...venda, data: dataFormatada };
+      if (venda.data) {
+        const dataOriginal = new Date(venda.data);
+        dataOriginal.setHours(dataOriginal.getHours() - 3); // Ajusta a data subtraindo 3 horas
+        const dataFormatada = dataOriginal.toISOString().slice(0, 16); // Formato para datetime-local
+        vendaEdicao.value = { ...venda, data: dataFormatada };
+      } else {
+        vendaEdicao.value = { ...venda, data: '' };
+      }
       modalEditar.value = true;
     };
+
 
     const openVendaInfo = (venda: VendaEntity) => {
       const dataFormatada = venda.data ? new Date(venda.data).toISOString().split('T')[0] : '';
@@ -300,6 +327,7 @@ export default defineComponent({
       excluindoVenda,
       filteredVendas,
       openEditarVenda,
+      validaData,
       editarVenda,
       excluirVenda, // Adicionando a função de excluir
       formatData,

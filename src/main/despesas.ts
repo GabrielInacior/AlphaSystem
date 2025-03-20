@@ -14,7 +14,7 @@ export function createDespesa(db: Database, descricao: string, valor: number, da
 
 // Obter todas as despesas
 export function getAllDespesas(db: Database): Promise<any[]> {
-  const query = `SELECT * FROM despesas`;
+  const query = `SELECT * FROM despesas ORDER BY data DESC`;
   return new Promise((resolve, reject) => {
     db.all(query, [], (err, rows) => {
       if (err) reject(err);

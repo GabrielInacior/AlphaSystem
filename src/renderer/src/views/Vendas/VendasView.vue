@@ -135,10 +135,17 @@
                       <v-icon>mdi-plus</v-icon>
                     </v-btn>
                   </template>
-                  <!-- Exibir quantidade fixa de 1 para serviços -->
                   <template v-else>
-                    1
+                    <v-btn icon size="small" @click="alterarQuantidade(item, -1)" :disabled="item.quantidade <= 1"
+                      class="mr-2" variant="text">
+                      <v-icon>mdi-minus</v-icon>
+                    </v-btn>
+                    {{ item.quantidade }}
+                    <v-btn icon size="small" @click="alterarQuantidade(item, 1)" class="ml-2" variant="text">
+                      <v-icon>mdi-plus</v-icon>
+                    </v-btn>
                   </template>
+
                 </td>
                 <td>R$ {{ item.preco.toFixed(2) }}</td>
                 <td>R$ {{ (item.preco * item.quantidade).toFixed(2) }}</td>
@@ -161,19 +168,19 @@
           <!-- Informações de Pagamento -->
           <v-row class="pt-3 px-4">
             <v-col cols="12" sm="5">
-                <v-number-input density="compact" v-model="valorPago" label="Valor Pago" prefix="R$" :precision="2"
-                  :min="0" :max="totalVenda"
-                  hint="O valor pago pelo cliente. Se for menor que o valor total a venda será pendente (fiado)"
-                  prepend-inner-icon="mdi-cash" required>
-                </v-number-input>
+              <v-number-input density="compact" v-model="valorPago" label="Valor Pago" prefix="R$" :precision="2"
+                :min="0" :max="totalVenda"
+                hint="O valor pago pelo cliente. Se for menor que o valor total a venda será pendente (fiado)"
+                prepend-inner-icon="mdi-cash" required>
+              </v-number-input>
             </v-col>
 
             <v-col cols="auto">
-              <v-btn @click="pagarDeUmaVez" color="success" variant="flat"
-                  :disabled="itensVenda.length === 0" style="margin-left: 4px;">
-                  <v-icon>mdi-plus</v-icon>
-                  <v-tooltip activator="parent" location="start">Adicionar valor</v-tooltip>
-                </v-btn>
+              <v-btn @click="pagarDeUmaVez" color="success" variant="flat" :disabled="itensVenda.length === 0"
+                style="margin-left: 4px;">
+                <v-icon>mdi-plus</v-icon>
+                <v-tooltip activator="parent" location="start">Preencher com valor total</v-tooltip>
+              </v-btn>
             </v-col>
 
             <v-col cols="10" sm="3">
@@ -183,7 +190,13 @@
             </v-col>
 
             <v-col cols="auto">
-              <v-btn @click="finalizarVenda" variant="flat" :disabled="!clienteSelecionado || itensVenda.length === 0">
+              <v-btn @click="finalizarVenda" variant="flat" :disabled="!clienteSelecionado || itensVenda.length === 0"
+                v-if="valorPago === totalVenda">
+                <v-icon>mdi-check</v-icon>
+                Finalizar Venda
+              </v-btn>
+              <v-btn @click="openModalFiado()" variant="flat" :disabled="!clienteSelecionado || itensVenda.length === 0"
+                v-else>
                 <v-icon>mdi-check</v-icon>
                 Finalizar Venda
               </v-btn>
@@ -192,6 +205,22 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="modalConfirmacaoFiado" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h6">Atenção!</v-card-title>
+        <v-card-text style="white-space: normal; word-break: break-word;">
+          O valor pago é menor que o valor total da venda. Esse registro será salvo como uma venda pendente (Fiado).
+          Deseja
+          continuar?
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn @click="closeModalFiado()" color="grey">Cancelar</v-btn>
+          <v-btn @click="finalizarVenda()" color="red">Finalizar venda</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
 
     <v-dialog v-model="showModalSucesso" max-width="400px">
       <v-card>
@@ -233,6 +262,7 @@ export default defineComponent({
     const metodosPagamento = ['Cartão', 'Dinheiro', 'PIX'];
     const filtroProduto = ref('');
     const expanded = ref([0]);
+    const modalConfirmacaoFiado = ref(false);
 
     const filtroServico = ref('');
     const clientes = ref<{ id: number; nome: string }[]>([]);
@@ -254,6 +284,14 @@ export default defineComponent({
       metodoPagamento.value = 'Cartão';
       totalVenda.value = 0;
     };
+
+    const openModalFiado = () => {
+      modalConfirmacaoFiado.value = true;
+    }
+
+    const closeModalFiado = () => {
+      modalConfirmacaoFiado.value = false;
+    }
 
     const pagarDeUmaVez = () => {
       valorPago.value = totalVenda.value
@@ -337,14 +375,22 @@ export default defineComponent({
 
 
     const adicionarServico = (servico: ServicoEntity) => {
-      const item = itensVenda.value.find(i => i.id === servico.id && i.tipo === 'servico');
-      if (item) {
-        item.quantidade++;
+      const itemExistente = itensVenda.value.find(item => item.id === servico.id && item.tipo === 'servico');
+      if (itemExistente) {
+        itemExistente.quantidade += 1;
       } else {
-        itensVenda.value.push({ ...servico, quantidade: 1, tipo: 'servico' });
+        itensVenda.value.push({
+          id: servico.id,
+          nome: servico.nome,
+          tipo: 'servico',
+          preco: servico.preco,
+          quantidade: 1,
+          qtdEstoque: null // ou 0 ou undefined, já que serviço não usa estoque
+        });
       }
       atualizarTotalVenda();
-    }
+    };
+
 
     const removerItemVenda = (item: any) => {
       itensVenda.value = itensVenda.value.filter(i => i.id !== item.id);
@@ -356,20 +402,17 @@ export default defineComponent({
       return produto ? produto.qtdEstoque : 0;
     };
 
-    const alterarQuantidade = (item: any, quantidade: number) => {
-      const itemVenda = itensVenda.value.find(i => i.id === item.id);
-      if (itemVenda) {
-        const quantidadeAtual = itemVenda.quantidade + quantidade;
-        const estoqueDisponivel = produtoEmEstoque(item.id);
-
-        if (quantidadeAtual <= estoqueDisponivel && quantidadeAtual >= 0) {
-          itemVenda.quantidade += quantidade;
+    const alterarQuantidade = (item: any, valor: number) => {
+      const itemIndex = itensVenda.value.findIndex(i => i.id === item.id && i.tipo === item.tipo);
+      if (itemIndex !== -1) {
+        const novoValor = itensVenda.value[itemIndex].quantidade + valor;
+        if (novoValor >= 1) {
+          itensVenda.value[itemIndex].quantidade = novoValor;
           atualizarTotalVenda();
-        } else {
-          alert('Quantidade excede o estoque disponível!');
         }
       }
     };
+
 
     const atualizarTotalVenda = () => {
       totalVenda.value = itensVenda.value.reduce((total, item) => total + (item.preco * item.quantidade), 0);
@@ -382,6 +425,8 @@ export default defineComponent({
 
     const finalizarVenda = async () => {
       try {
+        closeModalFiado();
+
         if (!clienteSelecionado.value) {
           console.error("Nenhum cliente selecionado.");
           return;
@@ -403,7 +448,7 @@ export default defineComponent({
                 produto_id: null,
                 servico_id: item.id,
                 nome_item: item.nome,
-                quantidade: 1,
+                quantidade: item.quantidade,
                 valor_unitario: item.preco,
                 valor_total: item.preco,
               };
@@ -413,7 +458,6 @@ export default defineComponent({
           .filter(Boolean); // Remove valores nulos
 
         atualizarTotalVenda();
-        console.log(totalVenda.value);
 
         const venda: VendaEntity = {
           id: 0,
@@ -487,6 +531,9 @@ export default defineComponent({
       showModalSucesso,
       closeModalSucesso,
       closeModalCliente,
+      modalConfirmacaoFiado,
+      closeModalFiado,
+      openModalFiado,
     };
   }
 });

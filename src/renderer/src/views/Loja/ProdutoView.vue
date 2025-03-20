@@ -11,7 +11,7 @@
               class="filter-input" />
           </v-col>
           <v-col cols="12" sm="6" md="4">
-            <v-btn color="primary" @click="openModal(null)">Novo Produto</v-btn>
+            <v-btn  color="primary" @click="openModal(null)">Novo Produto</v-btn>
           </v-col>
         </v-row>
       </v-card-title>

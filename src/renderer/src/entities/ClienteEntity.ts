@@ -2,7 +2,7 @@ export class ClienteEntity {
   id?: number;
   nome: string;
   telefone?: string;
-  aniversario?: string; // "YYYY-MM-DD"
+  aniversario?: string | null; // "YYYY-MM-DD"
 
   constructor(data: any) {
     this.id = data.id;

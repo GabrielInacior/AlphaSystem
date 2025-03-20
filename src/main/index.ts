@@ -14,7 +14,7 @@ function createWindow(): void {
     height: 768,
     show: false,
     autoHideMenuBar: true,
-    fullscreen: false,
+    fullscreen: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -26,8 +26,7 @@ function createWindow(): void {
     mainWindow.show()
   })
 
-  mainWindow.webContents.openDevTools();
-
+  // mainWindow.webContents.openDevTools();
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])

@@ -6,7 +6,7 @@
         <v-card class="pa-1" style="min-height: 150px;">
           <v-card-title style="font-size: 16px; font-weight: bold;">
             Top clientes - Produtos
-            <v-btn variant="plain" size="small">
+            <v-btn rounded="0" variant="plain" size="small">
               <v-icon icon="mdi-information"> </v-icon>
               <v-tooltip activator="parent" location="start">Clientes que mais gastaram com produtos, ranqueados por
                 valor gasto</v-tooltip>
@@ -78,7 +78,7 @@
             <v-card-title class="text-h6">
               <span :style="{ color: lucroTotal.cor, fontWeight: 'bold' }">
                 {{ lucroTotal.lucroTotal >= 0 ? 'Lucro Total: R$' : 'Prejuízo Total: R$' }}
-                {{ lucroTotal.lucroTotal.toFixed(2) }}
+                {{ lucroTotal.lucroTotal.toFixed(2) || '---' }}
               </span>
             </v-card-title>
           </v-card>
@@ -212,8 +212,8 @@
                     </v-list-item-title>
                     <v-list-item-subtitle style="font-size: 12px;">
                       <span v-if="quantidadeReceitaProdutos.receita_total_produtos">
-                        {{ 'R$' +
-                          quantidadeReceitaProdutos.receita_total_produtos.toFixed(2) }}</span>
+                        {{ 'R$ ' +
+                          quantidadeReceitaProdutos.receita_total_produtos.toFixed(2) || '--' }}</span>
                       <span v-else>---</span>
                     </v-list-item-subtitle>
                   </v-list-item-content>

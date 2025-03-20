@@ -8,7 +8,7 @@
             style="margin-right: 15px;"></v-img>
         </template>
         <template v-slot:append>
-          <v-btn variant="plain" @click.stop="toggleRail" style="font-size: 25px !important;">
+          <v-btn rounded="0" variant="plain" @click.stop="toggleRail" style="font-size: 25px !important;">
             <v-icon icon="mdi-chevron-left" style="width: 20px!important;"></v-icon>
             <v-tooltip activator="parent" location="start">Esconder barra lateral</v-tooltip>
           </v-btn>
@@ -20,11 +20,11 @@
         <template v-slot:activator="{ props }">
           <v-list-item v-bind="props" prepend-icon="mdi-store" title="Loja"></v-list-item>
         </template>
-        <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog" density="compact">Loja</v-list-item>
+        <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog" density="compact">Visão Geral: Loja</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('produtos')"
-          prepend-icon="mdi-clipboard-list-outline">Gerenciar
+          prepend-icon="mdi-package-variant">Gerenciar
           Produtos</v-list-item>
-        <v-list-item density="compact" @click="navigateToPage('despesas')" prepend-icon="mdi-currency-usd">Gerenciar
+        <v-list-item density="compact" @click="navigateToPage('despesas')" prepend-icon="mdi-cash-remove">Gerenciar
           Despesas
         </v-list-item>
       </v-list-group>
@@ -36,10 +36,10 @@
           </v-btn>
         </template>
         <v-list density="compact">
-          <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog">Loja</v-list-item>
-          <v-list-item @click="navigateToPage('produtos')" prepend-icon="mdi-clipboard-list-outline">Gerenciar
+          <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog">Visão Geral: Loja</v-list-item>
+          <v-list-item @click="navigateToPage('produtos')" prepend-icon="mdi-package-variant">Gerenciar
             Produtos</v-list-item>
-          <v-list-item @click="navigateToPage('despesas')" prepend-icon="mdi-currency-usd">Gerenciar Despesas
+          <v-list-item @click="navigateToPage('despesas')" prepend-icon="mdi-cash-remove">Gerenciar Despesas
           </v-list-item>
         </v-list>
       </v-menu>
@@ -50,8 +50,8 @@
           <v-list-item  v-bind="props" prepend-icon="mdi-content-cut" title="Barbearia"></v-list-item>
         </template>
         <v-list-item density="compact" @click="navigateToPage('barbearia')"
-          prepend-icon="mdi-content-cut">Barbearia</v-list-item>
-        <v-list-item density="compact" @click="navigateToPage('servicos')" prepend-icon="mdi-currency-usd">Gerenciar
+          prepend-icon="mdi-content-cut">Visão Geral: Barbearia</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('servicos')" prepend-icon="mdi-hair-dryer-outline">Gerenciar
           Serviços</v-list-item>
       </v-list-group>
       <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="barbeariaOpen">
@@ -61,8 +61,8 @@
           </v-btn>
         </template>
         <v-list density="compact">
-          <v-list-item @click="navigateToPage('barbearia')" prepend-icon="mdi-content-cut">Barbearia</v-list-item>
-          <v-list-item @click="navigateToPage('servicos')" prepend-icon="mdi-currency-usd">Gerenciar
+          <v-list-item @click="navigateToPage('barbearia')" prepend-icon="mdi-content-cut">Visão Geral: Barbearia</v-list-item>
+          <v-list-item @click="navigateToPage('servicos')" prepend-icon="mdi-hair-dryer-outline">Gerenciar
             Serviços</v-list-item>
         </v-list>
 
@@ -91,12 +91,12 @@
 
       <v-list-group v-if="!rail" value="Vendas">
         <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props" prepend-icon="mdi-store" title="Vendas"></v-list-item>
+          <v-list-item v-bind="props" prepend-icon="mdi-cash-register" title="Vendas"></v-list-item>
         </template>
-        <v-list-item density="compact" @click="navigateToPage('vendas')" prepend-icon="mdi-store-cog">Registrar Nova
+        <v-list-item density="compact" @click="navigateToPage('vendas')" prepend-icon="mdi-account-cash">Registrar Nova
           Venda</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('historico-vendas')"
-          prepend-icon="mdi-store-cog">Histórico de
+          prepend-icon="mdi-clipboard-text-clock-outline">Histórico de
           Vendas</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('fiados')"
           prepend-icon="mdi-account-multiple-minus">Vendas
@@ -107,12 +107,12 @@
       <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="vendaOpen">
         <template v-slot:activator="{ props }">
           <v-btn class="align-center elevation-0 my-1 custom-list-item" v-bind="props" variant="plain">
-            <v-icon :size="25" color="icon">mdi-store</v-icon>
+            <v-icon :size="25" color="icon">mdi-cash-register</v-icon>
           </v-btn>
         </template>
         <v-list density="compact">
-          <v-list-item @click="navigateToPage('vendas')" prepend-icon="mdi-store-cog">Registrar Nova venda</v-list-item>
-          <v-list-item @click="navigateToPage('historico-vendas')" prepend-icon="mdi-store-cog">Histórico de
+          <v-list-item @click="navigateToPage('vendas')" prepend-icon="mdi-account-cash">Registrar Nova venda</v-list-item>
+          <v-list-item @click="navigateToPage('historico-vendas')" prepend-icon="mdi-clipboard-text-clock-outline">Histórico de
             Vendas</v-list-item>
           <v-list-item @click="navigateToPage('fiados')" prepend-icon="mdi-account-multiple-minus">Vendas
             pendentes(Fiado)</v-list-item>

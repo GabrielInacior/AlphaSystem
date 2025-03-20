@@ -219,7 +219,7 @@ export function createVenda(db: Database, cliente_id: number, valor_total: numbe
             } else if (item.servico_id) {
               // Adiciona o item na tabela de itens da venda (serviço)
               const queryItem = `INSERT INTO vendas_itens (venda_id, produto_id, servico_id, quantidade, valor_unitario, valor_total) VALUES (?, ?, ?, ?, ?, ?)`;
-              db.run(queryItem, [venda_id, null, item.servico_id, 1, item.valor_unitario, item.valor_total], (err) => {
+              db.run(queryItem, [venda_id, null, item.servico_id, item.quantidade, item.valor_unitario, item.valor_total], (err) => {
                 if (err) {
                   console.error('Erro ao adicionar item na venda (serviço):', err.message);
                 }

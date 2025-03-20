@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { getClientesMaisCompraramProdutos, getQuantidadeEReceitaProdutos } from '../main/fechamentoCaixa';
+import { getClientesComVendasPendentes, getClientesMaisCompraramProdutos, getQuantidadeEReceitaProdutos } from '../main/fechamentoCaixa';
 import { getClientesAniversariantes } from '../main/clientes';
 
 // Custom APIs for renderer
@@ -152,6 +152,8 @@ const api = {
   getProdutosSemEstoque: () => ipcRenderer.invoke('get-produtos-sem-estoque'),
 
   getQuantidadeEReceitaProdutos: () => ipcRenderer.invoke("get-quantidade-e-receita-produtos"),
+
+  getClientesComVendasPendentes: () => ipcRenderer.invoke("get-clientes-com-vendas-pendentes"),
 
   getQuantidadeEReceitaServicos: (periodo: string) => ipcRenderer.invoke("get-quantidade-e-receita-servicos", periodo),
 };
