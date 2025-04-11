@@ -5,7 +5,7 @@
       <v-list-item class="logo-item" title="Barbearia Alpha" nav density="compact">
         <template v-slot:prepend>
           <v-img :width="50" aspect-ratio="16/9" cover :src="currentTheme === 'light' ? LogoPreta : LogoBranca"
-            class="logo-img"></v-img>
+            class="logo-img" style="background-color: aqua;"></v-img>
         </template>
         <template v-slot:append>
           <v-btn rounded="0" variant="plain" @click.stop="toggleRail" class="toggle-btn">
@@ -237,6 +237,7 @@ export default defineComponent({
   margin: 8px;
   border-radius: 16px;
   height: calc(100vh - 16px) !important;
+  position: relative;
 }
 
 :deep(.v-theme--dark) .sidebar {
@@ -394,24 +395,25 @@ export default defineComponent({
 }
 
 .expand-btn {
-  position: absolute;
+  position: relative;
   top: 50%;
-  width: 40px !important;
+  width: 32px !important;
   z-index: 1001 !important;
   font-size: 20px !important;
-  height: 80px !important;
-  right: -40px;
+  height: 64px !important;
+  margin-left: 60px;
   transform: translateY(-50%);
   background: rgb(var(--v-theme-sidebarbg)) !important;
   border: 1px solid var(--color-border) !important;
   color: var(--color-text) !important;
   transition: all 0.3s ease !important;
-  border-radius: 12px 0 0 12px !important;
-  box-shadow: -2px 0 8px -2px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 0 8px 8px 0 !important;
+  box-shadow: 2px 0 8px -2px rgba(0, 0, 0, 0.1) !important;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 !important;
+  margin-top: 0 !important;
 }
 
 :deep(.v-theme--dark) .expand-btn {
@@ -420,12 +422,37 @@ export default defineComponent({
 
 .expand-btn:hover {
   background: rgb(var(--v-theme-sidebarbg)) !important;
-  transform: translateY(-50%) translateX(-4px);
-  box-shadow: -4px 0 12px -2px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-50%) translateX(4px);
+  box-shadow: 4px 0 12px -2px rgba(0, 0, 0, 0.15) !important;
 }
 
 :deep(.v-theme--dark) .expand-btn:hover {
   background: rgb(var(--v-theme-sidebarbg)) !important;
+}
+
+:deep(.v-navigation-drawer--rail) {
+  width: 100px !important;
+  margin-right: 32px !important;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+:deep(.v-navigation-drawer--rail .v-list) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+:deep(.v-navigation-drawer--rail .v-list-item) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+:deep(.v-navigation-drawer--rail .v-list-item__prepend) {
+  margin-inline-end: 0 !important;
+  margin-inline-start: 0 !important;
 }
 
 /* Vuetify Overrides */
@@ -498,19 +525,5 @@ export default defineComponent({
   font-size: 12px !important;
   padding: 8px 12px !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
-}
-
-:deep(.v-navigation-drawer--rail) {
-  width: 80px !important;
-}
-
-:deep(.v-navigation-drawer--rail .v-list-item) {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
-
-:deep(.v-navigation-drawer--rail .v-list-item__prepend) {
-  margin-inline-end: 0 !important;
-  margin-inline-start: 0 !important;
 }
 </style>
