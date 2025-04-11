@@ -45,7 +45,7 @@
               <v-divider />
               <v-card-text class="pa-6">
                 <v-row>
-                  <v-col cols="12" md="6">
+                  <v-col cols="12" md="6" class="pr-2">
                     <v-card class="product-card h-100" elevation="0">
                       <v-card-title class="d-flex align-center justify-space-between py-3 px-4">
                         <div class="d-flex align-center">
@@ -114,9 +114,7 @@
                     </v-card>
                   </v-col>
 
-                  <v-divider vertical class="mx-4" />
-
-                  <v-col cols="12" md="6">
+                  <v-col cols="12" md="6" class="pl-2">
                     <v-card class="service-card h-100" elevation="0">
                       <v-card-title class="d-flex align-center justify-space-between py-3 px-4">
                         <div class="d-flex align-center">
@@ -260,7 +258,7 @@
                           <v-avatar :color="item.tipo === 'produto' ? 'primary' : 'success'" size="32" class="mr-3">
                             <span class="text-caption text-white">{{ item.nome.charAt(0) }}</span>
                           </v-avatar>
-                          <span class="font-weight-medium">{{ item.nome }}</span>
+                          <span class="font-weight-medium text-truncate" style="max-width: 120px;" :title="item.nome">{{ item.nome }}</span>
                         </div>
                       </td>
                       <td class="text-center">
@@ -385,16 +383,6 @@
                       @update:model-value="calcularTotalComDesconto"
                     />
                   </v-col>
-                  <v-col cols="12" md="6">
-                    <v-switch
-                      v-model="isFiado"
-                      color="warning"
-                      hide-details
-                      class="mb-4"
-                      label="Venda a Fiado (Pagamento Parcial)"
-                      @change="handleFiadoChange"
-                    ></v-switch>
-                  </v-col>
                 </v-row>
 
                 <v-divider class="my-4" />
@@ -417,7 +405,7 @@
                   </div>
                 </div>
 
-                <div v-if="isFiado && valorPago < totalComDesconto" class="mt-4">
+                <div v-if="valorPago < totalComDesconto" class="mt-4">
                   <v-alert
                     type="warning"
                     variant="tonal"
@@ -431,17 +419,29 @@
                   </v-alert>
                 </div>
 
-                <div class="d-flex justify-end mt-6">
+                <div class="d-flex justify-space-between align-center mt-6">
+                  <v-alert
+                    v-if="itensVenda.length > 0 && !clienteSelecionado"
+                    type="error"
+                    variant="tonal"
+                    icon="mdi-alert-circle"
+                    density="compact"
+                    class="mb-0"
+                    style="max-width: 400px;"
+                  >
+                    Selecione um cliente para finalizar a venda
+                  </v-alert>
+                  <v-spacer v-else></v-spacer>
                   <v-btn
                     @click="finalizarVenda"
                     variant="flat"
-                    :color="isFiado && valorPago < totalComDesconto ? 'warning' : 'primary'"
+                    :color="valorPago < totalComDesconto ? 'warning' : 'primary'"
                     size="large"
                     :disabled="!clienteSelecionado || itensVenda.length === 0"
                     class="finish-btn"
                   >
-                    <v-icon class="mr-2">{{ isFiado && valorPago < totalComDesconto ? 'mdi-alert' : 'mdi-check' }}</v-icon>
-                    {{ isFiado && valorPago < totalComDesconto ? 'Finalizar Venda a Fiado' : 'Finalizar Venda' }}
+                    <v-icon class="mr-2">{{ valorPago < totalComDesconto ? 'mdi-alert' : 'mdi-check' }}</v-icon>
+                    {{ valorPago < totalComDesconto ? 'Finalizar Venda a Fiado' : 'Finalizar Venda' }}
                   </v-btn>
                 </div>
               </v-card-text>
@@ -464,7 +464,7 @@
           </div>
           <div class="d-flex align-center mb-4">
             <v-icon color="error" class="mr-2">mdi-cash-minus</v-icon>
-            <span class="text-subtitle-1">Valor pendente: <strong class="text-error">R$ {{ (totalVenda - valorPago).toFixed(2) }}</strong></span>
+            <span class="text-subtitle-1">Valor pendente: <strong class="text-error">R$ {{ (totalComDesconto - valorPago).toFixed(2) }}</strong></span>
           </div>
           <div class="text-body-2 text-grey">
             Deseja continuar com a venda pendente?
@@ -473,7 +473,7 @@
         <v-card-actions class="pa-6 pt-0">
           <v-spacer></v-spacer>
           <v-btn
-            @click="closeModalFiado()"
+            @click="closeModalFiado"
             variant="outlined"
             color="grey"
             class="mr-2"
@@ -481,7 +481,7 @@
             Cancelar
           </v-btn>
           <v-btn
-            @click="finalizarVenda()"
+            @click="confirmarFiado"
             color="error"
             variant="flat"
           >
@@ -542,7 +542,6 @@ export default defineComponent({
     const totalVenda = ref(0);
     const desconto = ref(0);
     const totalComDesconto = ref(0);
-    const isFiado = ref(false);
     const metodosPagamento = ['Cartão', 'Dinheiro', 'PIX'];
     const filtroProduto = ref('');
     const expanded = ref([0]);
@@ -567,21 +566,8 @@ export default defineComponent({
       valorPago.value = 0;
       desconto.value = 0;
       totalComDesconto.value = 0;
-      isFiado.value = false;
       metodoPagamento.value = 'Cartão';
       totalVenda.value = 0;
-    };
-
-    const handleFiadoChange = () => {
-      if (isFiado.value) {
-        // Se ativou o fiado, não precisa confirmar
-        modalConfirmacaoFiado.value = false;
-      } else {
-        // Se desativou o fiado, verifica se precisa confirmar
-        if (valorPago.value < totalComDesconto.value) {
-          openModalFiado();
-        }
-      }
     };
 
     const openModalFiado = () => {
@@ -732,8 +718,20 @@ export default defineComponent({
 
     const finalizarVenda = async () => {
       try {
-        closeModalFiado();
+        // Verifica se precisa mostrar o modal de fiado
+        if (valorPago.value < totalComDesconto.value) {
+          modalConfirmacaoFiado.value = true;
+          return;
+        }
 
+        await processarVenda();
+      } catch (error) {
+        console.error("Erro ao finalizar venda:", error);
+      }
+    };
+
+    const processarVenda = async () => {
+      try {
         if (!clienteSelecionado.value) {
           console.error("Nenhum cliente selecionado.");
           return;
@@ -760,9 +758,9 @@ export default defineComponent({
                 valor_total: item.preco,
               };
             }
-            return null; // Evita undefined no array final
+            return null;
           })
-          .filter(Boolean); // Remove valores nulos
+          .filter(Boolean);
 
         atualizarTotalVenda();
 
@@ -779,9 +777,6 @@ export default defineComponent({
           itens: itensComValorTotal as any,
         };
 
-        console.log(venda.valor_total)
-
-        // Aguarda a criação da venda antes de continuar
         await window.api.createVenda(
           venda.cliente_id,
           venda.valor_total,
@@ -793,14 +788,18 @@ export default defineComponent({
           venda.desconto
         );
 
-      } catch (error) {
-        console.error("Erro ao finalizar venda:", error);
-      } finally {
         showModalSucesso.value = true;
         resetarVenda();
         carregarProdutosServicos();
         carregarClientes();
+      } catch (error) {
+        console.error("Erro ao processar venda:", error);
       }
+    };
+
+    const confirmarFiado = () => {
+      modalConfirmacaoFiado.value = false;
+      processarVenda();
     };
 
     return {
@@ -816,7 +815,6 @@ export default defineComponent({
       totalVenda,
       totalComDesconto,
       desconto,
-      isFiado,
       clienteSelecionado,
       metodosPagamento,
       metodoPagamento,
@@ -844,8 +842,8 @@ export default defineComponent({
       modalConfirmacaoFiado,
       closeModalFiado,
       openModalFiado,
-      handleFiadoChange,
       calcularTotalComDesconto,
+      confirmarFiado,
     };
   }
 });
@@ -873,7 +871,6 @@ export default defineComponent({
 }
 
 .selection-card, .summary-card {
-  background: white;
   border-radius: 16px;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
@@ -884,7 +881,6 @@ export default defineComponent({
 }
 
 .product-card, .service-card {
-  background: white;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -1011,7 +1007,6 @@ export default defineComponent({
 }
 
 :deep(.v-table th) {
-  background-color: #f8fafc;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -1028,7 +1023,6 @@ export default defineComponent({
 }
 
 .payment-card {
-  background: white;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
