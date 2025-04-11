@@ -1,111 +1,293 @@
 <template>
-  <v-container style="height: 90vh; width: 100%; display: flex; flex-direction: column;">
-    <v-card style="height: 100%; width: 100%; display: flex; flex-direction: column;" elevation="10">
+  <v-container fluid class="cliente-container pa-6">
+    <!-- Header Section with Parallax Effect -->
+    <v-row>
+      <v-col cols="12">
+        <v-card class="welcome-card" elevation="0">
+          <v-card-text class="d-flex align-center justify-space-between">
+            <div>
+              <h1 class="text-h4 font-weight-bold welcome-text mb-2">
+                Clientes
+              </h1>
+              <div class="text-subtitle-1 text-white opacity-75">
+                Gerencie seus clientes e histórico de compras
+              </div>
+            </div>
+            <v-avatar size="64" class="welcome-avatar">
+              <v-img src="@/assets/logo.png" alt="Logo" />
+            </v-avatar>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
-      <v-card-title>
-        Clientes
+    <!-- Main Content Card -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-card class="content-card" elevation="2">
+          <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
+            <div class="d-flex align-center">
+              <v-icon color="primary" class="mr-2">mdi-account-group</v-icon>
+              <span class="text-h6 font-weight-medium">Lista de Clientes</span>
+            </div>
+            <v-btn
+              color="primary"
+              @click="openModal(null)"
+              class="add-btn"
+            >
+              <v-icon class="mr-2">mdi-plus</v-icon>
+              Novo Cliente
+            </v-btn>
+          </v-card-title>
+          <v-divider />
+          <v-card-text class="pa-6">
+            <!-- Search and Filter Section -->
+            <v-row class="mb-4">
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="searchNome"
+                  label="Buscar por nome"
+                  prepend-inner-icon="mdi-account-search"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="search-field"
+                  placeholder="Digite o nome do cliente..."
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="searchTelefone"
+                  label="Buscar por telefone"
+                  prepend-inner-icon="mdi-phone-search"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="search-field"
+                  placeholder="Digite o telefone..."
+                  @input="formatTelefoneFiltro()"
+                />
+              </v-col>
+            </v-row>
 
-        <v-row dense>
-          <v-col cols="12" sm="6" md="4">
-            <v-text-field density="compact" v-model="searchNome" label="Filtrar por Nome" dense outlined color="grey"
-              class="search-input" />
-          </v-col>
+            <!-- Data Table -->
+            <v-data-table
+              :headers="headers"
+              :items="filteredClientes"
+              class="elevation-0 rounded-lg"
+              density="comfortable"
+              hover
+              :no-data-text="'Nenhum cliente encontrado'"
+              :loading-text="'Carregando clientes...'"
+            >
+              <template v-slot:headers>
+                <tr>
+                  <th v-for="header in headers" :key="header.value" class="text-left font-weight-bold">
+                    {{ header.text }}
+                  </th>
+                </tr>
+              </template>
 
-          <v-col cols="12" sm="6" md="4">
-            <v-text-field density="compact" v-model="searchTelefone" label="Filtrar por Telefone" dense outlined
-              color="grey" class="search-input" @input="formatTelefoneFiltro()" />
-          </v-col>
-          <v-col cols="12" sm="6" md="4">
-            <v-btn color="primary" @click="openModal(null)">Novo Cliente</v-btn>
-          </v-col>
+              <template v-slot:item.aniversario="{ item }">
+                <div class="d-flex align-center">
+                  <v-icon size="small" color="primary" class="mr-1">mdi-cake</v-icon>
+                  {{ item.aniversario ? formatDate(item.aniversario) : 'Não informado' }}
+                </div>
+              </template>
 
-        </v-row>
-      </v-card-title>
+              <template v-slot:item.telefone="{ item }">
+                <div class="d-flex align-center">
+                  <v-icon size="small" color="primary" class="mr-1">mdi-phone</v-icon>
+                  {{ item.telefone ? item.telefone : 'Não informado' }}
+                </div>
+              </template>
 
+              <template v-slot:item.actions="{ item }">
+                <div class="d-flex align-center">
+                  <v-btn
+                    icon="mdi-pencil"
+                    size="small"
+                    color="primary"
+                    variant="text"
+                    @click="openModal(item)"
+                    class="action-btn"
+                  />
+                  <v-btn
+                    icon="mdi-delete"
+                    size="small"
+                    color="error"
+                    variant="text"
+                    @click="deleteCliente(item.id)"
+                    v-if="item.id"
+                    class="action-btn"
+                  />
+                  <v-btn
+                    icon="mdi-history"
+                    size="small"
+                    color="info"
+                    variant="text"
+                    @click="openHistoricoModal(item)"
+                    v-if="item.id"
+                    class="action-btn"
+                  />
+                </div>
+              </template>
 
-      <v-data-table density="compact" style="height: 74%; width: 100%;" :headers="headers" :items="filteredClientes"
-        class="elevation-1" items-per-page-text="Itens por página" no-data-text="Nenhum cliente encontrado">
-        <template v-slot:headers>
-          <tr>
-            <th v-for="header in headers" :key="header.value" class="font-weight-bold text-left">
-              {{ header.text }}
-            </th>
-          </tr>
-        </template>
-        <template v-slot:item.aniversario="{ item }">
-          {{ item.aniversario ? item.aniversario : 'Não informado' }}
-        </template>
+              <template v-slot:no-data>
+                <div class="text-center py-6">
+                  <v-icon color="grey" size="48" class="mb-2">mdi-account-off</v-icon>
+                  <div class="text-subtitle-1 text-grey">Nenhum cliente encontrado</div>
+                  <div class="text-caption text-grey">Clique em "Novo Cliente" para adicionar</div>
+                </div>
+              </template>
+            </v-data-table>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
-        <template v-slot:item.telefone="{ item }">
-          {{ item.telefone ? item.telefone : 'Não informado' }}
-        </template>
-
-        <template v-slot:item.actions="{ item }">
-          <v-icon small class="mr-2" @click="openModal(item)">mdi-pencil</v-icon>
-          <v-icon small color="red" @click="deleteCliente(item.id)" v-if="item.id">mdi-delete</v-icon>
-          <v-icon small color="primary" class="ml-2" @click="openHistoricoModal(item)" v-if="item.id">mdi-history</v-icon>
-        </template>
-      </v-data-table>
-
-    </v-card>
-
+    <!-- Modal de Cliente -->
     <v-dialog v-model="modalOpen" max-width="500px">
-      <v-card>
-        <v-card-title>
-          {{ editingCliente ? 'Editar Cliente' : 'Novo Cliente' }}
+      <v-card class="modal-card">
+        <v-card-title class="d-flex align-center py-4 px-6">
+          <v-icon :color="editingCliente ? 'primary' : 'success'" size="32" class="mr-4">
+            {{ editingCliente ? 'mdi-pencil' : 'mdi-plus-circle' }}
+          </v-icon>
+          <span class="text-h6 font-weight-bold">{{ editingCliente ? 'Editar Cliente' : 'Novo Cliente' }}</span>
         </v-card-title>
-        <v-card-text>
-          <!-- Campo Nome com validação -->
-          <v-text-field density="compact" v-model="cliente.nome" label="Nome" :rules="[nameRule]"
-            required></v-text-field>
-          <v-text-field density="compact" v-model="cliente.aniversario" label="Aniversário" type="date"
-            required></v-text-field>
-          <v-text-field density="compact" v-model="cliente.telefone" label="Telefone" @input="formatTelefone"
-            :rules="telefoneRules"></v-text-field>
+        <v-divider />
+        <v-card-text class="pa-6">
+          <v-text-field
+            v-model="cliente.nome"
+            label="Nome do Cliente"
+            prepend-inner-icon="mdi-account"
+            density="compact"
+            variant="outlined"
+            :error-messages="[nameRule(cliente.nome)]"
+            class="mb-4"
+            required
+          />
+
+          <v-text-field
+            v-model="cliente.aniversario"
+            label="Data de Aniversário"
+            prepend-inner-icon="mdi-cake"
+            density="compact"
+            variant="outlined"
+            type="date"
+            class="mb-4"
+            required
+          />
+
+          <v-text-field
+            v-model="cliente.telefone"
+            label="Telefone"
+            prepend-inner-icon="mdi-phone"
+            density="compact"
+            variant="outlined"
+            :error-messages="telefoneRules.map(rule => rule(cliente.telefone)).filter(Boolean)"
+            class="mb-4"
+            @input="formatTelefone"
+          />
         </v-card-text>
-        <v-card-actions>
+        <v-divider />
+        <v-card-actions class="pa-6">
           <v-spacer></v-spacer>
-          <v-btn @click="modalOpen = false">Cancelar</v-btn>
-          <!-- Botão Salvar desabilitado caso o nome esteja vazio -->
-          <v-btn color="primary" @click="saveCliente" :disabled="!cliente.nome">Salvar</v-btn>
+          <v-btn
+            @click="modalOpen = false"
+            variant="outlined"
+            color="grey"
+            class="mr-2"
+          >
+            Cancelar
+          </v-btn>
+          <v-btn
+            color="primary"
+            variant="flat"
+            @click="saveCliente"
+            :disabled="!cliente.nome"
+          >
+            <v-icon class="mr-2">mdi-content-save</v-icon>
+            Salvar
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Modal de Histórico de Compras -->
     <v-dialog v-model="historicoModalOpen" max-width="800px" persistent>
-      <v-card>
-        <v-card-title class="text-h5 grey lighten-2">
-          <span>Histórico de Compras - {{ clienteSelecionado?.nome }}</span>
+      <v-card class="modal-card">
+        <v-card-title class="d-flex align-center py-4 px-6">
+          <v-icon color="info" size="32" class="mr-4">mdi-history</v-icon>
+          <span class="text-h6 font-weight-bold">Histórico de Compras - {{ clienteSelecionado?.nome }}</span>
           <v-spacer></v-spacer>
-          <v-btn icon @click="closeHistoricoModal">
+          <v-btn icon @click="closeHistoricoModal" variant="text">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
-        <v-card-text class="pt-4">
+        <v-divider />
+        <v-card-text class="pa-6">
           <v-data-table
             :headers="historicoHeaders"
             :items="historicoCompras"
-            density="compact"
-            class="elevation-1"
-            no-data-text="Nenhuma compra encontrada"
+            density="comfortable"
+            class="elevation-0 rounded-lg"
+            hover
+            :no-data-text="'Nenhuma compra encontrada'"
           >
+            <template v-slot:headers>
+              <tr>
+                <th v-for="header in historicoHeaders" :key="header.value" class="text-left font-weight-bold">
+                  {{ header.text }}
+                </th>
+              </tr>
+            </template>
+
             <template v-slot:item.valor_total="{ item }">
-              R$ {{ item.valor_total.toFixed(2) }}
+              <span class="font-weight-bold text-success">R$ {{ item.valor_total.toFixed(2) }}</span>
             </template>
+
             <template v-slot:item.data="{ item }">
-              {{ formatDate(item.data) }}
+              <div class="d-flex align-center">
+                <v-icon size="small" color="primary" class="mr-1">mdi-calendar</v-icon>
+                {{ formatDate(item.data) }}
+              </div>
             </template>
+
             <template v-slot:item.status="{ item }">
               <v-chip
                 :color="item.status === 'pago' ? 'success' : 'warning'"
-                small
+                size="small"
+                class="font-weight-bold"
               >
+                <v-icon size="small" class="mr-1">
+                  {{ item.status === 'pago' ? 'mdi-check-circle' : 'mdi-clock-outline' }}
+                </v-icon>
                 {{ item.status === 'pago' ? 'Pago' : 'Pendente' }}
               </v-chip>
             </template>
+
+            <template v-slot:no-data>
+              <div class="text-center py-6">
+                <v-icon color="grey" size="48" class="mb-2">mdi-cart-off</v-icon>
+                <div class="text-subtitle-1 text-grey">Nenhuma compra encontrada</div>
+                <div class="text-caption text-grey">Este cliente ainda não realizou compras</div>
+              </div>
+            </template>
           </v-data-table>
         </v-card-text>
+        <v-divider />
+        <v-card-actions class="pa-6">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            variant="flat"
+            @click="closeHistoricoModal"
+          >
+            <v-icon class="mr-2">mdi-close</v-icon>
+            Fechar
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </v-container>
@@ -283,3 +465,108 @@ export default defineComponent({
   }
 });
 </script>
+
+<style scoped>
+.cliente-container {
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+.welcome-card {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.welcome-text {
+  color: white;
+}
+
+.welcome-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.content-card {
+  border-radius: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.content-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+}
+
+.search-field {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.search-field:hover, .search-field:focus-within {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.add-btn {
+  transition: all 0.2s ease;
+}
+
+.add-btn:hover {
+  transform: scale(1.05);
+}
+
+.action-btn {
+  min-width: 32px;
+  height: 32px;
+}
+
+.modal-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Vuetify Overrides */
+:deep(.v-data-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-data-table th) {
+  background-color: #f8fafc;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+:deep(.v-data-table td) {
+  padding: 12px 16px;
+}
+
+:deep(.v-btn) {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+:deep(.v-alert) {
+  border-radius: 8px;
+}
+</style>

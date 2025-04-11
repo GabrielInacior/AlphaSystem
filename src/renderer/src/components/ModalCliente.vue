@@ -1,20 +1,60 @@
 <template>
-  <v-dialog v-model="isOpen" max-width="500px">
-    <v-card>
-      <v-card-title>
+  <v-dialog v-model="isOpen" max-width="500px" class="modal-dialog">
+    <v-card class="modal-card">
+      <v-card-title class="modal-title">
+        <v-icon icon="mdi-account-plus" class="mr-2"></v-icon>
         Novo Cliente
       </v-card-title>
-      <v-card-text>
-        <!-- Campo Nome com validação -->
-        <v-text-field density="compact" v-model="cliente.nome" label="Nome" :rules="[nameRule]" required></v-text-field>
-        <v-text-field density="compact" v-model="cliente.aniversario" label="Aniversário" type="date" required></v-text-field>
-        <v-text-field density="compact" v-model="cliente.telefone" label="Telefone" @input="formatTelefone"
-          :rules="telefoneRules"></v-text-field>
+      <v-card-text class="modal-content">
+        <v-text-field
+          density="compact"
+          v-model="cliente.nome"
+          label="Nome"
+          :rules="[nameRule]"
+          required
+          variant="outlined"
+          class="mb-4"
+          prepend-inner-icon="mdi-account"
+        ></v-text-field>
+        <v-text-field
+          density="compact"
+          v-model="cliente.aniversario"
+          label="Aniversário"
+          type="date"
+          required
+          variant="outlined"
+          class="mb-4"
+          prepend-inner-icon="mdi-cake-variant"
+        ></v-text-field>
+        <v-text-field
+          density="compact"
+          v-model="cliente.telefone"
+          label="Telefone"
+          @input="formatTelefone"
+          :rules="telefoneRules"
+          variant="outlined"
+          class="mb-4"
+          prepend-inner-icon="mdi-phone"
+        ></v-text-field>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="modal-actions">
         <v-spacer></v-spacer>
-        <v-btn @click="closeModal">Cancelar</v-btn>
-        <v-btn color="primary" @click="saveCliente" :disabled="!cliente.nome">Salvar</v-btn>
+        <v-btn
+          variant="text"
+          @click="closeModal"
+          class="cancel-btn"
+        >
+          Cancelar
+        </v-btn>
+        <v-btn
+          color="primary"
+          @click="saveCliente"
+          :disabled="!cliente.nome"
+          class="save-btn"
+        >
+          <v-icon icon="mdi-content-save" class="mr-2"></v-icon>
+          Salvar
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -86,3 +126,52 @@ export default defineComponent({
   }
 });
 </script>
+
+<style scoped>
+.modal-dialog {
+  border-radius: 16px;
+}
+
+.modal-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.modal-title {
+  background: var(--color-background-soft);
+  padding: 16px 24px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.modal-content {
+  padding: 24px;
+}
+
+.modal-actions {
+  padding: 16px 24px;
+  background: var(--color-background-soft);
+}
+
+.cancel-btn {
+  margin-right: 8px;
+}
+
+.save-btn {
+  min-width: 100px;
+}
+
+:deep(.v-field) {
+  border-radius: 8px;
+}
+
+:deep(.v-field:hover) {
+  background: var(--color-background-soft);
+}
+
+:deep(.v-field--focused) {
+  background: var(--color-background-soft);
+}
+</style>

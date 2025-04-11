@@ -1,82 +1,167 @@
 <template>
-  <v-container style="height: 90vh; width: 100%;">
-    <v-card style="height: 100%; width: 100%;" elevation="10">
-      <v-card-title>
-        Categorias de Produtos
-        <v-spacer></v-spacer>
-        <!-- Filtro de busca -->
-        <v-row density="compact">
-          <v-col cols="12" sm="6" md="4">
-            <v-text-field
-              density="compact"
-              v-model="search"
-              label="Buscar categoria"
-              dense
-              outlined
-              class="filter-input"
-            />
-          </v-col>
-          <v-col cols="12" sm="6" md="4">
-            <v-btn color="primary" @click="openModal(null)">Nova Categoria</v-btn>
-          </v-col>
-        </v-row>
-      </v-card-title>
+  <v-container fluid class="categoria-container pa-6">
+    <!-- Header Section with Parallax Effect -->
+    <v-row>
+      <v-col cols="12">
+        <v-card class="welcome-card" elevation="0">
+          <v-card-text class="d-flex align-center justify-space-between">
+            <div>
+              <h1 class="text-h4 font-weight-bold welcome-text mb-2">
+                Categorias
+              </h1>
+              <div class="text-subtitle-1 text-white opacity-75">
+                Gerencie as categorias de produtos da loja
+              </div>
+            </div>
+            <v-avatar size="64" class="welcome-avatar">
+              <v-img src="@/assets/logo.png" alt="Logo" />
+            </v-avatar>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
-      <v-data-table
-        density="compact"
-        style="height: 74%; width: 100%;"
-        :headers="headers"
-        :items="filteredCategorias"
-        :search="search"
-        :loading="loading"
-      >
-        <template v-slot:item.actions="{ item }">
-          <v-icon size="small" class="me-2" @click="openModal(item)">
-            mdi-pencil
-          </v-icon>
-          <v-icon size="small" @click="confirmDelete(item)">
-            mdi-delete
-          </v-icon>
-        </template>
-      </v-data-table>
-    </v-card>
+    <!-- Main Content Card -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-card class="content-card" elevation="2">
+          <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
+            <div class="d-flex align-center">
+              <v-icon color="primary" class="mr-2">mdi-shape</v-icon>
+              <span class="text-h6 font-weight-medium">Lista de Categorias</span>
+            </div>
+            <v-btn
+              color="primary"
+              @click="openModal(null)"
+              class="add-btn"
+            >
+              <v-icon class="mr-2">mdi-plus</v-icon>
+              Nova Categoria
+            </v-btn>
+          </v-card-title>
+          <v-divider />
+          <v-card-text class="pa-6">
+            <!-- Search and Filter Section -->
+            <v-row class="mb-4">
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="search"
+                  label="Buscar categoria"
+                  prepend-inner-icon="mdi-magnify"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="search-field"
+                  placeholder="Digite para filtrar..."
+                />
+              </v-col>
+            </v-row>
+
+            <!-- Data Table -->
+            <v-data-table
+              :headers="headers"
+              :items="filteredCategorias"
+              class="elevation-0 rounded-lg"
+              density="comfortable"
+              hover
+              :no-data-text="'Nenhuma categoria encontrada'"
+              :loading-text="'Carregando categorias...'"
+            >
+              <template v-slot:headers>
+                <tr>
+                  <th v-for="header in headers" :key="header.key" class="text-left font-weight-bold">
+                    {{ header.title }}
+                  </th>
+                </tr>
+              </template>
+
+              <template v-slot:item.actions="{ item }">
+                <div class="d-flex align-center">
+                  <v-btn
+                    icon="mdi-pencil"
+                    size="small"
+                    color="primary"
+                    variant="text"
+                    @click="openModal(item)"
+                    class="action-btn"
+                  />
+                  <v-btn
+                    icon="mdi-delete"
+                    size="small"
+                    color="error"
+                    variant="text"
+                    @click="confirmDelete(item)"
+                    class="action-btn"
+                  />
+                </div>
+              </template>
+
+              <template v-slot:no-data>
+                <div class="text-center py-6">
+                  <v-icon color="grey" size="48" class="mb-2">mdi-shape-off</v-icon>
+                  <div class="text-subtitle-1 text-grey">Nenhuma categoria encontrada</div>
+                  <div class="text-caption text-grey">Clique em "Nova Categoria" para adicionar</div>
+                </div>
+              </template>
+            </v-data-table>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <!-- Modal de Categoria -->
     <v-dialog v-model="dialog" max-width="500px">
-      <v-card>
-        <v-card-title>
-          <span class="text-h5">{{ formTitle }}</span>
+      <v-card class="modal-card">
+        <v-card-title class="d-flex align-center py-4 px-6">
+          <v-icon :color="editedIndex === -1 ? 'success' : 'primary'" size="32" class="mr-4">
+            {{ editedIndex === -1 ? 'mdi-plus-circle' : 'mdi-pencil' }}
+          </v-icon>
+          <span class="text-h6 font-weight-bold">{{ formTitle }}</span>
         </v-card-title>
+        <v-divider />
+        <v-card-text class="pa-6">
+          <v-text-field
+            v-model="editedItem.nome"
+            label="Nome da Categoria"
+            prepend-inner-icon="mdi-tag"
+            density="compact"
+            variant="outlined"
+            :error-messages="nomeError"
+            @input="validateNome"
+            class="mb-4"
+            required
+          />
 
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="editedItem.nome"
-                  label="Nome"
-                  :error-messages="nomeError"
-                  @input="validateNome"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="editedItem.descricao"
-                  label="Descrição"
-                  :error-messages="descricaoError"
-                  @input="validateDescricao"
-                ></v-textarea>
-              </v-col>
-            </v-row>
-          </v-container>
+          <v-textarea
+            v-model="editedItem.descricao"
+            label="Descrição"
+            prepend-inner-icon="mdi-text"
+            density="compact"
+            variant="outlined"
+            :error-messages="descricaoError"
+            @input="validateDescricao"
+            class="mb-4"
+            rows="3"
+            auto-grow
+          />
         </v-card-text>
-
-        <v-card-actions>
+        <v-divider />
+        <v-card-actions class="pa-6">
           <v-spacer></v-spacer>
-          <v-btn color="blue-darken-1" variant="text" @click="close">
+          <v-btn
+            @click="close"
+            variant="outlined"
+            color="grey"
+            class="mr-2"
+          >
             Cancelar
           </v-btn>
-          <v-btn color="blue-darken-1" variant="text" @click="save">
+          <v-btn
+            color="primary"
+            variant="flat"
+            @click="save"
+          >
+            <v-icon class="mr-2">mdi-content-save</v-icon>
             Salvar
           </v-btn>
         </v-card-actions>
@@ -85,26 +170,51 @@
 
     <!-- Modal de Confirmação de Exclusão -->
     <v-dialog v-model="dialogDelete" max-width="500px">
-      <v-card>
-        <v-card-title class="text-h5">Confirmar Exclusão</v-card-title>
-        <v-card-text>
-          Tem certeza que deseja excluir esta categoria?
+      <v-card class="modal-card">
+        <v-card-title class="d-flex align-center py-4 px-6">
+          <v-icon color="error" size="32" class="mr-4">mdi-alert</v-icon>
+          <span class="text-h6 font-weight-bold">Confirmar Exclusão</span>
+        </v-card-title>
+        <v-divider />
+        <v-card-text class="pa-6">
+          <div class="text-body-1 mb-4">
+            Tem certeza que deseja excluir esta categoria?
+          </div>
+          <div class="text-body-2 text-grey">
+            Esta ação não pode ser desfeita.
+          </div>
         </v-card-text>
-        <v-card-actions>
+        <v-divider />
+        <v-card-actions class="pa-6">
           <v-spacer></v-spacer>
-          <v-btn color="blue-darken-1" variant="text" @click="dialogDelete = false">
+          <v-btn
+            @click="dialogDelete = false"
+            variant="outlined"
+            color="grey"
+            class="mr-2"
+          >
             Cancelar
           </v-btn>
-          <v-btn color="blue-darken-1" variant="text" @click="deleteItem">
-            Confirmar
+          <v-btn
+            color="error"
+            variant="flat"
+            @click="deleteItem"
+          >
+            <v-icon class="mr-2">mdi-delete</v-icon>
+            Excluir
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Snackbar para mensagens -->
-    <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
-      {{ snackbarText }}
+    <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000" location="top">
+      <div class="d-flex align-center">
+        <v-icon :color="snackbarColor === 'success' ? 'white' : 'white'" class="mr-2">
+          {{ snackbarColor === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle' }}
+        </v-icon>
+        {{ snackbarText }}
+      </div>
       <template v-slot:actions>
         <v-btn color="white" variant="text" @click="snackbar = false">
           Fechar
@@ -155,7 +265,10 @@ const formTitle = computed(() => {
 })
 
 const filteredCategorias = computed(() => {
-  return categorias.value
+  return categorias.value.filter(c =>
+    c.nome.toLowerCase().includes(search.value.toLowerCase()) ||
+    c.descricao.toLowerCase().includes(search.value.toLowerCase())
+  )
 })
 
 const nomeError = ref<string | null>(null)
@@ -279,7 +392,106 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.filter-input {
-  max-width: 300px;
+.categoria-container {
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+.welcome-card {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.welcome-text {
+  color: white;
+}
+
+.welcome-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.content-card {
+  border-radius: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.content-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+}
+
+.search-field {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.search-field:hover, .search-field:focus-within {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.add-btn {
+  transition: all 0.2s ease;
+}
+
+.add-btn:hover {
+  transform: scale(1.05);
+}
+
+.action-btn {
+  min-width: 32px;
+  height: 32px;
+}
+
+.modal-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Vuetify Overrides */
+:deep(.v-data-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-data-table th) {
+  background-color: #f8fafc;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+:deep(.v-data-table td) {
+  padding: 12px 16px;
+}
+
+:deep(.v-btn) {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+:deep(.v-alert) {
+  border-radius: 8px;
 }
 </style>

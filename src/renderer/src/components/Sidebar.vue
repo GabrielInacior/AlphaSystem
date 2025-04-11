@@ -1,148 +1,156 @@
 <template>
-  <v-navigation-drawer v-model="drawer" :rail="rail" :width="300" permanent style="height: 100vh;" app class="ss">
-    <v-list v-model:opened="open" density="compact">
-      <!-- Item do cabeçalho da barra lateral -->
-      <v-list-item class="first-item" title="Barbearia Alpha" nav density="compact">
+  <v-navigation-drawer v-model="drawer" :rail="rail" :width="300" permanent style="height: 100vh;" app class="sidebar">
+    <!-- Logo and Toggle Section -->
+    <div class="sidebar-header">
+      <v-list-item class="logo-item" title="Barbearia Alpha" nav density="compact">
         <template v-slot:prepend>
           <v-img :width="50" aspect-ratio="16/9" cover :src="currentTheme === 'light' ? LogoPreta : LogoBranca"
-            style="margin-right: 15px;"></v-img>
+            class="logo-img"></v-img>
         </template>
         <template v-slot:append>
-          <v-btn rounded="0" variant="plain" @click.stop="toggleRail" style="font-size: 25px !important;">
-            <v-icon icon="mdi-chevron-left" style="width: 20px!important;"></v-icon>
+          <v-btn rounded="0" variant="plain" @click.stop="toggleRail" class="toggle-btn">
+            <v-icon icon="mdi-chevron-left"></v-icon>
             <v-tooltip activator="parent" location="start">Esconder barra lateral</v-tooltip>
           </v-btn>
         </template>
       </v-list-item>
+    </div>
 
-      <v-list-item prepend-icon="mdi-home" title="Início" @click="navigateToPage('inicio')"></v-list-item>
-      <v-list-group v-if="!rail" value="Loja">
-        <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props" prepend-icon="mdi-store" title="Loja"></v-list-item>
+    <!-- Main Navigation -->
+    <v-list v-model:opened="open" density="compact" class="sidebar-menu">
+      <!-- Início -->
+      <v-list-item prepend-icon="mdi-home" title="Início" @click="navigateToPage('inicio')" class="menu-item">
+        <template v-slot:prepend>
+          <v-icon color="primary">mdi-home</v-icon>
         </template>
-        <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog" density="compact">Visão Geral:
-          Loja</v-list-item>
-        <v-list-item density="compact" @click="navigateToPage('produtos')" prepend-icon="mdi-package-variant">Gerenciar
-          Produtos</v-list-item>
-        <v-list-item density="compact" @click="navigateToPage('categorias')" prepend-icon="mdi-shape">Gerenciar
-          Categorias</v-list-item>
-        <v-list-item density="compact" @click="navigateToPage('despesas')" prepend-icon="mdi-cash-remove">Gerenciar
-          Despesas
-        </v-list-item>
-      </v-list-group>
+      </v-list-item>
 
-      <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="lojaOpen">
+      <!-- Loja Section -->
+      <v-list-group v-if="!rail" value="Loja" class="menu-group">
         <template v-slot:activator="{ props }">
-          <v-btn class="align-center elevation-0 my-1 custom-list-item" v-bind="props" variant="plain">
-            <v-icon :size="25" color="icon">mdi-store</v-icon>
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog" density="compact">Visão Geral:
-            Loja</v-list-item>
-          <v-list-item density="compact" @click="navigateToPage('produtos')"
-            prepend-icon="mdi-package-variant">Gerenciar
-            Produtos</v-list-item>
-          <v-list-item density="compact" @click="navigateToPage('categorias')" prepend-icon="mdi-shape">Gerenciar
-            Categorias</v-list-item>
-          <v-list-item density="compact" @click="navigateToPage('despesas')" prepend-icon="mdi-cash-remove">Gerenciar
-            Despesas
+          <v-list-item v-bind="props" prepend-icon="mdi-store" title="Loja" class="menu-item">
+            <template v-slot:prepend>
+              <v-icon color="primary">mdi-store</v-icon>
+            </template>
           </v-list-item>
-        </v-list>
-      </v-menu>
-
-      <!-- Menu de Barbearia -->
-      <v-list-group v-if="!rail" value="Barbearia">
-        <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props" prepend-icon="mdi-content-cut" title="Barbearia"></v-list-item>
         </template>
-        <v-list-item density="compact" @click="navigateToPage('barbearia')" prepend-icon="mdi-content-cut">Visão Geral:
-          Barbearia</v-list-item>
-        <v-list-item density="compact" @click="navigateToPage('servicos')"
-          prepend-icon="mdi-hair-dryer-outline">Gerenciar
-          Serviços</v-list-item>
-      </v-list-group>
-      <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="barbeariaOpen">
-        <template v-slot:activator="{ props }">
-          <v-btn class="align-center elevation-0 my-1 custom-list-item" v-bind="props" variant="plain">
-            <v-icon :size="25" color="icon">mdi-content-cut</v-icon>
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item @click="navigateToPage('barbearia')" prepend-icon="mdi-content-cut">Visão Geral:
-            Barbearia</v-list-item>
-          <v-list-item @click="navigateToPage('servicos')" prepend-icon="mdi-hair-dryer-outline">Gerenciar
-            Serviços</v-list-item>
-        </v-list>
-
-      </v-menu>
-
-      <!-- Menu de Clientes -->
-      <v-list-group v-if="!rail" value="Clientes">
-        <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props" prepend-icon="mdi-account-group" title="Clientes"></v-list-item>
-        </template>
-        <v-list-item @click="navigateToPage('clientes')" prepend-icon="mdi-account-multiple-plus">Gerenciar
-          Clientes</v-list-item>
-
-      </v-list-group>
-      <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="clientesOpen">
-        <template v-slot:activator="{ props }">
-          <v-btn class="align-center elevation-0 my-1 custom-list-item" v-bind="props" variant="plain">
-            <v-icon :size="25" color="icon">mdi-account-group</v-icon>
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item @click="navigateToPage('clientes')" prepend-icon="mdi-account-multiple-plus">Gerenciar
-            Clientes</v-list-item>
-        </v-list>
-      </v-menu>
-
-      <v-list-group v-if="!rail" value="Vendas">
-        <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props" prepend-icon="mdi-cash-register" title="Vendas"></v-list-item>
-        </template>
-        <v-list-item density="compact" @click="navigateToPage('vendas')" prepend-icon="mdi-account-cash">Registrar Nova
-          Venda</v-list-item>
-        <v-list-item density="compact" @click="navigateToPage('historico-vendas')"
-          prepend-icon="mdi-clipboard-text-clock-outline">Histórico de
-          Vendas</v-list-item>
-        <v-list-item density="compact" @click="navigateToPage('fiados')"
-          prepend-icon="mdi-account-multiple-minus">Vendas
-          Pendentes<br>(Fiado)</v-list-item>
-
+        <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog" density="compact" class="submenu-item">Visão Geral: Loja</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('produtos')" prepend-icon="mdi-package-variant" class="submenu-item">Gerenciar Produtos</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('categorias')" prepend-icon="mdi-shape" class="submenu-item">Gerenciar Categorias</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('despesas')" prepend-icon="mdi-cash-remove" class="submenu-item">Gerenciar Despesas</v-list-item>
       </v-list-group>
 
-      <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="vendaOpen">
+      <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="lojaOpen" class="rail-menu">
         <template v-slot:activator="{ props }">
-          <v-btn class="align-center elevation-0 my-1 custom-list-item" v-bind="props" variant="plain">
-            <v-icon :size="25" color="icon">mdi-cash-register</v-icon>
+          <v-btn class="rail-btn" v-bind="props" variant="plain">
+            <v-icon :size="25" color="primary">mdi-store</v-icon>
           </v-btn>
         </template>
-        <v-list density="compact">
-          <v-list-item @click="navigateToPage('vendas')" prepend-icon="mdi-account-cash">Registrar Nova
-            venda</v-list-item>
-          <v-list-item @click="navigateToPage('historico-vendas')"
-            prepend-icon="mdi-clipboard-text-clock-outline">Histórico
-            de
-            Vendas</v-list-item>
-          <v-list-item @click="navigateToPage('fiados')" prepend-icon="mdi-account-multiple-minus">Vendas
-            pendentes(Fiado)</v-list-item>
+        <v-list density="compact" class="rail-submenu">
+          <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog" density="compact">Visão Geral: Loja</v-list-item>
+          <v-list-item density="compact" @click="navigateToPage('produtos')" prepend-icon="mdi-package-variant">Gerenciar Produtos</v-list-item>
+          <v-list-item density="compact" @click="navigateToPage('categorias')" prepend-icon="mdi-shape">Gerenciar Categorias</v-list-item>
+          <v-list-item density="compact" @click="navigateToPage('despesas')" prepend-icon="mdi-cash-remove">Gerenciar Despesas</v-list-item>
         </v-list>
       </v-menu>
 
+      <!-- Barbearia Section -->
+      <v-list-group v-if="!rail" value="Barbearia" class="menu-group">
+        <template v-slot:activator="{ props }">
+          <v-list-item v-bind="props" prepend-icon="mdi-content-cut" title="Barbearia" class="menu-item">
+            <template v-slot:prepend>
+              <v-icon color="primary">mdi-content-cut</v-icon>
+            </template>
+          </v-list-item>
+        </template>
+        <v-list-item density="compact" @click="navigateToPage('barbearia')" prepend-icon="mdi-content-cut" class="submenu-item">Visão Geral: Barbearia</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('servicos')" prepend-icon="mdi-hair-dryer-outline" class="submenu-item">Gerenciar Serviços</v-list-item>
+      </v-list-group>
+
+      <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="barbeariaOpen" class="rail-menu">
+        <template v-slot:activator="{ props }">
+          <v-btn class="rail-btn" v-bind="props" variant="plain">
+            <v-icon :size="25" color="primary">mdi-content-cut</v-icon>
+          </v-btn>
+        </template>
+        <v-list density="compact" class="rail-submenu">
+          <v-list-item @click="navigateToPage('barbearia')" prepend-icon="mdi-content-cut">Visão Geral: Barbearia</v-list-item>
+          <v-list-item @click="navigateToPage('servicos')" prepend-icon="mdi-hair-dryer-outline">Gerenciar Serviços</v-list-item>
+        </v-list>
+      </v-menu>
+
+      <!-- Clientes Section -->
+      <v-list-group v-if="!rail" value="Clientes" class="menu-group">
+        <template v-slot:activator="{ props }">
+          <v-list-item v-bind="props" prepend-icon="mdi-account-group" title="Clientes" class="menu-item">
+            <template v-slot:prepend>
+              <v-icon color="primary">mdi-account-group</v-icon>
+            </template>
+          </v-list-item>
+        </template>
+        <v-list-item @click="navigateToPage('clientes')" prepend-icon="mdi-account-multiple-plus" class="submenu-item">Gerenciar Clientes</v-list-item>
+      </v-list-group>
+
+      <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="clientesOpen" class="rail-menu">
+        <template v-slot:activator="{ props }">
+          <v-btn class="rail-btn" v-bind="props" variant="plain">
+            <v-icon :size="25" color="primary">mdi-account-group</v-icon>
+          </v-btn>
+        </template>
+        <v-list density="compact" class="rail-submenu">
+          <v-list-item @click="navigateToPage('clientes')" prepend-icon="mdi-account-multiple-plus">Gerenciar Clientes</v-list-item>
+        </v-list>
+      </v-menu>
+
+      <!-- Vendas Section -->
+      <v-list-group v-if="!rail" value="Vendas" class="menu-group">
+        <template v-slot:activator="{ props }">
+          <v-list-item v-bind="props" prepend-icon="mdi-cash-register" title="Vendas" class="menu-item">
+            <template v-slot:prepend>
+              <v-icon color="primary">mdi-cash-register</v-icon>
+            </template>
+          </v-list-item>
+        </template>
+        <v-list-item density="compact" @click="navigateToPage('vendas')" prepend-icon="mdi-account-cash" class="submenu-item">Registrar Nova Venda</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('historico-vendas')" prepend-icon="mdi-clipboard-text-clock-outline" class="submenu-item">Histórico de Vendas</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('fiados')" prepend-icon="mdi-account-multiple-minus" class="submenu-item">Vendas Pendentes (Fiado)</v-list-item>
+      </v-list-group>
+
+      <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="vendaOpen" class="rail-menu">
+        <template v-slot:activator="{ props }">
+          <v-btn class="rail-btn" v-bind="props" variant="plain">
+            <v-icon :size="25" color="primary">mdi-cash-register</v-icon>
+          </v-btn>
+        </template>
+        <v-list density="compact" class="rail-submenu">
+          <v-list-item @click="navigateToPage('vendas')" prepend-icon="mdi-account-cash">Registrar Nova venda</v-list-item>
+          <v-list-item @click="navigateToPage('historico-vendas')" prepend-icon="mdi-clipboard-text-clock-outline">Histórico de Vendas</v-list-item>
+          <v-list-item @click="navigateToPage('fiados')" prepend-icon="mdi-account-multiple-minus">Vendas pendentes(Fiado)</v-list-item>
+        </v-list>
+      </v-menu>
     </v-list>
 
-    <v-list density="compact" nav style="position: absolute; bottom: 0; width: 100%;">
-      <v-list-item @click="toggleTheme" prepend-icon="mdi-theme-light-dark" title="Alterar Tema"> <v-tooltip v-if="rail"
-          activator="parent" location="start">Alterar tema</v-tooltip></v-list-item>
-      <v-list-item title="Sair" prepend-icon="mdi-power" @click="logout">
+    <!-- Footer Section -->
+    <v-list density="compact" nav class="sidebar-footer">
+      <v-list-item @click="toggleTheme" prepend-icon="mdi-theme-light-dark" title="Alterar Tema" class="footer-item">
+        <template v-slot:prepend>
+          <v-icon :color="currentTheme === 'light' ? 'primary' : 'warning'">
+            {{ currentTheme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night' }}
+          </v-icon>
+        </template>
+        <v-tooltip v-if="rail" activator="parent" location="start">Alterar tema</v-tooltip>
+      </v-list-item>
+      <v-list-item title="Sair" prepend-icon="mdi-power" @click="logout" class="footer-item">
+        <template v-slot:prepend>
+          <v-icon color="error">mdi-power</v-icon>
+        </template>
         <v-tooltip v-if="rail" activator="parent" location="start">Sair para a área de trabalho</v-tooltip>
       </v-list-item>
     </v-list>
   </v-navigation-drawer>
 
-  <v-btn v-if="rail" variant="tonal" class="botaozao" density="default" size="x-small" @click.stop="toggleRail">
+  <!-- Expand Button (when sidebar is collapsed) -->
+  <v-btn v-if="rail" variant="tonal" class="expand-btn" density="default" size="x-small" @click.stop="toggleRail">
     <v-icon icon="mdi-chevron-double-right"></v-icon>
     <v-tooltip activator="parent" location="start">Expandir barra lateral</v-tooltip>
   </v-btn>
@@ -221,28 +229,288 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.first-item :deep(.v-list-item-title) {
-  font-size: 18px;
-  font-weight: bold;
+.sidebar {
+  background: rgb(var(--v-theme-sidebarbg)) !important;
+  border-right: 1px solid var(--color-border) !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  margin: 8px;
+  border-radius: 16px;
+  height: calc(100vh - 16px) !important;
 }
 
-.botaozao {
-  position: fixed;
-  top: 2%;
-  width: 10px !important;
-  z-index: 1001 !important;
-  font-size: 25px !important;
-  height: 35px !important;
-  left: 41px;
-  transform: translateY(-50%);
+:deep(.v-theme--dark) .sidebar {
+  background: rgb(var(--v-theme-sidebarbg)) !important;
 }
 
-.custom-list-item {
+.sidebar-header {
+  padding: 16px 8px;
+  border-bottom: 1px solid var(--color-border);
+  background: rgb(var(--v-theme-sidebarbg));
+  border-radius: 16px 16px 0 0;
+}
+
+:deep(.v-theme--dark) .sidebar-header {
+  background: rgb(var(--v-theme-sidebarbg));
+}
+
+.logo-item {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.logo-item:hover {
+  background: var(--color-background-mute) !important;
+}
+
+.logo-img {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+  background: var(--color-background-mute) !important;
+}
+
+.sidebar-menu {
+  padding: 8px;
+  background: rgb(var(--v-theme-sidebarbg));
+}
+
+:deep(.v-theme--dark) .sidebar-menu {
+  background: rgb(var(--v-theme-sidebarbg));
+}
+
+.menu-item {
+  border-radius: 12px;
+  margin-bottom: 4px;
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover {
+  background: var(--color-background-mute) !important;
+  transform: translateX(4px);
+}
+
+.menu-group {
+  border-radius: 12px;
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.submenu-item {
+  border-radius: 8px;
+  margin: 4px 0;
+  transition: all 0.3s ease;
+}
+
+.submenu-item:hover {
+  background: var(--color-background-mute) !important;
+  transform: translateX(4px);
+}
+
+.rail-btn {
   width: 100%;
-  text-align: left;
+  text-align: center;
+  border-radius: 12px;
+  margin: 4px 0;
+  transition: all 0.3s ease;
+  height: 48px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
 }
 
-.ss {
-  font-size: 14px !important;
+.rail-btn .v-icon {
+  margin: 0 !important;
+  font-size: 24px !important;
+}
+
+.rail-btn:hover {
+  background: var(--color-background-mute) !important;
+  transform: translateX(4px);
+}
+
+:deep(.v-theme--dark) .rail-btn:hover {
+  background: var(--color-background-mute) !important;
+}
+
+:deep(.v-list-item--active.rail-btn) {
+  background: var(--color-primary) !important;
+  color: white !important;
+}
+
+:deep(.v-list-item--active.rail-btn .v-icon) {
+  color: white !important;
+}
+
+.rail-menu {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-left: 8px;
+}
+
+.rail-submenu {
+  background: rgb(var(--v-theme-sidebarbg)) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+  padding: 8px;
+  min-width: 200px;
+}
+
+:deep(.v-theme--dark) .rail-submenu {
+  background: rgb(var(--v-theme-sidebarbg)) !important;
+  border-color: var(--color-border) !important;
+}
+
+.sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 8px;
+  border-top: 1px solid var(--color-border);
+  background: rgb(var(--v-theme-sidebarbg));
+  border-radius: 0 0 16px 16px;
+}
+
+:deep(.v-theme--dark) .sidebar-footer {
+  background: rgb(var(--v-theme-sidebarbg));
+}
+
+.footer-item {
+  border-radius: 12px;
+  margin-bottom: 4px;
+  transition: all 0.3s ease;
+}
+
+.footer-item:hover {
+  background: var(--color-background-mute) !important;
+}
+
+.expand-btn {
+  position: absolute;
+  top: 50%;
+  width: 40px !important;
+  z-index: 1001 !important;
+  font-size: 20px !important;
+  height: 80px !important;
+  right: -40px;
+  transform: translateY(-50%);
+  background: rgb(var(--v-theme-sidebarbg)) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
+  transition: all 0.3s ease !important;
+  border-radius: 12px 0 0 12px !important;
+  box-shadow: -2px 0 8px -2px rgba(0, 0, 0, 0.1) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+}
+
+:deep(.v-theme--dark) .expand-btn {
+  background: rgb(var(--v-theme-sidebarbg)) !important;
+}
+
+.expand-btn:hover {
+  background: rgb(var(--v-theme-sidebarbg)) !important;
+  transform: translateY(-50%) translateX(-4px);
+  box-shadow: -4px 0 12px -2px rgba(0, 0, 0, 0.15) !important;
+}
+
+:deep(.v-theme--dark) .expand-btn:hover {
+  background: rgb(var(--v-theme-sidebarbg)) !important;
+}
+
+/* Vuetify Overrides */
+:deep(.v-list-item) {
+  color: var(--color-text) !important;
+  transition: all 0.3s ease !important;
+  min-height: 48px !important;
+}
+
+:deep(.v-list-item--active) {
+  background: var(--color-primary) !important;
+  color: white !important;
+  border-radius: 12px;
+}
+
+:deep(.v-list-item--active:hover) {
+  background: var(--color-secondary) !important;
+}
+
+:deep(.v-list-item__prepend) {
+  color: var(--color-text) !important;
+}
+
+:deep(.v-list-item--active .v-list-item__prepend) {
+  color: white !important;
+}
+
+:deep(.v-list-group__header) {
+  color: var(--color-text) !important;
+  border-radius: 12px;
+}
+
+:deep(.v-list-group__items) {
+  background: var(--color-background-soft) !important;
+  padding: 4px 0;
+}
+
+:deep(.v-menu) {
+  background: rgb(var(--v-theme-sidebarbg)) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+  margin-left: 8px !important;
+}
+
+:deep(.v-menu .v-list) {
+  background: rgb(var(--v-theme-sidebarbg)) !important;
+  padding: 4px !important;
+}
+
+:deep(.v-menu .v-list-item) {
+  color: var(--color-text) !important;
+  border-radius: 8px;
+  margin: 4px 0;
+  min-height: 40px !important;
+}
+
+:deep(.v-menu .v-list-item:hover) {
+  background: var(--color-background-mute) !important;
+  transform: translateX(4px);
+}
+
+:deep(.v-divider) {
+  border-color: var(--color-border) !important;
+}
+
+:deep(.v-tooltip) {
+  background: var(--color-background-mute) !important;
+  color: var(--color-text) !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+:deep(.v-navigation-drawer--rail) {
+  width: 80px !important;
+}
+
+:deep(.v-navigation-drawer--rail .v-list-item) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+:deep(.v-navigation-drawer--rail .v-list-item__prepend) {
+  margin-inline-end: 0 !important;
+  margin-inline-start: 0 !important;
 }
 </style>

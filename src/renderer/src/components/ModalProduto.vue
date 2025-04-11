@@ -1,28 +1,89 @@
 <template>
-  <v-dialog v-model="isOpen" max-width="500px">
-    <v-card>
-      <v-card-title>Adicionar Produto</v-card-title>
-      <v-card-text>
-        <v-text-field density="compact" v-model="produto.nome" label="Nome" required :rules="[val => !!val || 'Nome é obrigatório']"
-          :error-messages="nomeError"></v-text-field>
+  <v-dialog v-model="isOpen" max-width="500px" class="modal-dialog">
+    <v-card class="modal-card">
+      <v-card-title class="modal-title">
+        <v-icon icon="mdi-package-variant-plus" class="mr-2"></v-icon>
+        Adicionar Produto
+      </v-card-title>
+      <v-card-text class="modal-content">
+        <v-text-field
+          density="compact"
+          v-model="produto.nome"
+          label="Nome"
+          required
+          :rules="[val => !!val || 'Nome é obrigatório']"
+          :error-messages="nomeError"
+          variant="outlined"
+          class="mb-4"
+          prepend-inner-icon="mdi-package-variant"
+        ></v-text-field>
 
-        <v-number-input density="compact" v-model="produto.custo" label="Custo de compra" required :min="0"
-          :rules="[val => val >= 0 || 'Custo deve ser maior ou igual a zero']" :error-messages="custoError" prefix="R$"
-          :precision="2" control-variant="stacked"></v-number-input>
+        <v-number-input
+          density="compact"
+          v-model="produto.custo"
+          label="Custo de compra"
+          required
+          :min="0"
+          :rules="[val => val >= 0 || 'Custo deve ser maior ou igual a zero']"
+          :error-messages="custoError"
+          prefix="R$"
+          :precision="2"
+          control-variant="stacked"
+          variant="outlined"
+          class="mb-4"
+          prepend-inner-icon="mdi-currency-brl"
+        ></v-number-input>
 
-        <v-number-input density="compact" v-model="produto.preco" label="Preço de venda" required :min="0"
-          :rules="[val => val > 0 || 'Preço deve ser maior que zero']" :error-messages="precoError" prefix="R$"
-          :precision="2" control-variant="stacked"></v-number-input>
+        <v-number-input
+          density="compact"
+          v-model="produto.preco"
+          label="Preço de venda"
+          required
+          :min="0"
+          :rules="[val => val > 0 || 'Preço deve ser maior que zero']"
+          :error-messages="precoError"
+          prefix="R$"
+          :precision="2"
+          control-variant="stacked"
+          variant="outlined"
+          class="mb-4"
+          prepend-inner-icon="mdi-tag"
+        ></v-number-input>
 
-        <v-number-input density="compact" v-model="produto.qtdEstoque" label="Quantidade em Estoque" required :min="0"
-          :rules="[val => val >= 0 || 'Quantidade deve ser maior ou igual a zero']" :error-messages="estoqueError"
-          suffix="UN" :precision="0" control-variant="stacked"></v-number-input>
-
+        <v-number-input
+          density="compact"
+          v-model="produto.qtdEstoque"
+          label="Quantidade em Estoque"
+          required
+          :min="0"
+          :rules="[val => val >= 0 || 'Quantidade deve ser maior ou igual a zero']"
+          :error-messages="estoqueError"
+          suffix="UN"
+          :precision="0"
+          control-variant="stacked"
+          variant="outlined"
+          class="mb-4"
+          prepend-inner-icon="mdi-package"
+        ></v-number-input>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="modal-actions">
         <v-spacer></v-spacer>
-        <v-btn @click="closeModal()">Cancelar</v-btn>
-        <v-btn color="primary" :disabled="isSaveDisabled" @click="saveProduto">Salvar</v-btn>
+        <v-btn
+          variant="text"
+          @click="closeModal()"
+          class="cancel-btn"
+        >
+          Cancelar
+        </v-btn>
+        <v-btn
+          color="primary"
+          :disabled="isSaveDisabled"
+          @click="saveProduto"
+          class="save-btn"
+        >
+          <v-icon icon="mdi-content-save" class="mr-2"></v-icon>
+          Salvar
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -115,3 +176,68 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.modal-dialog {
+  border-radius: 16px;
+}
+
+.modal-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.modal-title {
+  background: var(--color-background-soft);
+  padding: 16px 24px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.modal-content {
+  padding: 24px;
+}
+
+.modal-actions {
+  padding: 16px 24px;
+  background: var(--color-background-soft);
+}
+
+.cancel-btn {
+  margin-right: 8px;
+}
+
+.save-btn {
+  min-width: 100px;
+}
+
+:deep(.v-field) {
+  border-radius: 8px;
+}
+
+:deep(.v-field:hover) {
+  background: var(--color-background-soft);
+}
+
+:deep(.v-field--focused) {
+  background: var(--color-background-soft);
+}
+
+:deep(.v-number-input) {
+  margin-bottom: 16px;
+}
+
+:deep(.v-number-input .v-field) {
+  border-radius: 8px;
+}
+
+:deep(.v-number-input .v-field:hover) {
+  background: var(--color-background-soft);
+}
+
+:deep(.v-number-input .v-field--focused) {
+  background: var(--color-background-soft);
+}
+</style>
