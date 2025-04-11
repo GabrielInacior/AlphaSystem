@@ -67,6 +67,15 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
+  ipcMain.handle('get-historico-compras-cliente', async (_event, cliente_id: number) => {
+    try {
+      return await Cliente.getHistoricoComprasCliente(db, cliente_id);
+    } catch (error) {
+      console.error('Erro ao obter histórico de compras do cliente:', error);
+      throw error;
+    }
+  });
+
   // Serviços
   ipcMain.handle('create-servico', async (_event, nome: string, preco: number) => {
     try {

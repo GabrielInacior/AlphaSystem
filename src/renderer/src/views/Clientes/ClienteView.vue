@@ -43,6 +43,7 @@
         <template v-slot:item.actions="{ item }">
           <v-icon small class="mr-2" @click="openModal(item)">mdi-pencil</v-icon>
           <v-icon small color="red" @click="deleteCliente(item.id)" v-if="item.id">mdi-delete</v-icon>
+          <v-icon small color="primary" class="ml-2" @click="openHistoricoModal(item)" v-if="item.id">mdi-history</v-icon>
         </template>
       </v-data-table>
 
@@ -70,6 +71,43 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Modal de Histórico de Compras -->
+    <v-dialog v-model="historicoModalOpen" max-width="800px" persistent>
+      <v-card>
+        <v-card-title class="text-h5 grey lighten-2">
+          <span>Histórico de Compras - {{ clienteSelecionado?.nome }}</span>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="closeHistoricoModal">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-card-text class="pt-4">
+          <v-data-table
+            :headers="historicoHeaders"
+            :items="historicoCompras"
+            density="compact"
+            class="elevation-1"
+            no-data-text="Nenhuma compra encontrada"
+          >
+            <template v-slot:item.valor_total="{ item }">
+              R$ {{ item.valor_total.toFixed(2) }}
+            </template>
+            <template v-slot:item.data="{ item }">
+              {{ formatDate(item.data) }}
+            </template>
+            <template v-slot:item.status="{ item }">
+              <v-chip
+                :color="item.status === 'pago' ? 'success' : 'warning'"
+                small
+              >
+                {{ item.status === 'pago' ? 'Pago' : 'Pendente' }}
+              </v-chip>
+            </template>
+          </v-data-table>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -83,7 +121,10 @@ export default defineComponent({
     const clientes = ref<ClienteEntity[]>([]);
     const search = ref('');
     const modalOpen = ref(false);
+    const historicoModalOpen = ref(false);
     const editingCliente = ref<ClienteEntity | null>(null);
+    const clienteSelecionado = ref<ClienteEntity | null>(null);
+    const historicoCompras = ref<any[]>([]);
     const cliente = ref<ClienteEntity>(new ClienteEntity({ nome: '', aniversario: null, telefone: '' }));
 
     const headers = [
@@ -91,6 +132,14 @@ export default defineComponent({
       { text: 'Aniversário', value: 'aniversario' },
       { text: 'Telefone', value: 'telefone' },
       { text: 'Ações', value: 'actions', sortable: false }
+    ];
+
+    const historicoHeaders = [
+      { text: 'Data', value: 'data' },
+      { text: 'Itens', value: 'itens' },
+      { text: 'Valor Total', value: 'valor_total' },
+      { text: 'Método de Pagamento', value: 'metodo_pagamento' },
+      { text: 'Status', value: 'status' }
     ];
 
     const searchNome = ref('');
@@ -123,11 +172,42 @@ export default defineComponent({
       modalOpen.value = true;
     };
 
+    const openHistoricoModal = async (cliente: ClienteEntity) => {
+      try {
+        historicoModalOpen.value = true;
+        clienteSelecionado.value = cliente;
+        const historico = await window.api.getHistoricoComprasCliente(cliente.id || 0);
+        historicoCompras.value = historico;
+      } catch (error) {
+        console.error('Erro ao carregar histórico:', error);
+        historicoModalOpen.value = false;
+      }
+    };
+
+    const closeHistoricoModal = () => {
+      historicoModalOpen.value = false;
+      clienteSelecionado.value = null;
+      historicoCompras.value = [];
+    };
+
+    const formatDate = (date: string) => {
+      return new Date(date).toLocaleDateString('pt-BR');
+    };
+
     const saveCliente = async () => {
       if (editingCliente.value) {
-        await window.api.updateCliente(editingCliente.value.id || 0, cliente.value.nome, cliente.value.aniversario || null, cliente.value.telefone || '');
+        await window.api.updateCliente(
+          editingCliente.value.id || 0,
+          cliente.value.nome,
+          cliente.value.aniversario || '',
+          cliente.value.telefone || ''
+        );
       } else {
-        await window.api.createCliente(cliente.value.nome, cliente.value.aniversario || null, cliente.value.telefone || '');
+        await window.api.createCliente(
+          cliente.value.nome,
+          cliente.value.aniversario || '',
+          cliente.value.telefone || ''
+        );
       }
       modalOpen.value = false;
       loadClientes();
@@ -173,25 +253,30 @@ export default defineComponent({
       }
     };
 
-
-
     onMounted(loadClientes);
 
     return {
       clientes,
       search,
       modalOpen,
+      historicoModalOpen,
       editingCliente,
+      clienteSelecionado,
+      historicoCompras,
       cliente,
       headers,
+      historicoHeaders,
       filteredClientes,
       openModal,
+      openHistoricoModal,
+      closeHistoricoModal,
       searchNome,
       searchTelefone,
       saveCliente,
       deleteCliente,
       formatTelefone,
       formatTelefoneFiltro,
+      formatDate,
       telefoneRules,
       nameRule
     };

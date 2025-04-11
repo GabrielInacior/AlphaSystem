@@ -159,6 +159,9 @@ const api = {
   getClientesMaisCompraramServicos: (periodo: string, limite: number) =>
     ipcRenderer.invoke('get-clientes-mais-compraram-servicos', periodo, limite),
 
+  getHistoricoComprasCliente: (cliente_id: number) =>
+    ipcRenderer.invoke('get-historico-compras-cliente', cliente_id),
+
   getVendasProdutosPorMetodoPagamento: (periodo: string, categoria_id?: number) =>
     ipcRenderer.invoke('get-vendas-produtos-por-metodo-pagamento', periodo, categoria_id),
 

@@ -76,5 +76,36 @@ export function getClientesAniversariantes(db: Database): Promise<any[]> {
   });
 }
 
+export function getHistoricoComprasCliente(db: Database, cliente_id: number): Promise<any[]> {
+  const query = `
+    SELECT
+      v.id,
+      v.data,
+      v.valor_total,
+      v.metodo_pagamento,
+      v.status,
+      GROUP_CONCAT(
+        CASE
+          WHEN vi.produto_id IS NOT NULL THEN p.nome || ' (x' || vi.quantidade || ')'
+          WHEN vi.servico_id IS NOT NULL THEN s.nome || ' (x' || vi.quantidade || ')'
+        END
+      ) as itens
+    FROM vendas v
+    LEFT JOIN vendas_itens vi ON v.id = vi.venda_id
+    LEFT JOIN produtos p ON vi.produto_id = p.id
+    LEFT JOIN servicos s ON vi.servico_id = s.id
+    WHERE v.cliente_id = ?
+    GROUP BY v.id
+    ORDER BY v.data DESC
+  `;
+
+  return new Promise((resolve, reject) => {
+    db.all(query, [cliente_id], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
 
 

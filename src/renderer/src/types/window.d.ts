@@ -9,6 +9,7 @@ declare global {
       getClienteById: (id: number) => Promise<any>;
       updateCliente: (id: number, nome: string, aniversario: string, telefone: string) => Promise<void>;
       deleteCliente: (id: number) => Promise<void>;
+      getHistoricoComprasCliente: (cliente_id: number) => Promise<any[]>;
 
       // Serviços
       createServico: (nome: string, preco: number) => Promise<void>;
