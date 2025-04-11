@@ -17,6 +17,18 @@
               <v-select v-model="periodoVClientesCompraram" :items="periodos" item-title="text" item-value="value"
                 label="Selecione o Período" density="compact" outlined />
             </v-col>
+            <v-col style="width: 100%;">
+              <v-select
+                item-title="nome"
+                item-value="id"
+                v-model="categoriaClientesMaisCompraram"
+                :items="categorias"
+                label="Filtrar por Categoria"
+                density="compact"
+                outlined
+                clearable
+              />
+            </v-col>
           </v-row>
           <v-list style="width: 100%; overflow-y: auto; max-height: 300px;">
             <v-list-item-group v-for="(cliente, index) in melhoresClientes" :key="index">
@@ -68,6 +80,18 @@
             <v-col>
               <v-select v-model="periodoLucroGasto" :items="periodos" item-title="text" item-value="value"
                 label="Selecione o Período" density="compact" />
+            </v-col>
+            <v-col>
+              <v-select
+                item-title="nome"
+                item-value="id"
+                v-model="categoriaLucroGasto"
+                :items="categorias"
+                label="Filtrar por Categoria"
+                density="compact"
+                outlined
+                clearable
+              />
             </v-col>
           </v-row>
 
@@ -121,7 +145,7 @@
               <v-select
                 item-title="nome"
                 item-value="id"
-                v-model="categoriaSelecionada"
+                v-model="categoriaProdutosMaisVendidos"
                 :items="categorias"
                 label="Filtrar por Categoria"
                 density="compact"
@@ -185,6 +209,16 @@
           <v-row cols="auto" class="px-8 my-1" style="max-height: 80px;">
             <v-select item-title="text" item-value="value" v-model="periodoVendasProdutos" :items="periodos"
               label="Selecione o Período" density="compact" />
+            <v-select
+              item-title="nome"
+              item-value="id"
+              v-model="categoriaVendasProdutos"
+              :items="categorias"
+              label="Filtrar por Categoria"
+              density="compact"
+              outlined
+              clearable
+            />
           </v-row>
           <LineChart :data="vendasProdutosData" :options="chartOptions" />
         </v-card>
@@ -201,6 +235,16 @@
               <v-row cols="auto" class="px-4 my-1" style="max-height: 80px;">
                 <v-select item-title="text" item-value="value" v-model="periogoPagamentos" :items="periodos"
                   label="Selecione o Período" density="compact" />
+                <v-select
+                  item-title="nome"
+                  item-value="id"
+                  v-model="categoriaMetodoPagamento"
+                  :items="categorias"
+                  label="Filtrar por Categoria"
+                  density="compact"
+                  outlined
+                  clearable
+                />
               </v-row>
               <DoughnutChart :data="vendasPorMetodoPagamentoData" :options="chartOptionsVendasPagamento" />
             </v-col>
@@ -257,72 +301,6 @@
         </v-card>
       </v-col>
     </v-row>
-
-    <v-row>
-      <v-col cols="12" md="6">
-        <v-card class="pa-4" elevation="10">
-          <v-card-title>Produtos Mais Vendidos por Categoria</v-card-title>
-          <v-row style="max-height: 90px;">
-            <v-col style="width: 100%;">
-              <v-select
-                item-title="text"
-                item-value="value"
-                v-model="periodoMaisVendidos"
-                :items="periodos"
-                label="Selecione o Período"
-                density="compact"
-                outlined
-              />
-            </v-col>
-            <v-col style="width: 100%;">
-              <v-select
-                item-title="nome"
-                item-value="id"
-                v-model="categoriaSelecionada"
-                :items="categorias"
-                label="Filtrar por Categoria"
-                density="compact"
-                outlined
-                clearable
-              />
-            </v-col>
-          </v-row>
-          <Bar :data="produtosMaisVendidosData" :options="chartOptions" />
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="6">
-        <v-card class="pa-4" elevation="10">
-          <v-card-title>Lucro Total por Categoria</v-card-title>
-          <v-row style="max-height: 90px;">
-            <v-col style="width: 100%;">
-              <v-select
-                item-title="text"
-                item-value="value"
-                v-model="periodoMaisVendidos"
-                :items="periodos"
-                label="Selecione o Período"
-                density="compact"
-                outlined
-              />
-            </v-col>
-            <v-col style="width: 100%;">
-              <v-select
-                item-title="nome"
-                item-value="id"
-                v-model="categoriaSelecionada"
-                :items="categorias"
-                label="Filtrar por Categoria"
-                density="compact"
-                outlined
-                clearable
-              />
-            </v-col>
-          </v-row>
-          <Bar :data="lucroTotalPorCategoriaData" :options="chartOptions" />
-        </v-card>
-      </v-col>
-    </v-row>
   </v-container>
 </template>
 
@@ -343,12 +321,12 @@ export default defineComponent({
     BarChart: Bar
   },
   setup() {
-    // Dados e opções dos gráficos
     const router = useRouter();
+    // Dados e opções dos gráficos
     const vendasProdutosData = ref<any>({ labels: [], datasets: [] });
     const vendasPorMetodoPagamentoData = ref<any>({ labels: [], datasets: [] });
     const lucroVsGastoData = ref<any>({ labels: ['Lucro', 'Gasto'], datasets: [] });
-    const lucroTotal = ref({ lucroTotal: 0, cor: '#42A5F5' }); // Definindo lucroTotal como um objeto reativo
+    const lucroTotal = ref({ lucroTotal: 0, cor: '#42A5F5' });
     const produtosMaisVendidos = ref<any[]>([]);
     const produtosSemEstoque = ref<any[]>([]);
     const chartOptionVendas = ref<any>();
@@ -356,11 +334,21 @@ export default defineComponent({
     const melhoresClientes = ref<any[]>([]);
     const exemploData = ref<any>({ labels: [], datasets: [] });
     const chartOptionsLucroGasto = ref<any>();
+
+    // Períodos
     const periodoVendasProdutos = ref('semana');
     const periodoMaisVendidos = ref('semana');
     const periodoVClientesCompraram = ref('semana');
     const periogoPagamentos = ref('semana');
     const periodoLucroGasto = ref('semana');
+
+    // Categorias separadas para cada seção
+    const categoriaVendasProdutos = ref<number | null>(null);
+    const categoriaProdutosMaisVendidos = ref<number | null>(null);
+    const categoriaClientesMaisCompraram = ref<number | null>(null);
+    const categoriaMetodoPagamento = ref<number | null>(null);
+    const categoriaLucroGasto = ref<number | null>(null);
+
     const periodos = [
       { value: 'dia', text: 'Últimas 24 horas' },
       { value: 'semana', text: 'Última Semana' },
@@ -369,65 +357,62 @@ export default defineComponent({
       { value: 'todos', text: 'Todos' },
     ];
     const categorias = ref<any[]>([]);
-    const categoriaSelecionada = ref<number | null>(null);
-    const produtosMaisVendidosData = ref<any>({ labels: [], datasets: [] });
-    const lucroTotalPorCategoriaData = ref<any>({ labels: [], datasets: [] });
     const loading = ref(false);
 
     const getVendasProdutosPorData = async (periodo: string) => {
       try {
-        const vendasProdutosResponse = await window.api.getVendasProdutosPorData(periodo)
-        console.log('[VENDAS RESPONSE]', vendasProdutosResponse)
+        const vendasProdutosResponse = await window.api.getVendasProdutosPorData(periodo, categoriaVendasProdutos.value);
+        console.log('[VENDAS RESPONSE]', vendasProdutosResponse);
 
-        const labels: string[] = []
-        const dataQuantidade: number[] = []
-        const dataTotalVendido: number[] = []
+        const labels: string[] = [];
+        const dataQuantidade: number[] = [];
+        const dataTotalVendido: number[] = [];
 
         vendasProdutosResponse.forEach((item: any) => {
-          let label = ''
+          let label = '';
 
           switch (periodo) {
             case 'dia':
               label = new Date(item.periodo + ':00').toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit',
-              })
-              break
+              });
+              break;
 
             case 'semana':
-              let diaSemana = new Date(item.periodo).getDay()
+              let diaSemana = new Date(item.periodo).getDay();
               diaSemana = (diaSemana + 1) % 7;
-              label = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][diaSemana]
-              break
+              label = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][diaSemana];
+              break;
 
             case 'mes':
-              const dataInicio = new Date(item.periodo)
-              const dataFim = new Date(dataInicio)
-              dataFim.setDate(dataFim.getDate() + 1)
+              const dataInicio = new Date(item.periodo);
+              const dataFim = new Date(dataInicio);
+              dataFim.setDate(dataFim.getDate() + 1);
 
               const formatarData = (data: Date) =>
-                data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
-              label = `${formatarData(dataInicio)} a ${formatarData(dataFim)}`
-              break
+              label = `${formatarData(dataInicio)} a ${formatarData(dataFim)}`;
+              break;
 
             case 'ano':
-              const mesAno = new Date(item.periodo)
-              label = mesAno.toLocaleString('default', { month: 'long' })
-              break
+              const mesAno = new Date(item.periodo);
+              label = mesAno.toLocaleString('default', { month: 'long' });
+              break;
 
             case 'todos':
-              label = item.periodo
-              break
+              label = item.periodo;
+              break;
 
             default:
-              label = new Date(item.periodo).toLocaleDateString()
+              label = new Date(item.periodo).toLocaleDateString();
           }
 
-          labels.push(label)
-          dataQuantidade.push(Number(item.quantidade_total_vendida))
-          dataTotalVendido.push(Number(item.total_vendido))
-        })
+          labels.push(label);
+          dataQuantidade.push(Number(item.quantidade_total_vendida));
+          dataTotalVendido.push(Number(item.total_vendido));
+        });
 
         vendasProdutosData.value = {
           labels,
@@ -457,7 +442,7 @@ export default defineComponent({
               yAxisID: 'y1',
             },
           ],
-        }
+        };
 
         chartOptionVendas.value = {
           responsive: true,
@@ -488,32 +473,16 @@ export default defineComponent({
               },
             },
           },
-        }
-
+        };
       } catch (error) {
-        console.error('Erro ao buscar dados de vendas:', error)
+        console.error('Erro ao buscar dados de vendas:', error);
       }
-    }
+    };
 
     const getProdutosMaisVendidos = async (periodo: string) => {
       try {
-        const produtosResponse = await window.api.getProdutosMaisVendidosPorCategoria(periodo);
-        produtosMaisVendidos.value = categoriaSelecionada.value
-          ? produtosResponse.filter((p: any) => p.categoria_id === categoriaSelecionada.value)
-          : produtosResponse;
-
-        // Atualizar o gráfico de produtos mais vendidos
-        const labels = produtosMaisVendidos.value.map((p: any) => p.produto_nome);
-        const data = produtosMaisVendidos.value.map((p: any) => p.quantidade_vendida);
-
-        produtosMaisVendidosData.value = {
-          labels,
-          datasets: [{
-            label: 'Quantidade Vendida',
-            data,
-            backgroundColor: generateColors(data.length)
-          }]
-        };
+        const produtosResponse = await window.api.getProdutosMaisVendidos(periodo, categoriaProdutosMaisVendidos.value);
+        produtosMaisVendidos.value = produtosResponse;
       } catch (error) {
         console.error('Erro ao buscar produtos mais vendidos:', error);
       }
@@ -530,19 +499,19 @@ export default defineComponent({
     };
 
     const getClientesMaisCompraramProdutos = async (periodo: string, limite: number) => {
-      const clientesResponse = await window.api.getClientesMaisCompraramProdutos(periodo, limite);
+      const clientesResponse = await window.api.getClientesMaisCompraramProdutos(periodo, limite, categoriaClientesMaisCompraram.value);
       melhoresClientes.value = clientesResponse;
     };
 
     const getVendasProdutosPorMetodoPagamento = async (periodo: string) => {
-      const vendasResponse = await window.api.getVendasProdutosPorMetodoPagamento(periodo, categoriaSelecionada.value);
+      const vendasResponse = await window.api.getVendasProdutosPorMetodoPagamento(periodo, categoriaMetodoPagamento.value);
       const labels: string[] = [];
       const data: number[] = [];
-      const colors: string[] = ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#EF5350']; // Cores pré-definidas para métodos de pagamento
+      const colors: string[] = ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#EF5350'];
 
       vendasResponse.forEach((item: any) => {
-        labels.push(item.metodo); // Corrigido para 'metodo'
-        data.push(item.total_vendas); // Corrigido para 'total_vendas'
+        labels.push(item.metodo);
+        data.push(item.total_vendas);
       });
 
       vendasPorMetodoPagamentoData.value = {
@@ -551,26 +520,17 @@ export default defineComponent({
           {
             data: data,
             backgroundColor: colors.slice(0, labels.length),
-            hoverBackgroundColor: colors.slice(0, labels.length).map(color => color + 'CC'), // Adicionando transparência no hover
+            hoverBackgroundColor: colors.slice(0, labels.length).map(color => color + 'CC'),
           },
         ],
       };
-
-      console.log(vendasPorMetodoPagamentoData.value);
     };
 
-    const goToProdutos = () => {
-      router.push('produtos');
-    }
-
     const getLucroVsGasto = async (periodo: string) => {
-      const lucroVsGastoResponse = await window.api.getCustoVsLucro(periodo);
+      const lucroVsGastoResponse = await window.api.getCustoVsLucro(periodo, categoriaLucroGasto.value);
       console.log(lucroVsGastoResponse);
 
-      // Calculando o lucro total
       const lucroTotalValor = lucroVsGastoResponse.lucro_produtos;
-
-      // Definindo a cor do lucro total
       const lucroTotalCor = lucroTotalValor >= 0 ? '#42A5F5' : '#EF5350';
 
       lucroVsGastoData.value = {
@@ -595,7 +555,7 @@ export default defineComponent({
         plugins: {
           tooltip: {
             callbacks: {
-              label: (tooltipItem) => {
+              label: (tooltipItem: any) => {
                 const value = tooltipItem.raw;
                 return `R$ ${value.toFixed(2)}`;
               },
@@ -608,7 +568,7 @@ export default defineComponent({
       };
     };
 
-    const getMedalIcon = (index) => {
+    const getMedalIcon = (index: number) => {
       if (index === 0) {
         return 'mdi-medal';
       } else if (index === 1) {
@@ -619,7 +579,7 @@ export default defineComponent({
       return '';
     };
 
-    const getRankingClass = (index) => {
+    const getRankingClass = (index: number) => {
       if (index === 0) return 'gold-rank';
       else if (index === 1) return 'silver-rank';
       else if (index === 2) return 'bronze-rank';
@@ -644,84 +604,28 @@ export default defineComponent({
       }
     };
 
-    const generateColors = (count: number) => {
-      const colors = [
-        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-        '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF9F40'
-      ];
-      const result = [];
-      for (let i = 0; i < count; i++) {
-        result.push(colors[i % colors.length]);
-      }
-      return result;
-    };
-
-    const loadLucroTotalPorCategoria = async (periodo: string) => {
-      try {
-        const dados = await window.api.getLucroTotalPorCategoria(periodo);
-        const dadosFiltrados = categoriaSelecionada.value
-          ? dados.filter((item: any) => item.categoria_id === categoriaSelecionada.value)
-          : dados;
-
-        lucroTotalPorCategoriaData.value = {
-          labels: dadosFiltrados.map((item: any) => item.categoria_nome),
-          datasets: [{
-            label: 'Lucro Total (R$)',
-            data: dadosFiltrados.map((item: any) => item.lucro_total),
-            backgroundColor: generateColors(dadosFiltrados.length)
-          }]
-        };
-      } catch (error) {
-        console.error('Erro ao carregar lucro total por categoria:', error);
-      }
-    };
-
     // Watch para atualizar os gráficos quando o período ou categoria mudar
-    watch([periodoMaisVendidos, periodoLucroGasto, categoriaSelecionada], async () => {
+    watch([periodoMaisVendidos, periodoLucroGasto, categoriaProdutosMaisVendidos, categoriaLucroGasto], async () => {
       try {
         await Promise.all([
           getProdutosMaisVendidos(periodoMaisVendidos.value),
-          loadLucroTotalPorCategoria(periodoMaisVendidos.value)
+          getLucroVsGasto(periodoLucroGasto.value)
         ]);
       } catch (error) {
         console.error('Erro ao atualizar dados:', error);
       }
     });
 
-    onMounted(async () => {
-      await loadCategorias();
-      await getProdutosMaisVendidos(periodoMaisVendidos.value);
-      await loadLucroTotalPorCategoria(periodoMaisVendidos.value);
+    watch([periodoVClientesCompraram, categoriaClientesMaisCompraram], async () => {
+      await getClientesMaisCompraramProdutos(periodoVClientesCompraram.value, 50);
     });
 
-    watch(() => periodoLucroGasto.value, async (val) => {
-      if (val) {
-        await getLucroVsGasto(val);
-      }
+    watch([periogoPagamentos, categoriaMetodoPagamento], async () => {
+      await getVendasProdutosPorMetodoPagamento(periogoPagamentos.value);
     });
 
-    watch(() => periodoMaisVendidos.value, async (val) => {
-      if (val) {
-        await getProdutosMaisVendidos(val);
-      }
-    });
-
-    watch(() => periodoVClientesCompraram.value, async (val) => {
-      if (val) {
-        await getClientesMaisCompraramProdutos(val, 50);
-      }
-    });
-
-    watch(() => periogoPagamentos.value, async (val) => {
-      if (val) {
-        await getVendasProdutosPorMetodoPagamento(val);
-      }
-    });
-
-    watch(() => periodoVendasProdutos.value, async (val) => {
-      if (val) {
-        await getVendasProdutosPorData(val);
-      }
+    watch([periodoVendasProdutos, categoriaVendasProdutos], async () => {
+      await getVendasProdutosPorData(periodoVendasProdutos.value);
     });
 
     // Opções do gráfico (geral para todos)
@@ -729,22 +633,26 @@ export default defineComponent({
       responsive: true,
       scales: {
         y: {
-          beginAtZero: true,  // Inicia o eixo Y do zero
+          type: 'linear' as const,
+          beginAtZero: true,
           ticks: {
-            stepSize: 1,  // Intervalo de passos no eixo Y
+            callback: function(value: number | string) {
+              return 'R$ ' + Number(value).toFixed(2);
+            }
           }
-        },
-        x: {
-          beginAtZero: true,  // Inicia o eixo X do zero
-        },
-      },
-      maintainAspectRatio: false,  // Evita o gráfico de expandir infinitamente
-      plugins: {
-        title: {
-          display: true,
-          text: 'Gráfico de Vendas e Comparações'
         }
       },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context: any) {
+              const value = context.raw;
+              return 'R$ ' + Number(value).toFixed(2);
+            }
+          }
+        }
+      },
+      maintainAspectRatio: false,
       layout: {
         padding: 20
       }
@@ -766,6 +674,15 @@ export default defineComponent({
           },
         },
       },
+    });
+
+    const goToProdutos = () => {
+      router.push('/produtos');
+    };
+
+    onMounted(async () => {
+      await loadCategorias();
+      await carregarDados();
     });
 
     return {
@@ -791,9 +708,11 @@ export default defineComponent({
       periodos,
       periogoPagamentos,
       categorias,
-      categoriaSelecionada,
-      produtosMaisVendidosData,
-      lucroTotalPorCategoriaData,
+      categoriaVendasProdutos,
+      categoriaProdutosMaisVendidos,
+      categoriaClientesMaisCompraram,
+      categoriaMetodoPagamento,
+      categoriaLucroGasto,
       loading,
     };
   }

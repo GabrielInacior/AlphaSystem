@@ -59,10 +59,10 @@ export interface Api {
   updateFechamentoCaixa: (id: number, total_vendas: number, total_despesas: number, total_cartao: number, total_pix: number, total_dinheiro: number, total_banco: number, data: string) => Promise<void>;
 
   // Métodos para insights
-  getVendasProdutosPorData: (periodo: string) => Promise<any[]>;
+  getVendasProdutosPorData: (periodo: string, categoria_id?: number) => Promise<any[]>;
   getVendasServicosPorData: (periodo: string) => Promise<any[]>;
   getMelhoresClientes: (limite: number) => Promise<any[]>;
-  getProdutosMaisVendidos: (periodo: string) => Promise<any[]>;
+  getProdutosMaisVendidos: (periodo: string, categoria_id?: number) => Promise<any[]>;
   getServicosMaisVendidos: (periodo: string) => Promise<any[]>;
   getLucroTotalLoja: (periodo: string) => Promise<any>;
   getLucroTotal: (periodo: string) => Promise<any>;
@@ -70,8 +70,8 @@ export interface Api {
   getDespesasPorTipo: (periodo: string) => Promise<any[]>;
   getVendasPorCliente: (periodo: string) => Promise<any[]>;
   getVendasProdutosVsServicos: (periodo: string) => Promise<any>;
-  getCustoVsLucro: (periodo: string) => Promise<any>;
-  getClientesMaisCompraramProdutos: (periodo: string, limite: number) => Promise<any[]>;
+  getCustoVsLucro: (periodo: string, categoria_id?: number) => Promise<any>;
+  getClientesMaisCompraramProdutos: (periodo: string, limite: number, categoria_id?: number) => Promise<any[]>;
   getClientesMaisCompraramServicos: (periodo: string, limite: number) => Promise<any[]>;
   getVendasProdutosPorMetodoPagamento: (periodo: string, categoria_id?: number) => Promise<any[]>;
   getVendasServicosPorMetodoPagamento: (periodo: string) => Promise<any[]>;

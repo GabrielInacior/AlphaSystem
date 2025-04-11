@@ -457,27 +457,34 @@ export function getCustoVsLucro(
 // Função para retornar os clientes que mais compraram produtos
 export function getClientesMaisCompraramProdutos(
   db: Database,
-  periodo: string, // "dia", "semana", "mes", "ano"
-  limite: number // Número máximo de clientes a retornar
+  periodo: string,
+  limite: number,
+  categoria_id?: number
 ): Promise<any[]> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
   const query = `
-    SELECT c.nome AS cliente_nome,
-           SUM(vi.valor_total) AS total_comprado_produtos,
-           SUM(vi.quantidade) AS quantidade_produtos_comprados
+    SELECT
+      c.nome AS cliente_nome,
+      COUNT(DISTINCT vi.venda_id) AS quantidade_compras,
+      SUM(vi.quantidade) AS quantidade_produtos_comprados,
+      SUM(vi.valor_total) AS total_gasto
     FROM vendas v
+    JOIN vendas_itens vi ON v.id = vi.venda_id
+    JOIN produtos p ON vi.produto_id = p.id
     JOIN clientes c ON v.cliente_id = c.id
-    LEFT JOIN vendas_itens vi ON v.id = vi.venda_id
-    LEFT JOIN produtos p ON vi.produto_id = p.id
-    WHERE v.data BETWEEN ? AND ? AND vi.produto_id IS NOT NULL
+    WHERE v.data BETWEEN ? AND ?
+      AND vi.produto_id IS NOT NULL
+      ${categoria_id ? 'AND p.categoria_id = ?' : ''}
     GROUP BY c.id
-    ORDER BY total_comprado_produtos DESC
+    ORDER BY total_gasto DESC
     LIMIT ?
   `;
 
+  const params = categoria_id ? [dataInicio, dataFim, categoria_id, limite] : [dataInicio, dataFim, limite];
+
   return new Promise((resolve, reject) => {
-    db.all(query, [dataInicio, dataFim, limite], (err, rows) => {
+    db.all(query, params, (err, rows) => {
       if (err) reject(err);
       else resolve(rows);
     });

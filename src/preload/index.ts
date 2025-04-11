@@ -107,47 +107,63 @@ const api = {
     ipcRenderer.invoke('update-fechamento-caixa', id, total_vendas, total_despesas, total_cartao, total_pix, total_dinheiro, total_banco, data),
 
   //Apis de Insights
-  getVendasProdutosPorData: (periodo: string) => ipcRenderer.invoke('get-vendas-produtos-por-data', periodo),
+  getVendasProdutosPorData: (periodo: string, categoria_id?: number) =>
+    ipcRenderer.invoke('get-vendas-produtos-por-data', periodo, categoria_id),
 
-  getVendasServicosPorData: (periodo: string) => ipcRenderer.invoke('get-vendas-servicos-por-data', periodo),
+  getVendasServicosPorData: (periodo: string) =>
+    ipcRenderer.invoke('get-vendas-servicos-por-data', periodo),
 
   // Função para obter os melhores clientes
-  getMelhoresClientes: (limite: number) => ipcRenderer.invoke('get-melhores-clientes', limite),
+  getMelhoresClientes: (limite: number) =>
+    ipcRenderer.invoke('get-melhores-clientes', limite),
 
   // Função para obter os produtos mais vendidos
-  getProdutosMaisVendidos: (periodo: string) => ipcRenderer.invoke('get-produtos-mais-vendidos', periodo),
+  getProdutosMaisVendidos: (periodo: string, categoria_id?: number) =>
+    ipcRenderer.invoke('get-produtos-mais-vendidos', periodo, categoria_id),
 
   // Função para obter os serviços mais vendidos
-  getServicosMaisVendidos: (periodo: string) => ipcRenderer.invoke('get-servicos-mais-vendidos', periodo),
+  getServicosMaisVendidos: (periodo: string) =>
+    ipcRenderer.invoke('get-servicos-mais-vendidos', periodo),
 
   // Função para obter o lucro total da loja
-  getLucroTotalLoja: (periodo: string) => ipcRenderer.invoke('get-lucro-total-loja', periodo),
+  getLucroTotalLoja: (periodo: string) =>
+    ipcRenderer.invoke('get-lucro-total-loja', periodo),
 
   // Função para obter o lucro total
-  getLucroTotal: (periodo: string) => ipcRenderer.invoke('get-lucro-total', periodo),
+  getLucroTotal: (periodo: string) =>
+    ipcRenderer.invoke('get-lucro-total', periodo),
 
   // Função para obter as vendas por método de pagamento
-  getVendasPorMetodoPagamento: (periodo: string) => ipcRenderer.invoke('get-vendas-por-metodo-pagamento', periodo),
+  getVendasPorMetodoPagamento: (periodo: string) =>
+    ipcRenderer.invoke('get-vendas-por-metodo-pagamento', periodo),
 
   // Função para obter as despesas por tipo
-  getDespesasPorTipo: (periodo: string) => ipcRenderer.invoke('get-despesas-por-tipo', periodo),
+  getDespesasPorTipo: (periodo: string) =>
+    ipcRenderer.invoke('get-despesas-por-tipo', periodo),
 
   // Função para obter vendas por cliente
-  getVendasPorCliente: (periodo: string) => ipcRenderer.invoke('get-vendas-por-cliente', periodo),
+  getVendasPorCliente: (periodo: string) =>
+    ipcRenderer.invoke('get-vendas-por-cliente', periodo),
 
   // Função para comparar vendas de produtos vs serviços
-  getVendasProdutosVsServicos: (periodo: string) => ipcRenderer.invoke('get-vendas-produtos-vs-servicos', periodo),
+  getVendasProdutosVsServicos: (periodo: string) =>
+    ipcRenderer.invoke('get-vendas-produtos-vs-servicos', periodo),
 
   // Função para comparar custo vs lucro
-  getCustoVsLucro: (periodo: string) => ipcRenderer.invoke('get-custo-vs-lucro', periodo),
-    // Função para comparar custo vs lucro
-  getClientesMaisCompraramProdutos: (periodo: string, limite: number) => ipcRenderer.invoke('get-clientes-mais-compraram-produtos', periodo, limite),
+  getCustoVsLucro: (periodo: string, categoria_id?: number) =>
+    ipcRenderer.invoke('get-custo-vs-lucro', periodo, categoria_id),
 
-  getClientesMaisCompraramServicos: (periodo: string, limite: number) => ipcRenderer.invoke('get-clientes-mais-compraram-servicos', periodo, limite),
+  getClientesMaisCompraramProdutos: (periodo: string, limite: number, categoria_id?: number) =>
+    ipcRenderer.invoke('get-clientes-mais-compraram-produtos', periodo, limite, categoria_id),
 
-  getVendasProdutosPorMetodoPagamento: (periodo: string, categoria_id?: number) => ipcRenderer.invoke('get-vendas-produtos-por-metodo-pagamento', periodo, categoria_id),
+  getClientesMaisCompraramServicos: (periodo: string, limite: number) =>
+    ipcRenderer.invoke('get-clientes-mais-compraram-servicos', periodo, limite),
 
-  getVendasServicosPorMetodoPagamento: (periodo: string) => ipcRenderer.invoke('get-vendas-servicos-por-metodo-pagamento', periodo),
+  getVendasProdutosPorMetodoPagamento: (periodo: string, categoria_id?: number) =>
+    ipcRenderer.invoke('get-vendas-produtos-por-metodo-pagamento', periodo, categoria_id),
+
+  getVendasServicosPorMetodoPagamento: (periodo: string) =>
+    ipcRenderer.invoke('get-vendas-servicos-por-metodo-pagamento', periodo),
 
   getProdutosSemEstoque: () => ipcRenderer.invoke('get-produtos-sem-estoque'),
 

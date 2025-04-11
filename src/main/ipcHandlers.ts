@@ -323,9 +323,9 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Função para obter vendas de produtos por data
-  ipcMain.handle('get-vendas-produtos-por-data', async (_event, periodo: string) => {
+  ipcMain.handle('get-vendas-produtos-por-data', async (_event, periodo: string, categoria_id?: number) => {
     try {
-      return await Fechamento.getVendasProdutosPorData(db, periodo);
+      return await Fechamento.getVendasProdutosPorData(db, periodo, categoria_id);
     } catch (error) {
       console.error('Erro ao obter vendas de produtos por data:', error);
       throw error;
@@ -343,9 +343,9 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Função para obter os produtos mais vendidos
-  ipcMain.handle('get-produtos-mais-vendidos', async (_event, periodo: string) => {
+  ipcMain.handle('get-produtos-mais-vendidos', async (_event, periodo: string, categoria_id?: number) => {
     try {
-      return await Fechamento.getProdutosMaisVendidos(db, periodo);
+      return await Fechamento.getProdutosMaisVendidos(db, periodo, categoria_id);
     } catch (error) {
       console.error('Erro ao obter produtos mais vendidos:', error);
       throw error;
@@ -423,20 +423,20 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Função para comparar custo vs lucro
-  ipcMain.handle('get-custo-vs-lucro', async (_event, periodo: string) => {
+  ipcMain.handle('get-custo-vs-lucro', async (_event, periodo: string, categoria_id?: number) => {
     try {
-      return await Fechamento.getCustoVsLucro(db, periodo);
+      return await Fechamento.getCustoVsLucro(db, periodo, categoria_id);
     } catch (error) {
       console.error('Erro ao comparar custo vs lucro:', error);
       throw error;
     }
   });
 
-  ipcMain.handle('get-clientes-mais-compraram-produtos', async (_event, periodo: string, limite: number) => {
+  ipcMain.handle('get-clientes-mais-compraram-produtos', async (_event, periodo: string, limite: number, categoria_id?: number) => {
     try {
-      return await Fechamento.getClientesMaisCompraramProdutos(db, periodo, limite);
+      return await Fechamento.getClientesMaisCompraramProdutos(db, periodo, limite, categoria_id);
     } catch (error) {
-      console.error('Erro ao comparar custo vs lucro:', error);
+      console.error('Erro ao obter clientes que mais compraram produtos:', error);
       throw error;
     }
   });
