@@ -92,13 +92,36 @@
               hover
               :no-data-text="'Nenhuma despesa encontrada'"
               :loading-text="'Carregando despesas...'"
+              :sort-by="sortBy"
+              :sort-desc="sortDesc"
+              :items-per-page="10"
+              :items-per-page-options="[5, 10, 25, 50]"
+              @update:sort-by="handleSortBy"
+              @update:sort-desc="handleSortDesc"
             >
               <template v-slot:headers>
                 <tr>
                   <th v-for="header in headers" :key="header.value" class="text-left font-weight-bold">
-                    {{ header.text }}
+                    <div class="d-flex align-center">
+                      {{ header.text }}
+                      <v-icon
+                        v-if="header.sortable !== false"
+                        size="small"
+                        color="grey"
+                        class="sort-icon ml-1"
+                        @click="handleSort(header.value)"
+                      >
+                        {{ getSortIcon(header.value) }}
+                      </v-icon>
+                    </div>
                   </th>
                 </tr>
+              </template>
+
+              <template v-slot:item.descricao="{ item }">
+                <div class="text-truncate" style="max-width: 300px;" :title="item.descricao">
+                  {{ item.descricao }}
+                </div>
               </template>
 
               <template v-slot:item.valor="{ item }">
@@ -284,6 +307,12 @@ interface TableHeader {
   sortable: boolean
   value?: string
   text?: string
+  width?: string
+}
+
+interface SortItem {
+  key: string;
+  order: 'asc' | 'desc';
 }
 
 export default defineComponent({
@@ -308,13 +337,15 @@ export default defineComponent({
     const snackbar = ref(false);
     const snackbarText = ref('');
     const snackbarColor = ref('');
+    const sortBy = ref<SortItem[]>([{ key: 'data', order: 'desc' }]);
+    const sortDesc = ref(true);
 
     const headers: TableHeader[] = [
-      { title: 'Descrição', key: 'descricao', sortable: true, value: 'descricao', text: 'descricao' },
-      { title: 'Valor', key: 'valor', sortable: true, value: 'valor', text: 'valor' },
-      { title: 'Data', key: 'data', sortable: true, value: 'data', text: 'data' },
-      { title: 'Tipo', key: 'tipo', sortable: true, value: 'tipo', text: 'tipo' },
-      { title: 'Ações', key: 'actions', sortable: false, value: 'actions', text: 'actions' }
+      { title: 'Descrição', key: 'descricao', sortable: true, value: 'descricao', text: 'Descrição', width: '300px' },
+      { title: 'Valor', key: 'valor', sortable: true, value: 'valor', text: 'Valor', width: '120px' },
+      { title: 'Data', key: 'data', sortable: true, value: 'data', text: 'Data', width: '120px' },
+      { title: 'Tipo', key: 'tipo', sortable: true, value: 'tipo', text: 'Tipo', width: '120px' },
+      { title: 'Ações', key: 'actions', sortable: false, value: 'actions', text: 'Ações', width: '120px' }
     ];
 
     const getTipoColor = (tipo: string) => {
@@ -366,32 +397,41 @@ export default defineComponent({
 
     const saveDespesa = async () => {
       try {
+        // Validação dos campos obrigatórios
+        if (!despesa.value.descricao || !despesa.value.valor || !despesa.value.data || !despesa.value.tipo) {
+          snackbarText.value = 'Preencha todos os campos obrigatórios';
+          snackbarColor.value = 'error';
+          snackbar.value = true;
+          return;
+        }
+
         if (editingDespesa.value?.id) {
           await window.api.updateDespesa(
             editingDespesa.value.id,
-            JSON.stringify(despesa.value),
-            'despesa',
-            'update'
-          )
-          snackbarText.value = 'Despesa atualizada com sucesso!'
+            despesa.value.descricao,
+            Number(despesa.value.valor),
+            despesa.value.data,
+            despesa.value.tipo
+          );
+          snackbarText.value = 'Despesa atualizada com sucesso!';
         } else {
           await window.api.createDespesa(
-            JSON.stringify(despesa.value),
-            'despesa',
-            'create',
-            'Despesa criada com sucesso!'
-          )
-          snackbarText.value = 'Despesa criada com sucesso!'
+            despesa.value.descricao,
+            Number(despesa.value.valor),
+            despesa.value.data,
+            despesa.value.tipo
+          );
+          snackbarText.value = 'Despesa criada com sucesso!';
         }
-        snackbarColor.value = 'success'
-        snackbar.value = true
-        modalOpen.value = false
-        await loadDespesas()
+        snackbarColor.value = 'success';
+        snackbar.value = true;
+        modalOpen.value = false;
+        await loadDespesas();
       } catch (error) {
-        console.error('Erro ao salvar despesa:', error)
-        snackbarText.value = 'Erro ao salvar despesa'
-        snackbarColor.value = 'error'
-        snackbar.value = true
+        console.error('Erro ao salvar despesa:', error);
+        snackbarText.value = 'Erro ao salvar despesa';
+        snackbarColor.value = 'error';
+        snackbar.value = true;
       }
     };
 
@@ -408,6 +448,37 @@ export default defineComponent({
         snackbarColor.value = 'error'
         snackbar.value = true
       }
+    };
+
+    const handleSort = (key: string) => {
+      const header = headers.find(h => h.value === key);
+      if (!header || !header.sortable) return;
+
+      if (sortBy.value[0]?.key === key) {
+        // Se já está ordenando por esta coluna, inverte a direção
+        sortDesc.value = !sortDesc.value;
+        sortBy.value = [{ key, order: sortDesc.value ? 'desc' : 'asc' }];
+      } else {
+        // Se é uma nova coluna, ordena ascendente
+        sortBy.value = [{ key, order: 'asc' }];
+        sortDesc.value = false;
+      }
+    };
+
+    const getSortIcon = (key: string) => {
+      const header = headers.find(h => h.value === key);
+      if (!header || !header.sortable) return '';
+
+      if (sortBy.value[0]?.key !== key) return 'mdi-arrow-up-down';
+      return sortDesc.value ? 'mdi-arrow-down' : 'mdi-arrow-up';
+    };
+
+    const handleSortBy = (value: SortItem[]) => {
+      sortBy.value = value;
+    };
+
+    const handleSortDesc = (value: boolean) => {
+      sortDesc.value = value;
     };
 
     onMounted(loadDespesas);
@@ -432,7 +503,13 @@ export default defineComponent({
       deleteModalOpen,
       snackbar,
       snackbarText,
-      snackbarColor
+      snackbarColor,
+      sortBy,
+      sortDesc,
+      handleSort,
+      handleSortBy,
+      handleSortDesc,
+      getSortIcon,
     };
   }
 });
@@ -522,7 +599,6 @@ export default defineComponent({
 }
 
 :deep(.v-data-table th) {
-  background-color: #f8fafc;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -540,5 +616,15 @@ export default defineComponent({
 
 :deep(.v-alert) {
   border-radius: 8px;
+}
+
+.sort-icon {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.sort-icon:hover {
+  opacity: 1;
 }
 </style>

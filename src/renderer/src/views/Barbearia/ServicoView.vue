@@ -66,13 +66,36 @@
               hover
               :no-data-text="'Nenhum serviço encontrado'"
               :loading-text="'Carregando serviços...'"
+              :sort-by="sortBy"
+              :sort-desc="sortDesc"
+              :items-per-page="10"
+              :items-per-page-options="[5, 10, 25, 50]"
+              @update:sort-by="handleSortBy"
+              @update:sort-desc="handleSortDesc"
             >
               <template v-slot:headers>
                 <tr>
                   <th v-for="header in headers" :key="header.value" class="text-left font-weight-bold">
-                    {{ header.text }}
+                    <div class="d-flex align-center">
+                      {{ header.text }}
+                      <v-icon
+                        v-if="header.sortable !== false"
+                        size="small"
+                        color="grey"
+                        class="sort-icon ml-1"
+                        @click="handleSort(header.value)"
+                      >
+                        {{ getSortIcon(header.value) }}
+                      </v-icon>
+                    </div>
                   </th>
                 </tr>
+              </template>
+
+              <template v-slot:item.nome="{ item }">
+                <div class="text-truncate" style="max-width: 300px;" :title="item.nome">
+                  {{ item.nome }}
+                </div>
               </template>
 
               <template v-slot:item.preco="{ item }">
@@ -241,11 +264,38 @@ export default defineComponent({
       modalConfirmacaoExclusao.value = true; // Abre o modal de confirmação
     };
 
+    const sortBy = ref([{ key: 'nome', order: 'asc' }]);
+    const sortDesc = ref(false);
+
+    const handleSort = (key: string) => {
+      if (sortBy.value[0]?.key === key) {
+        // Se já está ordenando por esta coluna, inverte a direção
+        sortDesc.value = !sortDesc.value;
+        sortBy.value = [{ key, order: sortDesc.value ? 'desc' : 'asc' }];
+      } else {
+        // Se é uma nova coluna, ordena ascendente
+        sortBy.value = [{ key, order: 'asc' }];
+        sortDesc.value = false;
+      }
+    };
+
+    const getSortIcon = (key: string) => {
+      if (sortBy.value[0]?.key !== key) return 'mdi-arrow-up-down';
+      return sortDesc.value ? 'mdi-arrow-down' : 'mdi-arrow-up';
+    };
+
+    const handleSortBy = (value: any) => {
+      sortBy.value = value;
+    };
+
+    const handleSortDesc = (value: boolean) => {
+      sortDesc.value = value;
+    };
 
     const headers = [
-      { text: 'Nome', value: 'nome' },
-      { text: 'Preço', value: 'preco' },
-      { text: 'Ações', value: 'actions', sortable: false }
+      { text: 'Nome', value: 'nome', width: '300px' },
+      { text: 'Preço', value: 'preco', width: '150px' },
+      { text: 'Ações', value: 'actions', sortable: false, width: '120px' }
     ];
 
     const filteredServicos = computed(() =>
@@ -360,7 +410,13 @@ export default defineComponent({
       confirmarExclusao,
       modalConfirmacaoExclusao,
       valorReais,
-      valorPorcentagem
+      valorPorcentagem,
+      sortBy,
+      sortDesc,
+      handleSort,
+      handleSortBy,
+      handleSortDesc,
+      getSortIcon,
     };
   }
 });
@@ -450,7 +506,6 @@ export default defineComponent({
 }
 
 :deep(.v-data-table th) {
-  background-color: #f8fafc;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -468,5 +523,15 @@ export default defineComponent({
 
 :deep(.v-alert) {
   border-radius: 8px;
+}
+
+.sort-icon {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.sort-icon:hover {
+  opacity: 1;
 }
 </style>

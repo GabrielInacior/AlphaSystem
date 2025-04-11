@@ -92,11 +92,28 @@
               hover
               :no-data-text="'Nenhum registro de venda encontrado'"
               :loading-text="'Carregando vendas...'"
+              :sort-by="sortBy"
+              :sort-desc="sortDesc"
+              :items-per-page="10"
+              :items-per-page-options="[5, 10, 25, 50]"
+              @update:sort-by="handleSortBy"
+              @update:sort-desc="handleSortDesc"
             >
               <template v-slot:headers>
                 <tr>
                   <th v-for="header in headers" :key="header.value" class="text-left font-weight-bold">
-                    {{ header.text }}
+                    <div class="d-flex align-center">
+                      {{ header.text }}
+                      <v-icon
+                        v-if="header.sortable !== false && header.value !== 'status'"
+                        size="small"
+                        color="grey"
+                        class="sort-icon ml-1"
+                        @click="handleSort(header.value)"
+                      >
+                        {{ getSortIcon(header.value) }}
+                      </v-icon>
+                    </div>
                   </th>
                 </tr>
               </template>
@@ -371,6 +388,11 @@
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import { VendaEntity } from '@renderer/entities/VendaEntity';
 
+interface SortItem {
+  key: string;
+  order: 'asc' | 'desc';
+}
+
 export default defineComponent({
   name: 'HistoricoVendas',
   setup() {
@@ -390,11 +412,11 @@ export default defineComponent({
 
     // Cabeçalhos da tabela de vendas
     const headers = [
-      { text: 'Cliente', value: 'nome_cliente' },
-      { text: 'Valor Total', value: 'valor_total' },
-      { text: 'Data', value: 'data' },
-      { text: 'Método de Pagamento', value: 'metodo_pagamento' },
-      { text: 'Status', value: 'status' },
+      { text: 'Cliente', value: 'nome_cliente', sortable: true },
+      { text: 'Valor Total', value: 'valor_total', sortable: true },
+      { text: 'Data', value: 'data', sortable: true },
+      { text: 'Método de Pagamento', value: 'metodo_pagamento', sortable: true },
+      { text: 'Status', value: 'status', sortable: true },
       { text: 'Ações', value: 'actions', sortable: false }
     ];
 
@@ -442,7 +464,6 @@ export default defineComponent({
       return true;
     };
 
-
     // Carregar as vendas
     const carregarVendas = async () => {
       try {
@@ -467,7 +488,6 @@ export default defineComponent({
       }
       modalEditar.value = true;
     };
-
 
     const openVendaInfo = (venda: VendaEntity) => {
       const dataFormatada = venda.data ? new Date(venda.data).toISOString().split('T')[0] : '';
@@ -514,6 +534,38 @@ export default defineComponent({
       return `${day}/${month}/${year} - ${hours}:${minutes}`;
     };
 
+    // No setup()
+    const sortBy = ref<SortItem[]>([{ key: 'data', order: 'desc' }]);
+    const sortDesc = ref(true);
+
+    const handleSort = (key: string) => {
+      if (!key) return;
+
+      if (sortBy.value[0]?.key === key) {
+        // Se já está ordenando por esta coluna, inverte a direção
+        sortDesc.value = !sortDesc.value;
+        sortBy.value = [{ key, order: sortDesc.value ? 'desc' : 'asc' }];
+      } else {
+        // Se é uma nova coluna, ordena ascendente
+        sortBy.value = [{ key, order: 'asc' }];
+        sortDesc.value = false;
+      }
+    };
+
+    const getSortIcon = (key: string) => {
+      if (!key) return 'mdi-arrow-up-down';
+      if (sortBy.value[0]?.key !== key) return 'mdi-arrow-up-down';
+      return sortDesc.value ? 'mdi-arrow-down' : 'mdi-arrow-up';
+    };
+
+    const handleSortBy = (value: SortItem[]) => {
+      sortBy.value = value;
+    };
+
+    const handleSortDesc = (value: boolean) => {
+      sortDesc.value = value;
+    };
+
     onMounted(() => {
       carregarVendas();
     });
@@ -541,6 +593,12 @@ export default defineComponent({
       carregarVendas,
       openVendaInfo,
       modalInfo,
+      sortBy,
+      sortDesc,
+      handleSort,
+      handleSortBy,
+      handleSortDesc,
+      getSortIcon,
     };
   }
 });
@@ -622,7 +680,6 @@ export default defineComponent({
 }
 
 :deep(.v-data-table th) {
-  background-color: #f8fafc;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -640,5 +697,15 @@ export default defineComponent({
 
 :deep(.v-alert) {
   border-radius: 8px;
+}
+
+.sort-icon {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.sort-icon:hover {
+  opacity: 1;
 }
 </style>

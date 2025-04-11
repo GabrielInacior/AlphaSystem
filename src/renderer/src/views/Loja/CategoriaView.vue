@@ -96,6 +96,18 @@
                 </div>
               </template>
 
+              <template v-slot:item.nome="{ item }">
+                <div class="text-truncate" style="max-width: 200px;" :title="item.nome">
+                  {{ item.nome }}
+                </div>
+              </template>
+
+              <template v-slot:item.descricao="{ item }">
+                <div class="text-truncate" style="max-width: 300px;" :title="item.descricao">
+                  {{ item.descricao }}
+                </div>
+              </template>
+
               <template v-slot:no-data>
                 <div class="text-center py-6">
                   <v-icon color="grey" size="48" class="mb-2">mdi-shape-off</v-icon>
@@ -246,9 +258,9 @@ const categorias = ref<Categoria[]>([])
 const itemToDelete = ref<Categoria | null>(null)
 
 const headers = [
-  { title: 'Nome', key: 'nome' },
-  { title: 'Descrição', key: 'descricao' },
-  { title: 'Ações', key: 'actions', sortable: false }
+  { title: 'Nome', key: 'nome', width: '200px' },
+  { title: 'Descrição', key: 'descricao', width: '300px' },
+  { title: 'Ações', key: 'actions', sortable: false, width: '100px' }
 ]
 
 const defaultItem: Categoria = {
@@ -475,7 +487,6 @@ onMounted(() => {
 }
 
 :deep(.v-data-table th) {
-  background-color: #f8fafc;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;

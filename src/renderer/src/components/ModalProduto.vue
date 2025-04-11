@@ -34,6 +34,17 @@
           prepend-inner-icon="mdi-currency-brl"
         ></v-number-input>
 
+        <v-alert
+          v-if="produto.custo === 0"
+          type="info"
+          variant="tonal"
+          class="mb-4"
+          density="compact"
+          icon="mdi-gift"
+        >
+          Produto será registrado como presente
+        </v-alert>
+
         <v-number-input
           density="compact"
           v-model="produto.preco"
@@ -86,6 +97,19 @@
         </v-btn>
       </v-card-actions>
     </v-card>
+
+    <!-- Notificação de sucesso para produtos presentes -->
+    <v-snackbar
+      v-model="showNotification"
+      color="success"
+      timeout="3000"
+      location="top"
+    >
+      <div class="d-flex align-center">
+        <v-icon icon="mdi-gift" class="mr-2"></v-icon>
+        {{ notificationMessage }}
+      </div>
+    </v-snackbar>
   </v-dialog>
 </template>
 
@@ -105,6 +129,10 @@ export default defineComponent({
     const custoError = ref<string | null>(null);
     const precoError = ref<string | null>(null);
     const estoqueError = ref<string | null>(null);
+
+    // Notificação
+    const showNotification = ref(false);
+    const notificationMessage = ref('');
 
     const saveProduto = async () => {
       if (!produto.value.nome) {
@@ -135,12 +163,25 @@ export default defineComponent({
         estoqueError.value = null;
       }
 
+      // Verifica se é um produto presente (custo zero)
+      const isPresente = produto.value.custo === 0;
+
       await window.api.createProduto(
         produto.value.nome,
         produto.value.custo,
         produto.value.preco,
-        produto.value.qtdEstoque
+        produto.value.qtdEstoque,
+        0 // categoria_id (0 para produtos sem categoria)
       );
+
+      // Notifica o usuário se salvou um presente
+      if (isPresente) {
+        notificationMessage.value = 'Produto presente salvo';
+        showNotification.value = true;
+        setTimeout(() => {
+          showNotification.value = false;
+        }, 3000);
+      }
 
       emit('sucesso');
       closeModal();
@@ -160,6 +201,7 @@ export default defineComponent({
     watch(() => props.isOpen, (val) => {
       if (!val) {
         produto.value = new ProdutoEntity({ nome: '', custo: 0, preco: 0, qtdEstoque: 0 });
+        showNotification.value = false;
       }
     });
 
@@ -172,6 +214,8 @@ export default defineComponent({
       isSaveDisabled,
       saveProduto,
       closeModal,
+      showNotification,
+      notificationMessage
     };
   },
 });

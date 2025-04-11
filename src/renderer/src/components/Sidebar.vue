@@ -1,14 +1,14 @@
 <template>
-  <v-navigation-drawer v-model="drawer" :rail="rail" :width="300" permanent style="height: 100vh;" app class="sidebar">
+  <v-navigation-drawer v-model="drawer" :rail="rail" :width="rail ? 160 : 300" permanent style="height: 100vh;" app class="sidebar">
     <!-- Logo and Toggle Section -->
     <div class="sidebar-header">
       <v-list-item class="logo-item" title="Barbearia Alpha" nav density="compact">
         <template v-slot:prepend>
           <v-img :width="50" aspect-ratio="16/9" cover :src="currentTheme === 'light' ? LogoPreta : LogoBranca"
-            class="logo-img" style="background-color: aqua;"></v-img>
+            class="logo-img"></v-img>
         </template>
         <template v-slot:append>
-          <v-btn rounded="0" variant="plain" @click.stop="toggleRail" class="toggle-btn">
+          <v-btn v-if="!rail" rounded="0" variant="plain" @click.stop="toggleRail" class="toggle-btn">
             <v-icon icon="mdi-chevron-left"></v-icon>
             <v-tooltip activator="parent" location="start">Esconder barra lateral</v-tooltip>
           </v-btn>
@@ -431,7 +431,7 @@ export default defineComponent({
 }
 
 :deep(.v-navigation-drawer--rail) {
-  width: 100px !important;
+  width: 160px !important;
   margin-right: 32px !important;
   display: flex;
   flex-direction: column;

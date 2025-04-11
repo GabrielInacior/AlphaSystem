@@ -7,7 +7,7 @@
           <v-card-text class="d-flex align-center justify-space-between">
             <div>
               <h1 class="text-h4 font-weight-bold welcome-text mb-2">
-                Produtos
+        Produtos
               </h1>
               <div class="text-subtitle-1 text-white opacity-75">
                 Gerencie o estoque e os produtos da loja
@@ -41,8 +41,92 @@
           </v-card-title>
           <v-divider />
           <v-card-text class="pa-6">
+            <!-- Estatísticas de Estoque -->
+            <v-row class="mb-2">
+              <v-col cols="12" sm="6" md="3">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="d-flex align-center justify-space-between py-3 px-4">
+                    <div class="d-flex align-center">
+                      <v-icon color="info" size="32" class="mr-3">mdi-package-variant-closed</v-icon>
+                      <div>
+                        <div class="text-subtitle-2 text-medium-emphasis d-flex align-center">
+                          Total em Estoque
+                          <v-tooltip location="top" text="Quantidade total de produtos disponíveis para venda em seu estoque">
+                            <template v-slot:activator="{ props }">
+                              <v-icon size="small" class="ml-1" v-bind="props">mdi-information</v-icon>
+                            </template>
+                          </v-tooltip>
+                        </div>
+                        <div class="text-h5 font-weight-bold">{{ totalProdutosEmEstoque }}</div>
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+              <v-col cols="12" sm="6" md="3">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="d-flex align-center justify-space-between py-3 px-4">
+                    <div class="d-flex align-center">
+                      <v-icon color="error" size="32" class="mr-3">mdi-currency-usd</v-icon>
+                      <div>
+                        <div class="text-subtitle-2 text-medium-emphasis d-flex align-center">
+                          Custo Total
+                          <v-tooltip location="top" text="Valor total investido em todos os produtos do seu estoque">
+                            <template v-slot:activator="{ props }">
+                              <v-icon size="small" class="ml-1" v-bind="props">mdi-information</v-icon>
+                            </template>
+                          </v-tooltip>
+                        </div>
+                        <div class="text-h5 font-weight-bold text-error">R$ {{ custoTotalEstoque.toFixed(2) }}</div>
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+              <v-col cols="12" sm="6" md="3">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="d-flex align-center justify-space-between py-3 px-4">
+                    <div class="d-flex align-center">
+                      <v-icon color="success" size="32" class="mr-3">mdi-chart-line</v-icon>
+                      <div>
+                        <div class="text-subtitle-2 text-medium-emphasis d-flex align-center">
+                          Ganho Potencial
+                          <v-tooltip location="top" text="Lucro que você pode obter se vender todo o estoque atual (diferença entre preço de venda e custo)">
+                            <template v-slot:activator="{ props }">
+                              <v-icon size="small" class="ml-1" v-bind="props">mdi-information</v-icon>
+                            </template>
+                          </v-tooltip>
+                        </div>
+                        <div class="text-h5 font-weight-bold text-success">R$ {{ ganhoPotencial.toFixed(2) }}</div>
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+              <v-col cols="12" sm="6" md="3">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="d-flex align-center justify-space-between py-3 px-4">
+                    <div class="d-flex align-center">
+                      <v-icon color="warning" size="32" class="mr-3">mdi-alert</v-icon>
+                      <div>
+                        <div class="text-subtitle-2 text-medium-emphasis d-flex align-center">
+                          Produtos com Estoque Baixo
+                          <v-tooltip location="top" text="Quantidade de produtos com menos de 5 unidades em estoque, indicando necessidade de reposição">
+                            <template v-slot:activator="{ props }">
+                              <v-icon size="small" class="ml-1" v-bind="props">mdi-information</v-icon>
+                            </template>
+                          </v-tooltip>
+                        </div>
+                        <div class="text-h5 font-weight-bold text-warning">{{ produtosComEstoqueBaixo }}</div>
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+          </v-col>
+            </v-row>
+
             <!-- Search and Filter Section -->
-            <v-row class="mb-4">
+            <v-row class="mb-2">
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="search"
@@ -54,8 +138,8 @@
                   class="search-field"
                   placeholder="Digite para filtrar..."
                 />
-              </v-col>
-            </v-row>
+          </v-col>
+        </v-row>
 
             <!-- Data Table -->
             <v-data-table
@@ -66,24 +150,41 @@
               hover
               :no-data-text="'Nenhum produto encontrado'"
               :loading-text="'Carregando produtos...'"
+              :sort-by="sortBy"
+              :sort-desc="sortDesc"
+              :items-per-page="10"
+              :items-per-page-options="[5, 10, 25, 50]"
+              @update:sort-by="handleSortBy"
+              @update:sort-desc="handleSortDesc"
             >
-              <template v-slot:headers>
-                <tr>
+        <template v-slot:headers>
+          <tr>
                   <th v-for="header in headers" :key="header.value" class="text-left font-weight-bold">
-                    {{ header.text }}
-                  </th>
-                </tr>
-              </template>
+                    <div class="d-flex align-center">
+              {{ header.text }}
+                      <v-icon
+                        v-if="header.sortable !== false"
+                        size="small"
+                        color="grey"
+                        class="sort-icon ml-1"
+                        @click="handleSort(header.value)"
+                      >
+                        {{ getSortIcon(header.value) }}
+                      </v-icon>
+                    </div>
+            </th>
+          </tr>
+        </template>
 
-              <template v-slot:item.custo="{ item }">
+        <template v-slot:item.custo="{ item }">
                 <span class="font-weight-bold text-error">R$ {{ item.custo.toFixed(2) || 'Não informado' }}</span>
-              </template>
+        </template>
 
-              <template v-slot:item.preco="{ item }">
+        <template v-slot:item.preco="{ item }">
                 <span class="font-weight-bold text-success">R$ {{ item.preco.toFixed(2) || 'Não informado' }}</span>
-              </template>
+        </template>
 
-              <template v-slot:item.qtdEstoque="{ item }">
+        <template v-slot:item.qtdEstoque="{ item }">
                 <v-chip
                   :color="item.qtdEstoque === 0 ? 'error' : item.qtdEstoque < 5 ? 'warning' : 'success'"
                   size="small"
@@ -92,23 +193,29 @@
                   {{ item.qtdEstoque }} {{ item.qtdEstoque === 1 ? 'Unidade' : 'Unidades' }}
                   <v-icon v-if="item.qtdEstoque === 0" size="small" class="ml-1">mdi-alert</v-icon>
                 </v-chip>
-              </template>
+        </template>
 
-              <template v-slot:item.lucroPorcentagem="{ item }">
+        <template v-slot:item.lucroPorcentagem="{ item }">
                 <v-chip
-                  :color="item.lucroPorcentagem < 0 ? 'error' : 'primary'"
+                  :color="item.custo === 0 ? 'success' : item.lucroPorcentagem < 0 ? 'error' : 'primary'"
                   size="small"
                   class="font-weight-bold"
                 >
-                  {{
-                    isFinite(item.lucroPorcentagem) && item.lucroPorcentagem !== null
-                      ? `${item.lucroPorcentagem.toFixed(2)}%`
-                      : 'Indisponível'
-                  }}
+                  <template v-if="item.custo === 0">
+                    <v-icon size="small" class="mr-1">mdi-gift</v-icon>
+                    Presente
+                  </template>
+                  <template v-else>
+            {{
+              isFinite(item.lucroPorcentagem) && item.lucroPorcentagem !== null
+                ? `${item.lucroPorcentagem.toFixed(2)}%`
+                : 'Indisponível'
+            }}
+                  </template>
                 </v-chip>
-              </template>
+        </template>
 
-              <template v-slot:item.actions="{ item }">
+        <template v-slot:item.actions="{ item }">
                 <div class="d-flex align-center">
                   <v-btn
                     icon="mdi-pencil"
@@ -130,16 +237,28 @@
                 </div>
               </template>
 
+              <template v-slot:item.nome="{ item }">
+                <div class="text-truncate" style="max-width: 120px;" :title="item.nome">
+                  {{ item.nome }}
+                </div>
+              </template>
+
+              <template v-slot:item.categoria_nome="{ item }">
+                <div class="text-truncate" style="max-width: 120px;" :title="item.categoria_nome">
+                  {{ item.categoria_nome }}
+                </div>
+              </template>
+
               <template v-slot:no-data>
                 <div class="text-center py-6">
                   <v-icon color="grey" size="48" class="mb-2">mdi-package-variant-off</v-icon>
                   <div class="text-subtitle-1 text-grey">Nenhum produto encontrado</div>
                   <div class="text-caption text-grey">Clique em "Novo Produto" para adicionar</div>
                 </div>
-              </template>
-            </v-data-table>
+        </template>
+      </v-data-table>
           </v-card-text>
-        </v-card>
+    </v-card>
       </v-col>
     </v-row>
 
@@ -177,6 +296,17 @@
             prefix="R$"
             required
           />
+
+          <v-alert
+            v-if="produto.custo === 0"
+            type="info"
+            variant="tonal"
+            class="mb-4"
+            density="compact"
+            icon="mdi-gift"
+          >
+            Produto será registrado como presente
+          </v-alert>
 
           <v-text-field
             v-model="produto.preco"
@@ -318,20 +448,49 @@ export default defineComponent({
     const categorias = ref<any[]>([]);
     const categoriaError = ref<string | null>(null);
 
+    const sortBy = ref([{ key: 'nome', order: 'asc' }]);
+    const sortDesc = ref(false);
+
+    const handleSort = (key: string) => {
+      if (sortBy.value[0]?.key === key) {
+        // Se já está ordenando por esta coluna, inverte a direção
+        sortDesc.value = !sortDesc.value;
+        sortBy.value = [{ key, order: sortDesc.value ? 'desc' : 'asc' }];
+      } else {
+        // Se é uma nova coluna, ordena ascendente
+        sortBy.value = [{ key, order: 'asc' }];
+        sortDesc.value = false;
+      }
+    };
+
+    const getSortIcon = (key: string) => {
+      if (sortBy.value[0]?.key !== key) return 'mdi-arrow-up-down';
+      return sortDesc.value ? 'mdi-arrow-down' : 'mdi-arrow-up';
+    };
+
+    const handleSortBy = (value: any) => {
+      sortBy.value = value;
+    };
+
+    const handleSortDesc = (value: boolean) => {
+      sortDesc.value = value;
+    };
+
     const confirmarExclusao = (id: number) => {
       produtoIdParaExcluir.value = id; // Guarda o ID do produto para exclusão
       modalConfirmacaoExclusao.value = true; // Abre o modal de confirmação
     };
 
     const headers = [
-      { text: 'Nome', value: 'nome' },
-      { text: 'Categoria', value: 'categoria_nome' },
-      { text: 'Custo de compra', value: 'custo' },
-      { text: 'Preço de venda', value: 'preco' },
-      { text: 'Quantidade em Estoque', value: 'qtdEstoque' },
-      { text: 'Lucro (%)', value: 'lucroPorcentagem' },
-      { text: 'Ações', value: 'actions', sortable: false }
+      { text: 'Nome', value: 'nome', sortable: true, width: '180px' },
+      { text: 'Categoria', value: 'categoria_nome', sortable: true, width: '120px' },
+      { text: 'Custo de compra', value: 'custo', sortable: true, width: '120px' },
+      { text: 'Preço de venda', value: 'preco', sortable: true, width: '120px' },
+      { text: 'Quantidade em Estoque', value: 'qtdEstoque', sortable: true, width: '150px' },
+      { text: 'Lucro (%)', value: 'lucroPorcentagem', sortable: true, width: '120px' },
+      { text: 'Ações', value: 'actions', sortable: false, width: '100px' }
     ];
+
 
     const filteredProdutos = computed(() =>
       produtos.value.filter(p => p.nome.toLowerCase().includes(search.value.toLowerCase()))
@@ -378,8 +537,8 @@ export default defineComponent({
         nomeError.value = 'Nome é obrigatório';
         return;
       }
-      if (produto.value.custo <= 0) {
-        custoError.value = 'Custo deve ser maior que zero';
+      if (produto.value.custo < 0) {
+        custoError.value = 'Custo deve ser maior ou igual a zero';
         return;
       }
       if (produto.value.preco <= 0) {
@@ -396,6 +555,9 @@ export default defineComponent({
       }
 
       try {
+        // Verifica se é um produto presente (custo zero)
+        const isPresente = produto.value.custo === 0;
+
         if (produto.value.id) {
           await window.api.updateProduto(
             produto.value.id,
@@ -416,6 +578,12 @@ export default defineComponent({
         }
         await loadProdutos();
         modalOpen.value = false;
+
+        // Notifica o usuário se salvou um presente
+        if (isPresente) {
+          // Aqui você pode adicionar uma notificação visual ou mensagem de sucesso
+          console.log('Produto presente salvo');
+        }
       } catch (error) {
         console.error('Erro ao salvar produto:', error);
       }
@@ -464,6 +632,27 @@ export default defineComponent({
       return isValid;
     };
 
+    const totalProdutosEmEstoque = computed(() =>
+      produtos.value.reduce((total, produto) => total + produto.qtdEstoque, 0)
+    );
+
+    const custoTotalEstoque = computed(() =>
+      produtos.value.reduce((total, produto) => total + produto.custo, 0)
+    );
+
+    const ganhoPotencial = computed(() => {
+      // Calcula o ganho potencial (preço de venda - custo) para cada produto em estoque
+      return produtos.value.reduce((total, produto) => {
+        const valorVendaTotal = produto.preco * produto.qtdEstoque;
+        const custoTotal = produto.custo * produto.qtdEstoque;
+        return total + (valorVendaTotal - custoTotal);
+      }, 0);
+    });
+
+    const produtosComEstoqueBaixo = computed(() =>
+      produtos.value.filter(p => p.qtdEstoque < 5).length
+    );
+
     onMounted(async () => {
       await Promise.all([
         loadProdutos(),
@@ -492,7 +681,17 @@ export default defineComponent({
       categorias,
       categoriaError,
       isSaveDisabled,
-      validateForm
+      validateForm,
+      totalProdutosEmEstoque,
+      custoTotalEstoque,
+      ganhoPotencial,
+      produtosComEstoqueBaixo,
+      sortBy,
+      sortDesc,
+      handleSort,
+      handleSortBy,
+      handleSortDesc,
+      getSortIcon,
     };
   }
 });
@@ -527,6 +726,18 @@ export default defineComponent({
 .content-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+}
+
+.stat-card {
+  background: rgb(var(--v-theme-surface));
+  border-radius: 12px;
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1);
 }
 
 .search-field {
@@ -582,7 +793,6 @@ export default defineComponent({
 }
 
 :deep(.v-data-table th) {
-  background-color: #f8fafc;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -600,5 +810,15 @@ export default defineComponent({
 
 :deep(.v-alert) {
   border-radius: 8px;
+}
+
+.sort-icon {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.sort-icon:hover {
+  opacity: 1;
 }
 </style>

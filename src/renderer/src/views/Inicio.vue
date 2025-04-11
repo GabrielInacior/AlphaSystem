@@ -1,35 +1,71 @@
 <template>
-  <v-container fluid class="dashboard-container pa-6">
+  <v-container fluid class="dashboard-container pa-4">
     <!-- Header Section with Parallax Effect -->
     <v-row>
       <v-col cols="12">
         <v-card class="welcome-card" elevation="0">
-          <v-card-text class="d-flex align-center justify-space-between">
+          <v-card-text class="d-flex align-center justify-space-between py-3 px-4">
             <div>
-              <h1 class="text-h4 font-weight-bold welcome-text mb-2">
+              <h1 class="text-h5 font-weight-bold welcome-text mb-1">
                 {{ saudacao }}, Bia e Raphael!
               </h1>
-              <div class="text-subtitle-1 text-white opacity-75">
+              <div class="text-subtitle-2 text-white opacity-75">
                 Aqui está o resumo do seu negócio
               </div>
             </div>
-            <v-avatar size="64" class="welcome-avatar">
-              <v-img src="@/assets/logo.png" alt="Logo" />
-            </v-avatar>
+            <div class="d-flex align-center">
+              <v-btn
+                color="white"
+                variant="tonal"
+                class="mr-4"
+                prepend-icon="mdi-file-pdf-box"
+                @click="gerarRelatorioInicio"
+                :loading="gerandoRelatorio"
+              >
+                Gerar Relatório
+              </v-btn>
+              <v-btn
+                icon
+                variant="text"
+                color="white"
+                class="mr-4"
+                size="small"
+              >
+                <v-icon>mdi-information</v-icon>
+                <v-tooltip activator="parent" location="bottom">
+                  <div class="tooltip-content">
+                    <p class="font-weight-bold mb-1">Como gerar um relatório:</p>
+                    <ol class="mb-0">
+                      <li>Clique no botão "Gerar Relatório"</li>
+                      <li>O sistema criará um PDF com os dados atuais da tela</li>
+                      <li>O arquivo será salvo automaticamente no seu computador</li>
+                      <li>Você pode compartilhar este PDF com sua equipe ou clientes</li>
+                    </ol>
+                    <p class="mt-2 mb-0 text-caption">Dica: Ajuste os filtros de período antes de gerar o relatório para obter dados específicos.</p>
+                  </div>
+                </v-tooltip>
+              </v-btn>
+              <v-avatar size="48" class="welcome-avatar">
+                <v-img src="@/assets/logo.png" alt="Logo" />
+              </v-avatar>
+            </div>
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
 
-    <v-row class="mt-4">
+    <v-row class="mt-2">
       <!-- Sales Comparison Chart -->
-      <v-col cols="12" md="4">
+      <v-col cols="12" sm="6" md="4">
         <v-card class="chart-card h-100" elevation="2">
-          <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
+          <v-card-title class="d-flex align-center py-3 px-4">
             <div class="d-flex align-center">
               <v-icon color="primary" class="mr-2">mdi-chart-donut</v-icon>
-              <span class="text-h6 font-weight-medium">Comparação Serviços vs Produtos</span>
+              <span class="text-subtitle-1 font-weight-medium">Comparação Serviços vs Produtos</span>
             </div>
+          </v-card-title>
+          <v-divider />
+          <v-card-text class="pa-4">
             <v-select
               v-model="periodoVendasXServicos"
               :items="periodos"
@@ -37,31 +73,28 @@
               item-value="value"
               label="Período"
               density="compact"
-              class="period-select"
+              class="period-select mb-4"
               variant="outlined"
               hide-details
               style="max-width: 200px"
             />
-          </v-card-title>
-          <v-divider />
-          <v-card-text class="chart-container pa-6">
             <apexchart
               type="donut"
               :options="chartOptions"
               :series="chartSeries"
-              height="300"
+              height="250"
             />
           </v-card-text>
         </v-card>
       </v-col>
 
       <!-- General Information -->
-      <v-col cols="12" md="8">
+      <v-col cols="12" sm="6" md="8">
         <v-card class="info-card h-100" elevation="2">
-          <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
+          <v-card-title class="d-flex align-center justify-space-between py-3 px-4">
             <div class="d-flex align-center">
               <v-icon color="primary" class="mr-2">mdi-information</v-icon>
-              <span class="text-h6 font-weight-medium">Informações Gerais</span>
+              <span class="text-subtitle-1 font-weight-medium">Informações Gerais</span>
             </div>
             <v-select
               v-model="periodoInfoGerais"
@@ -73,99 +106,99 @@
               class="period-select"
               variant="outlined"
               hide-details
-              style="max-width: 200px"
+              style="max-width: 150px"
             />
           </v-card-title>
           <v-divider />
 
-          <v-card-text class="pa-6">
+          <v-card-text class="pa-4">
             <v-row>
-              <v-col cols="12" md="6">
+              <v-col cols="12" sm="6">
                 <v-list class="info-list bg-transparent">
-                  <v-list-item class="mb-4">
+                  <v-list-item class="mb-2">
                     <template v-slot:prepend>
-                      <v-icon color="success" class="mr-4">mdi-cart</v-icon>
+                      <v-icon color="success" class="mr-2">mdi-cart</v-icon>
                     </template>
-                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Total Vendas Produtos</v-list-item-title>
+                    <v-list-item-title class="text-caption text-medium-emphasis">Total Vendas Produtos</v-list-item-title>
                     <template v-slot:append>
-                      <span class="text-h6 font-weight-bold text-success">R$ {{ infoGerais?.total_produtos_vendidos?.toFixed(2) || '---' }}</span>
+                      <span class="text-subtitle-1 font-weight-bold text-success">R$ {{ infoGerais?.total_produtos_vendidos?.toFixed(2) || '---' }}</span>
                     </template>
                   </v-list-item>
 
-                  <v-list-item class="mb-4">
+                  <v-list-item class="mb-2">
                     <template v-slot:prepend>
-                      <v-icon color="error" class="mr-4">mdi-cash-minus</v-icon>
+                      <v-icon color="error" class="mr-2">mdi-cash-minus</v-icon>
                     </template>
-                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Custo Produtos</v-list-item-title>
+                    <v-list-item-title class="text-caption text-medium-emphasis">Custo Produtos</v-list-item-title>
                     <template v-slot:append>
-                      <span class="text-h6 font-weight-bold text-error">R$ {{ infoGerais?.total_custo_produtos?.toFixed(2) || '---' }}</span>
+                      <span class="text-subtitle-1 font-weight-bold text-error">R$ {{ infoGerais?.total_custo_produtos?.toFixed(2) || '---' }}</span>
                     </template>
                   </v-list-item>
 
-                  <v-list-item class="mb-4">
+                  <v-list-item class="mb-2">
                     <template v-slot:prepend>
-                      <v-icon color="success" class="mr-4">mdi-handshake</v-icon>
+                      <v-icon color="success" class="mr-2">mdi-handshake</v-icon>
                     </template>
-                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Total Vendas Serviços</v-list-item-title>
+                    <v-list-item-title class="text-caption text-medium-emphasis">Total Vendas Serviços</v-list-item-title>
                     <template v-slot:append>
-                      <span class="text-h6 font-weight-bold text-success">R$ {{ infoGerais?.total_servicos_vendidos?.toFixed(2) || '---' }}</span>
+                      <span class="text-subtitle-1 font-weight-bold text-success">R$ {{ infoGerais?.total_servicos_vendidos?.toFixed(2) || '---' }}</span>
                     </template>
                   </v-list-item>
 
                   <v-list-item>
                     <template v-slot:prepend>
-                      <v-icon color="error" class="mr-4">mdi-cash-remove</v-icon>
+                      <v-icon color="error" class="mr-2">mdi-cash-remove</v-icon>
                     </template>
-                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Total Despesas</v-list-item-title>
+                    <v-list-item-title class="text-caption text-medium-emphasis">Total Despesas</v-list-item-title>
                     <template v-slot:append>
-                      <span class="text-h6 font-weight-bold text-error">R$ {{ infoGerais?.total_despesas?.toFixed(2) || '---' }}</span>
+                      <span class="text-subtitle-1 font-weight-bold text-error">R$ {{ infoGerais?.total_despesas?.toFixed(2) || '---' }}</span>
                     </template>
                   </v-list-item>
                 </v-list>
               </v-col>
 
-              <v-col cols="12" md="6">
+              <v-col cols="12" sm="6">
                 <v-list class="info-list bg-transparent">
-                  <v-list-item class="mb-4">
+                  <v-list-item class="mb-2">
                     <template v-slot:prepend>
-                      <v-icon color="info" class="mr-4">mdi-package-variant</v-icon>
+                      <v-icon color="info" class="mr-2">mdi-package-variant</v-icon>
                     </template>
-                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Qtd. Produtos Vendidos</v-list-item-title>
+                    <v-list-item-title class="text-caption text-medium-emphasis">Qtd. Produtos Vendidos</v-list-item-title>
                     <template v-slot:append>
-                      <span class="text-h6 font-weight-bold">{{ infoGerais?.qtd_produtos_vendidos || '---' }}</span>
+                      <span class="text-subtitle-1 font-weight-bold">{{ infoGerais?.qtd_produtos_vendidos || '---' }}</span>
                     </template>
                   </v-list-item>
 
-                  <v-list-item class="mb-4">
+                  <v-list-item class="mb-2">
                     <template v-slot:prepend>
-                      <v-icon color="info" class="mr-4">mdi-tools</v-icon>
+                      <v-icon color="info" class="mr-2">mdi-tools</v-icon>
                     </template>
-                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Qtd. Serviços Vendidos</v-list-item-title>
+                    <v-list-item-title class="text-caption text-medium-emphasis">Qtd. Serviços Vendidos</v-list-item-title>
                     <template v-slot:append>
-                      <span class="text-h6 font-weight-bold">{{ infoGerais?.qtd_servicos_vendidos || '---' }}</span>
+                      <span class="text-subtitle-1 font-weight-bold">{{ infoGerais?.qtd_servicos_vendidos || '---' }}</span>
                     </template>
                   </v-list-item>
 
                   <v-list-item>
                     <template v-slot:prepend>
-                      <v-icon color="info" class="mr-4">mdi-file-document-outline</v-icon>
+                      <v-icon color="info" class="mr-2">mdi-file-document-outline</v-icon>
                     </template>
-                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Qtd. Despesas</v-list-item-title>
+                    <v-list-item-title class="text-caption text-medium-emphasis">Qtd. Despesas</v-list-item-title>
                     <template v-slot:append>
-                      <span class="text-h6 font-weight-bold">{{ infoGerais?.qtd_despesas || '---' }}</span>
+                      <span class="text-subtitle-1 font-weight-bold">{{ infoGerais?.qtd_despesas || '---' }}</span>
                     </template>
                   </v-list-item>
                 </v-list>
               </v-col>
             </v-row>
 
-            <v-card class="profit-card mt-6" elevation="0">
-              <v-card-text class="d-flex align-center justify-space-between">
+            <v-card class="profit-card mt-4" elevation="0">
+              <v-card-text class="d-flex align-center justify-space-between py-2 px-3">
                 <div class="d-flex align-center">
-                  <v-icon color="white" size="32" class="mr-4">mdi-chart-line</v-icon>
-                  <span class="text-h6 font-weight-bold text-white">Lucro Total</span>
+                  <v-icon color="white" size="24" class="mr-2">mdi-chart-line</v-icon>
+                  <span class="text-subtitle-1 font-weight-bold text-white">Lucro Total</span>
                 </div>
-                <span class="text-h4 font-weight-bold text-white">R$ {{ infoGerais?.lucro_total?.toFixed(2) || '---' }}</span>
+                <span class="text-h5 font-weight-bold text-white">R$ {{ infoGerais?.lucro_total?.toFixed(2) || '---' }}</span>
               </v-card-text>
             </v-card>
           </v-card-text>
@@ -173,30 +206,30 @@
       </v-col>
     </v-row>
 
-    <v-row class="mt-4">
+    <v-row class="mt-2">
       <!-- Birthdays Section -->
-      <v-col cols="12" md="4">
+      <v-col cols="12" sm="6" md="4">
         <v-card class="birthday-card h-100" elevation="2">
-          <v-card-title class="d-flex align-center py-4 px-6">
+          <v-card-title class="d-flex align-center py-3 px-4">
             <v-icon color="primary" class="mr-2">mdi-cake-variant</v-icon>
-            <span class="text-h6 font-weight-medium">Aniversariantes do Mês</span>
+            <span class="text-subtitle-1 font-weight-medium">Aniversariantes do Mês</span>
           </v-card-title>
           <v-divider />
-          <v-card-text class="pa-4">
+          <v-card-text class="pa-3">
             <v-list v-if="clientesAniversariantes.length > 0" class="birthday-list">
               <v-list-item
                 v-for="(cliente, index) in clientesAniversariantes"
                 :key="index"
-                class="mb-2 rounded-lg"
+                class="mb-1 rounded-lg"
                 :class="{'bg-primary-lighten-5': index % 2 === 0}"
               >
                 <template v-slot:prepend>
-                  <v-avatar color="primary" size="40">
-                    <span class="text-h6 text-white">{{ cliente.nome.charAt(0) }}</span>
+                  <v-avatar color="primary" size="32">
+                    <span class="text-subtitle-2 text-white">{{ cliente.nome.charAt(0) }}</span>
                   </v-avatar>
                 </template>
-                <v-list-item-title class="font-weight-medium">{{ cliente.nome }}</v-list-item-title>
-                <v-list-item-subtitle class="d-flex align-center">
+                <v-list-item-title class="text-body-2 font-weight-medium">{{ cliente.nome }}</v-list-item-title>
+                <v-list-item-subtitle class="d-flex align-center text-caption">
                   <v-icon size="small" color="primary" class="mr-1">mdi-cake</v-icon>
                   {{ cliente.aniversario }} • {{ calcularIdade(cliente.aniversario) }} anos
                 </v-list-item-subtitle>
@@ -206,8 +239,9 @@
               v-else
               type="info"
               variant="tonal"
-              class="mt-4"
+              class="mt-2"
               icon="mdi-information"
+              density="compact"
             >
               Nenhum cliente aniversariante neste mês
             </v-alert>
@@ -216,35 +250,35 @@
       </v-col>
 
       <!-- Debtors Section -->
-      <v-col cols="12" md="8">
+      <v-col cols="12" sm="6" md="8">
         <v-card class="debtors-card h-100" elevation="2">
-          <v-card-title class="d-flex align-center py-4 px-6">
+          <v-card-title class="d-flex align-center py-3 px-4">
             <v-icon color="error" class="mr-2">mdi-alert-circle</v-icon>
-            <span class="text-h6 font-weight-medium">Maiores Devedores</span>
+            <span class="text-subtitle-1 font-weight-medium">Maiores Devedores</span>
           </v-card-title>
           <v-divider />
-          <v-card-text class="pa-4">
+          <v-card-text class="pa-3">
             <v-list v-if="clientesDevendo.length > 0" class="debtors-list">
               <v-list-item
                 v-for="(cliente, index) in clientesDevendo"
                 :key="index"
-                class="mb-2 rounded-lg"
+                class="mb-1 rounded-lg"
                 :class="{'bg-error-lighten-5': index % 2 === 0}"
               >
                 <template v-slot:prepend>
-                  <v-avatar color="error" size="40">
-                    <span class="text-h6 text-white">{{ index + 1 }}</span>
+                  <v-avatar color="error" size="32">
+                    <span class="text-subtitle-2 text-white">{{ index + 1 }}</span>
                   </v-avatar>
                 </template>
-                <v-list-item-title class="font-weight-medium">{{ cliente.cliente_nome }}</v-list-item-title>
-                <v-list-item-subtitle class="d-flex align-center">
+                <v-list-item-title class="text-body-2 font-weight-medium">{{ cliente.cliente_nome }}</v-list-item-title>
+                <v-list-item-subtitle class="d-flex align-center text-caption">
                   <v-icon size="small" color="error" class="mr-1">mdi-phone</v-icon>
                   {{ cliente.cliente_telefone || "Não cadastrado" }}
                 </v-list-item-subtitle>
                 <template v-slot:append>
                   <div class="text-right">
                     <div class="text-caption text-medium-emphasis">Deve</div>
-                    <div class="text-h6 font-weight-bold text-error">R$ {{ cliente.total_devido.toFixed(2) }}</div>
+                    <div class="text-subtitle-2 font-weight-bold text-error">R$ {{ cliente.total_devido.toFixed(2) }}</div>
                   </div>
                 </template>
               </v-list-item>
@@ -253,8 +287,9 @@
               v-else
               type="success"
               variant="tonal"
-              class="mt-4"
+              class="mt-2"
               icon="mdi-check-circle"
+              density="compact"
             >
               Nenhum cliente devedor encontrado
             </v-alert>
@@ -268,6 +303,8 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref, watch } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 export default defineComponent({
   name: 'Inicio',
@@ -278,6 +315,7 @@ export default defineComponent({
     const vendasProdutosXServicos = ref<any[]>([]);
     const infoGerais = ref<any>(null);
     const chartSeries = ref<number[]>([0, 0]);
+    const gerandoRelatorio = ref(false);
 
     const chartOptions = ref<any>({
       chart: {
@@ -475,6 +513,96 @@ export default defineComponent({
       await getVendasProdutosVsServicos(periodoVendasXServicos.value);
     };
 
+    const gerarRelatorioInicio = async () => {
+      try {
+        gerandoRelatorio.value = true;
+
+        // Criar um novo documento PDF
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+
+        // Título do relatório
+        pdf.setFontSize(20);
+        pdf.setTextColor(99, 102, 241); // Cor roxa
+        pdf.text('Relatório Geral do Negócio', pageWidth / 2, 20, { align: 'center' });
+
+        // Data e hora da geração
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 100, 100);
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        const horaAtual = new Date().toLocaleTimeString('pt-BR');
+        pdf.text(`Gerado em: ${dataAtual} às ${horaAtual}`, pageWidth / 2, 30, { align: 'center' });
+
+        // Informações de período
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Período do Relatório:', 20, 45);
+
+        // Adicionar informações de período selecionado
+        const periodoText = periodos.find(p => p.value === periodoVendasXServicos.value)?.text || 'Período não definido';
+        pdf.setFontSize(10);
+        pdf.text(`Vendas Produtos vs Serviços: ${periodoText}`, 30, 55);
+
+        const periodoInfoText = periodos.find(p => p.value === periodoInfoGerais.value)?.text || 'Período não definido';
+        pdf.text(`Informações Gerais: ${periodoInfoText}`, 30, 62);
+
+        // Resumo de vendas
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Resumo de Vendas', 20, 75);
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Total Vendas Produtos: R$ ${infoGerais.value?.total_produtos_vendidos?.toFixed(2) || '0.00'}`, 30, 85);
+        pdf.text(`Total Vendas Serviços: R$ ${infoGerais.value?.total_servicos_vendidos?.toFixed(2) || '0.00'}`, 30, 92);
+        pdf.text(`Lucro Total: R$ ${infoGerais.value?.lucro_total?.toFixed(2) || '0.00'}`, 30, 99);
+
+        // Custos e despesas
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Custos e Despesas', 20, 112);
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Custo Produtos: R$ ${infoGerais.value?.total_custo_produtos?.toFixed(2) || '0.00'}`, 30, 122);
+        pdf.text(`Total Despesas: R$ ${infoGerais.value?.total_despesas?.toFixed(2) || '0.00'}`, 30, 129);
+
+        // Quantidades
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Quantidades', 20, 142);
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Qtd. Produtos Vendidos: ${infoGerais.value?.qtd_produtos_vendidos || 0}`, 30, 152);
+        pdf.text(`Qtd. Serviços Vendidos: ${infoGerais.value?.qtd_servicos_vendidos || 0}`, 30, 159);
+        pdf.text(`Qtd. Despesas: ${infoGerais.value?.qtd_despesas || 0}`, 30, 166);
+
+        // Distribuição de vendas
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Distribuição de Vendas', 20, 179);
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+
+        const totalVendas = (infoGerais.value?.total_produtos_vendidos || 0) + (infoGerais.value?.total_servicos_vendidos || 0);
+        const percentualProdutos = totalVendas > 0 ? ((infoGerais.value?.total_produtos_vendidos || 0) / totalVendas * 100).toFixed(1) : '0.0';
+        const percentualServicos = totalVendas > 0 ? ((infoGerais.value?.total_servicos_vendidos || 0) / totalVendas * 100).toFixed(1) : '0.0';
+
+        pdf.text(`Produtos: R$ ${infoGerais.value?.total_produtos_vendidos?.toFixed(2) || '0.00'} (${percentualProdutos}%)`, 30, 189);
+        pdf.text(`Serviços: R$ ${infoGerais.value?.total_servicos_vendidos?.toFixed(2) || '0.00'} (${percentualServicos}%)`, 30, 196);
+
+        // Salvar o PDF
+        pdf.save('relatorio-geral.pdf');
+
+        gerandoRelatorio.value = false;
+      } catch (error) {
+        console.error('Erro ao gerar relatório geral:', error);
+        gerandoRelatorio.value = false;
+      }
+    };
+
     onMounted(() => {
       carregarDados();
       definirSaudacao();
@@ -505,6 +633,8 @@ export default defineComponent({
       calcularIdade,
       periodos,
       periodoInfoGerais,
+      gerarRelatorioInicio,
+      gerandoRelatorio
     }
   }
 });
@@ -518,7 +648,7 @@ export default defineComponent({
 
 .welcome-card {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
@@ -532,43 +662,43 @@ export default defineComponent({
 }
 
 .chart-card, .info-card, .birthday-card, .debtors-card {
-  border-radius: 16px;
+  border-radius: 12px;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .chart-card:hover, .info-card:hover, .birthday-card:hover, .debtors-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
 }
 
 .info-list {
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .profit-card {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 8px;
+  padding: 12px;
 }
 
 .birthday-list, .debtors-list {
-  max-height: 400px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -577,8 +707,8 @@ export default defineComponent({
 
 /* Vuetify Overrides */
 :deep(.v-list-item) {
-  min-height: 64px;
-  padding: 8px 16px;
+  min-height: 48px;
+  padding: 4px 12px;
 }
 
 :deep(.v-list-item--active) {
@@ -586,14 +716,56 @@ export default defineComponent({
 }
 
 :deep(.v-card-title) {
-  font-size: 1.25rem;
+  font-size: 1rem;
 }
 
 :deep(.v-select .v-field) {
-  border-radius: 8px;
+  border-radius: 6px;
+  min-height: 32px;
+}
+
+:deep(.v-select .v-field__input) {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+:deep(.v-select .v-field__append-inner) {
+  padding-top: 4px;
 }
 
 :deep(.v-alert) {
-  border-radius: 8px;
+  border-radius: 6px;
+}
+
+.period-select {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+@media (max-width: 1366px) {
+  .dashboard-container {
+    padding: 8px !important;
+  }
+
+  .welcome-card {
+    margin-bottom: 8px;
+  }
+
+  .chart-container {
+    height: 200px;
+  }
+
+  .birthday-list, .debtors-list {
+    max-height: 250px;
+  }
+
+  :deep(.v-select .v-field) {
+    font-size: 0.875rem;
+  }
+
+  .period-select {
+    max-width: 180px !important;
+  }
 }
 </style>

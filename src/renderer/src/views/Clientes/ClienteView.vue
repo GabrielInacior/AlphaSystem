@@ -102,6 +102,18 @@
                 </div>
               </template>
 
+              <template v-slot:item.nome="{ item }">
+                <div class="text-truncate" style="max-width: 250px;" :title="item.nome">
+                  {{ item.nome }}
+                </div>
+              </template>
+
+              <template v-slot:item.itens="{ item }">
+                <div class="text-truncate" style="max-width: 300px;" :title="item.itens">
+                  {{ item.itens }}
+                </div>
+              </template>
+
               <template v-slot:item.actions="{ item }">
                 <div class="d-flex align-center">
                   <v-btn
@@ -310,18 +322,18 @@ export default defineComponent({
     const cliente = ref<ClienteEntity>(new ClienteEntity({ nome: '', aniversario: null, telefone: '' }));
 
     const headers = [
-      { text: 'Nome', value: 'nome' },
-      { text: 'Aniversário', value: 'aniversario' },
-      { text: 'Telefone', value: 'telefone' },
-      { text: 'Ações', value: 'actions', sortable: false }
+      { text: 'Nome', value: 'nome', sortable: true, width: '250px' },
+      { text: 'Aniversário', value: 'aniversario', sortable: true, width: '150px' },
+      { text: 'Telefone', value: 'telefone', sortable: true, width: '150px' },
+      { text: 'Ações', value: 'actions', sortable: false, width: '120px' }
     ];
 
     const historicoHeaders = [
-      { text: 'Data', value: 'data' },
-      { text: 'Itens', value: 'itens' },
-      { text: 'Valor Total', value: 'valor_total' },
-      { text: 'Método de Pagamento', value: 'metodo_pagamento' },
-      { text: 'Status', value: 'status' }
+      { text: 'Data', value: 'data', sortable: true, width: '120px' },
+      { text: 'Itens', value: 'itens', sortable: true, width: '300px' },
+      { text: 'Valor Total', value: 'valor_total', sortable: true, width: '120px' },
+      { text: 'Método de Pagamento', value: 'metodo_pagamento', sortable: true, width: '150px' },
+      { text: 'Status', value: 'status', sortable: true, width: '120px' }
     ];
 
     const searchNome = ref('');
@@ -550,7 +562,6 @@ export default defineComponent({
 }
 
 :deep(.v-data-table th) {
-  background-color: #f8fafc;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;

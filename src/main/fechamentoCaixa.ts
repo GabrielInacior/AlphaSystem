@@ -47,34 +47,36 @@ export function getVendasServicosPorData(
 
   switch (periodo) {
     case 'dia':
-      groupBy = 'strftime("%Y-%m-%d %H", datetime(v.data, "-3 hours"))'
+      groupBy = 'strftime("%Y-%m-%d", v.data)';
       break;
     case 'semana':
       groupBy = 'strftime("%Y-%m-%d", v.data)';
       break;
     case 'mes':
-      groupBy = `date(v.data, '-' || ((cast(strftime('%d', v.data) as integer)) % 2) || ' days')`;
+      groupBy = 'strftime("%Y-%m-%d", v.data)';
       break;
     case 'ano':
       groupBy = 'strftime("%Y-%m", v.data)';
       break;
     case 'todos':
-      groupBy = 'strftime("%Y", v.data)';
+      groupBy = 'strftime("%Y-%m-%d", v.data)';
       break;
   }
 
   const query = `
-    SELECT ${groupBy} AS periodo,
-           SUM(vi.quantidade) AS quantidade_vendida,
-           SUM(vi.valor_total) AS total_vendido
+    SELECT
+      ${groupBy} AS periodo,
+      s.nome AS servico_nome,
+      SUM(vi.quantidade) AS quantidade_vendida,
+      SUM(vi.valor_total) AS total_vendido
     FROM vendas_itens vi
     JOIN vendas v ON vi.venda_id = v.id
-    LEFT JOIN servicos s ON vi.servico_id = s.id
+    JOIN servicos s ON vi.servico_id = s.id
     WHERE v.data BETWEEN ? AND ?
       AND vi.servico_id IS NOT NULL
       AND vi.produto_id IS NULL
-    GROUP BY periodo
-    ORDER BY periodo ASC
+    GROUP BY periodo, s.id
+    ORDER BY periodo ASC, servico_nome
   `;
 
   return new Promise((resolve, reject) => {
