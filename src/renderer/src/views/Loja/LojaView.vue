@@ -105,10 +105,29 @@
                 quantidade de vendas.</v-tooltip>
             </v-btn>
           </v-card-title>
-          <v-row style="max-height: 90px;"> <!-- Adicionando flex-wrap para se ajustar ao espaço -->
+          <v-row style="max-height: 90px;">
             <v-col style="width: 100%;">
-              <v-select item-title="text" item-value="value" v-model="periodoMaisVendidos" :items="periodos"
-                label="Selecione o Período" density="compact" outlined />
+              <v-select
+                item-title="text"
+                item-value="value"
+                v-model="periodoMaisVendidos"
+                :items="periodos"
+                label="Selecione o Período"
+                density="compact"
+                outlined
+              />
+            </v-col>
+            <v-col style="width: 100%;">
+              <v-select
+                item-title="nome"
+                item-value="id"
+                v-model="categoriaSelecionada"
+                :items="categorias"
+                label="Filtrar por Categoria"
+                density="compact"
+                outlined
+                clearable
+              />
             </v-col>
           </v-row>
           <v-list style="overflow-y: auto; max-height: 300px;">
@@ -238,8 +257,71 @@
         </v-card>
       </v-col>
     </v-row>
-    <v-row>
 
+    <v-row>
+      <v-col cols="12" md="6">
+        <v-card class="pa-4" elevation="10">
+          <v-card-title>Produtos Mais Vendidos por Categoria</v-card-title>
+          <v-row style="max-height: 90px;">
+            <v-col style="width: 100%;">
+              <v-select
+                item-title="text"
+                item-value="value"
+                v-model="periodoMaisVendidos"
+                :items="periodos"
+                label="Selecione o Período"
+                density="compact"
+                outlined
+              />
+            </v-col>
+            <v-col style="width: 100%;">
+              <v-select
+                item-title="nome"
+                item-value="id"
+                v-model="categoriaSelecionada"
+                :items="categorias"
+                label="Filtrar por Categoria"
+                density="compact"
+                outlined
+                clearable
+              />
+            </v-col>
+          </v-row>
+          <Bar :data="produtosMaisVendidosData" :options="chartOptions" />
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="6">
+        <v-card class="pa-4" elevation="10">
+          <v-card-title>Lucro Total por Categoria</v-card-title>
+          <v-row style="max-height: 90px;">
+            <v-col style="width: 100%;">
+              <v-select
+                item-title="text"
+                item-value="value"
+                v-model="periodoMaisVendidos"
+                :items="periodos"
+                label="Selecione o Período"
+                density="compact"
+                outlined
+              />
+            </v-col>
+            <v-col style="width: 100%;">
+              <v-select
+                item-title="nome"
+                item-value="id"
+                v-model="categoriaSelecionada"
+                :items="categorias"
+                label="Filtrar por Categoria"
+                density="compact"
+                outlined
+                clearable
+              />
+            </v-col>
+          </v-row>
+          <Bar :data="lucroTotalPorCategoriaData" :options="chartOptions" />
+        </v-card>
+      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -247,7 +329,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { Line, Doughnut, } from 'vue-chartjs';
+import { Line, Doughnut, Bar } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement } from 'chart.js';
 
 // Registrando os tipos do chart.js
@@ -257,7 +339,8 @@ export default defineComponent({
   name: 'LojaView',
   components: {
     LineChart: Line,
-    DoughnutChart: Doughnut
+    DoughnutChart: Doughnut,
+    BarChart: Bar
   },
   setup() {
     // Dados e opções dos gráficos
@@ -285,6 +368,11 @@ export default defineComponent({
       { value: 'ano', text: 'Último Ano' },
       { value: 'todos', text: 'Todos' },
     ];
+    const categorias = ref<any[]>([]);
+    const categoriaSelecionada = ref<number | null>(null);
+    const produtosMaisVendidosData = ref<any>({ labels: [], datasets: [] });
+    const lucroTotalPorCategoriaData = ref<any>({ labels: [], datasets: [] });
+    const loading = ref(false);
 
     const getVendasProdutosPorData = async (periodo: string) => {
       try {
@@ -408,8 +496,27 @@ export default defineComponent({
     }
 
     const getProdutosMaisVendidos = async (periodo: string) => {
-      const produtosResponse = await window.api.getProdutosMaisVendidos(periodo);
-      produtosMaisVendidos.value = produtosResponse;
+      try {
+        const produtosResponse = await window.api.getProdutosMaisVendidosPorCategoria(periodo);
+        produtosMaisVendidos.value = categoriaSelecionada.value
+          ? produtosResponse.filter((p: any) => p.categoria_id === categoriaSelecionada.value)
+          : produtosResponse;
+
+        // Atualizar o gráfico de produtos mais vendidos
+        const labels = produtosMaisVendidos.value.map((p: any) => p.produto_nome);
+        const data = produtosMaisVendidos.value.map((p: any) => p.quantidade_vendida);
+
+        produtosMaisVendidosData.value = {
+          labels,
+          datasets: [{
+            label: 'Quantidade Vendida',
+            data,
+            backgroundColor: generateColors(data.length)
+          }]
+        };
+      } catch (error) {
+        console.error('Erro ao buscar produtos mais vendidos:', error);
+      }
     };
 
     const getQuantidadeEReceitaProdutos = async () => {
@@ -529,8 +636,62 @@ export default defineComponent({
       await getVendasProdutosPorMetodoPagamento(periogoPagamentos.value);
     };
 
-    onMounted(() => {
-      carregarDados();
+    const loadCategorias = async () => {
+      try {
+        categorias.value = await window.api.getAllCategorias();
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+      }
+    };
+
+    const generateColors = (count: number) => {
+      const colors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+        '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF9F40'
+      ];
+      const result = [];
+      for (let i = 0; i < count; i++) {
+        result.push(colors[i % colors.length]);
+      }
+      return result;
+    };
+
+    const loadLucroTotalPorCategoria = async (periodo: string) => {
+      try {
+        const dados = await window.api.getLucroTotalPorCategoria(periodo);
+        const dadosFiltrados = categoriaSelecionada.value
+          ? dados.filter((item: any) => item.categoria_id === categoriaSelecionada.value)
+          : dados;
+
+        lucroTotalPorCategoriaData.value = {
+          labels: dadosFiltrados.map((item: any) => item.categoria_nome),
+          datasets: [{
+            label: 'Lucro Total (R$)',
+            data: dadosFiltrados.map((item: any) => item.lucro_total),
+            backgroundColor: generateColors(dadosFiltrados.length)
+          }]
+        };
+      } catch (error) {
+        console.error('Erro ao carregar lucro total por categoria:', error);
+      }
+    };
+
+    // Watch para atualizar os gráficos quando o período ou categoria mudar
+    watch([periodoMaisVendidos, periodoLucroGasto, categoriaSelecionada], async () => {
+      try {
+        await Promise.all([
+          getProdutosMaisVendidos(periodoMaisVendidos.value),
+          loadLucroTotalPorCategoria(periodoMaisVendidos.value)
+        ]);
+      } catch (error) {
+        console.error('Erro ao atualizar dados:', error);
+      }
+    });
+
+    onMounted(async () => {
+      await loadCategorias();
+      await getProdutosMaisVendidos(periodoMaisVendidos.value);
+      await loadLucroTotalPorCategoria(periodoMaisVendidos.value);
     });
 
     watch(() => periodoLucroGasto.value, async (val) => {
@@ -629,6 +790,11 @@ export default defineComponent({
       getRankingClass,
       periodos,
       periogoPagamentos,
+      categorias,
+      categoriaSelecionada,
+      produtosMaisVendidosData,
+      lucroTotalPorCategoriaData,
+      loading,
     };
   }
 });

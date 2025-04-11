@@ -58,20 +58,30 @@
           {{ editingProduto ? 'Editar Produto' : 'Novo Produto' }}
         </v-card-title>
         <v-card-text>
-          <v-text-field density="compact" v-model="produto.nome" label="Nome" required
-            :rules="[val => !!val || 'Nome é obrigatório']" :error-messages="nomeError"></v-text-field>
+          <v-text-field density="compact" v-model="produto.nome" label="Nome do Produto" required
+            :error-messages="nomeError"></v-text-field>
 
-          <v-number-input density="compact" v-model="produto.custo" label="Custo de compra" required :min="0"
-            :rules="[val => val >= 0 || 'Custo deve ser maior ou igual a zero']" :error-messages="custoError"
-            prefix="R$" :precision="2" control-variant="stacked"></v-number-input>
+          <v-text-field density="compact" v-model="produto.custo" label="Custo de Compra" required type="number" prefix="R$"
+            :error-messages="custoError"></v-text-field>
 
-          <v-number-input density="compact" v-model="produto.preco" label="Preço de venda" required :min="0"
-            :rules="[val => val > 0 || 'Preço deve ser maior que zero']" :error-messages="precoError" prefix="R$"
-            :precision="2" control-variant="stacked"></v-number-input>
+          <v-text-field density="compact" v-model="produto.preco" label="Preço de Venda" required type="number" prefix="R$"
+            :error-messages="precoError"></v-text-field>
 
-          <v-number-input density="compact" v-model="produto.qtdEstoque" label="Quantidade em Estoque" required :min="0"
-            :rules="[val => val >= 0 || 'Quantidade deve ser maior ou igual a zero']" :error-messages="estoqueError"
-            suffix="UN" :precision="0" control-variant="stacked"></v-number-input>
+          <v-select density="compact" v-model="produto.categoria_id" label="Categoria" :items="categorias"
+            item-title="nome" item-value="id" :error-messages="categoriaError" required></v-select>
+
+          <v-number-input
+            density="compact"
+            v-model="produto.qtdEstoque"
+            label="Quantidade em Estoque"
+            required
+            :min="0"
+            :rules="[val => val >= 0 || 'Quantidade deve ser maior ou igual a zero']"
+            :error-messages="estoqueError"
+            suffix="UN"
+            :precision="0"
+            control-variant="stacked"
+          ></v-number-input>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -106,7 +116,14 @@ export default defineComponent({
     const editingProduto = ref<ProdutoEntity | null>(null);
     const excluindoProduto = ref(false);
     const modalConfirmacaoExclusao = ref(false);
-    const produto = ref<ProdutoEntity>(new ProdutoEntity({ nome: '', custo: 0, preco: 0, qtdEstoque: 0 }));
+    const produto = ref({
+      id: null,
+      nome: '',
+      custo: 0,
+      preco: 0,
+      qtdEstoque: 0,
+      categoria_id: null,
+    });
     const produtoIdParaExcluir = ref<number | null>(null);
 
     // Erros
@@ -115,6 +132,9 @@ export default defineComponent({
     const precoError = ref<string | null>(null);
     const estoqueError = ref<string | null>(null);
 
+    const categorias = ref<any[]>([]);
+    const categoriaError = ref<string | null>(null);
+
     const confirmarExclusao = (id: number) => {
       produtoIdParaExcluir.value = id; // Guarda o ID do produto para exclusão
       modalConfirmacaoExclusao.value = true; // Abre o modal de confirmação
@@ -122,6 +142,7 @@ export default defineComponent({
 
     const headers = [
       { text: 'Nome', value: 'nome' },
+      { text: 'Categoria', value: 'categoria_nome' },
       { text: 'Custo de compra', value: 'custo' },
       { text: 'Preço de venda', value: 'preco' },
       { text: 'Quantidade em Estoque', value: 'qtdEstoque' },
@@ -138,71 +159,83 @@ export default defineComponent({
       produtos.value = dadosProdutos.map((produto: any) => new ProdutoEntity(produto));
     };
 
-    const openModal = (editItem: ProdutoEntity | null) => {
-      editingProduto.value = editItem;
-      produto.value = editItem ? new ProdutoEntity(editItem) : new ProdutoEntity({ nome: '', custo: 0, preco: 0, qtdEstoque: 0 });
+    const loadCategorias = async () => {
+      try {
+        categorias.value = await window.api.getAllCategorias();
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+        showSnackbar('Erro ao carregar categorias', 'error');
+      }
+    };
 
-      nomeError.value = null;
-      custoError.value = null;
-      precoError.value = null;
-      estoqueError.value = null;
+    const showSnackbar = (text: string, color: string = 'success') => {
+      // Implementação básica de notificação
+      console.log(`${color}: ${text}`);
+      // Se você tiver um sistema de notificações, pode implementá-lo aqui
+    };
 
+    const openModal = (item: any) => {
+      if (item) {
+        produto.value = { ...item };
+      } else {
+        produto.value = {
+          id: null,
+          nome: '',
+          custo: 0,
+          preco: 0,
+          qtdEstoque: 0,
+          categoria_id: null,
+        };
+      }
       modalOpen.value = true;
     };
 
     const saveProduto = async () => {
-      if (produtos.value.some(p => p.nome.toLowerCase() === produto.value.nome.toLowerCase() && p.id !== editingProduto.value?.id)) {
-        nomeError.value = 'Produto com esse nome já existe';
-        return;
-      }
-
       if (!produto.value.nome) {
         nomeError.value = 'Nome é obrigatório';
         return;
-      } else {
-        nomeError.value = null;
       }
-
-      if (produto.value.custo === null || produto.value.custo < 0) {
-        custoError.value = 'Custo deve ser maior ou igual a zero';
+      if (produto.value.custo <= 0) {
+        custoError.value = 'Custo deve ser maior que zero';
         return;
-      } else {
-        custoError.value = null;
       }
-
-      if (produto.value.preco === null || produto.value.preco <= 0) {
+      if (produto.value.preco <= 0) {
         precoError.value = 'Preço deve ser maior que zero';
         return;
-      } else {
-        precoError.value = null;
       }
-
-      if (produto.value.qtdEstoque === null || produto.value.qtdEstoque < 0) {
+      if (produto.value.qtdEstoque < 0) {
         estoqueError.value = 'Quantidade deve ser maior ou igual a zero';
         return;
-      } else {
-        estoqueError.value = null;
+      }
+      if (!produto.value.categoria_id) {
+        categoriaError.value = 'Categoria é obrigatória';
+        return;
       }
 
-      if (editingProduto.value) {
-        await window.api.updateProduto(
-          editingProduto.value.id || 0,
-          produto.value.nome,
-          produto.value.custo,
-          produto.value.preco,
-          produto.value.qtdEstoque
-        );
-      } else {
-        await window.api.createProduto(
-          produto.value.nome,
-          produto.value.custo,
-          produto.value.preco,
-          produto.value.qtdEstoque
-        );
+      try {
+        if (produto.value.id) {
+          await window.api.updateProduto(
+            produto.value.id,
+            produto.value.nome,
+            produto.value.custo,
+            produto.value.preco,
+            produto.value.qtdEstoque,
+            produto.value.categoria_id
+          );
+        } else {
+          await window.api.createProduto(
+            produto.value.nome,
+            produto.value.custo,
+            produto.value.preco,
+            produto.value.qtdEstoque,
+            produto.value.categoria_id
+          );
+        }
+        await loadProdutos();
+        modalOpen.value = false;
+      } catch (error) {
+        console.error('Erro ao salvar produto:', error);
       }
-
-      modalOpen.value = false;
-      await loadProdutos();
     };
 
     const deleteProduto = async () => {
@@ -215,10 +248,45 @@ export default defineComponent({
     };
 
     const isSaveDisabled = computed(() => {
-      return !produto.value.nome || produto.value.custo === null || produto.value.preco === null || produto.value.qtdEstoque === null;
+      return !produto.value.nome || produto.value.custo === null || produto.value.preco === null || produto.value.qtdEstoque === null || produto.value.categoria_id === null;
     });
 
-    onMounted(loadProdutos);
+    const validateForm = () => {
+      let isValid = true;
+      nomeError.value = null;
+      precoError.value = null;
+      estoqueError.value = null;
+      categoriaError.value = null;
+
+      if (!produto.value.nome.trim()) {
+        nomeError.value = 'Nome é obrigatório';
+        isValid = false;
+      }
+
+      if (!produto.value.preco || produto.value.preco <= 0) {
+        precoError.value = 'Preço deve ser maior que zero';
+        isValid = false;
+      }
+
+      if (!produto.value.categoria_id) {
+        categoriaError.value = 'Categoria é obrigatória';
+        isValid = false;
+      }
+
+      if (produto.value.qtdEstoque < 0) {
+        estoqueError.value = 'Quantidade não pode ser negativa';
+        isValid = false;
+      }
+
+      return isValid;
+    };
+
+    onMounted(async () => {
+      await Promise.all([
+        loadProdutos(),
+        loadCategorias()
+      ]);
+    });
 
     return {
       produtos,
@@ -238,7 +306,10 @@ export default defineComponent({
       custoError,
       precoError,
       estoqueError,
-      isSaveDisabled
+      categorias,
+      categoriaError,
+      isSaveDisabled,
+      validateForm
     };
   }
 });

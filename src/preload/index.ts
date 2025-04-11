@@ -33,15 +33,15 @@ const api = {
 
   deleteServico: (id: number) => ipcRenderer.invoke('delete-servico', id),
 
-  createProduto: (nome: string, custo: number, preco: number, qtdEstoque: number) =>
-    ipcRenderer.invoke('create-produto', nome, custo, preco, qtdEstoque),
+  createProduto: (nome: string, custo: number, preco: number, qtdEstoque: number, categoria_id: number) =>
+    ipcRenderer.invoke('create-produto', nome, custo, preco, qtdEstoque, categoria_id),
 
   getAllProdutos: () => ipcRenderer.invoke('get-all-produtos'),
 
   getProdutoById: (id: number) => ipcRenderer.invoke('get-produto-by-id', id),
 
-  updateProduto: (id: number, nome: string, custo: number, preco: number, qtdEstoque: number) =>
-    ipcRenderer.invoke('update-produto', id, nome, custo, preco, qtdEstoque),
+  updateProduto: (id: number, nome: string, custo: number, preco: number, qtdEstoque: number, categoria_id: number) =>
+    ipcRenderer.invoke('update-produto', id, nome, custo, preco, qtdEstoque, categoria_id),
 
   deleteProduto: (id: number) => ipcRenderer.invoke('delete-produto', id),
 
@@ -156,6 +156,26 @@ const api = {
   getClientesComVendasPendentes: () => ipcRenderer.invoke("get-clientes-com-vendas-pendentes"),
 
   getQuantidadeEReceitaServicos: (periodo: string) => ipcRenderer.invoke("get-quantidade-e-receita-servicos", periodo),
+
+  // Métodos para categorias
+  createCategoria: (nome: string, descricao: string) =>
+    ipcRenderer.invoke('create-categoria', nome, descricao),
+
+  getAllCategorias: () => ipcRenderer.invoke('get-all-categorias'),
+
+  getCategoriaById: (id: number) => ipcRenderer.invoke('get-categoria-by-id', id),
+
+  updateCategoria: (id: number, nome: string, descricao: string) =>
+    ipcRenderer.invoke('update-categoria', id, nome, descricao),
+
+  deleteCategoria: (id: number) => ipcRenderer.invoke('delete-categoria', id),
+
+  // Insights por categoria
+  getProdutosMaisVendidosPorCategoria: (periodo: string) =>
+    ipcRenderer.invoke('get-produtos-mais-vendidos-por-categoria', periodo),
+
+  getLucroTotalPorCategoria: (periodo: string) =>
+    ipcRenderer.invoke('get-lucro-total-por-categoria', periodo),
 };
 
 if (process.contextIsolated) {

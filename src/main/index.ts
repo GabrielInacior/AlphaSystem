@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
-import { initDB, createTables } from './database'
+import { initDB, createTables, checkAndUpdateDatabase } from './database'
 import { electronApp, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { Database } from 'sqlite3'
@@ -26,7 +26,7 @@ function createWindow(): void {
     mainWindow.show()
   })
 
-  // mainWindow.webContents.openDevTools();
+   mainWindow.webContents.openDevTools();
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
@@ -45,6 +45,7 @@ app.whenReady().then(() => {
 
   db = initDB() // Inicia o banco de dados
   createTables(db) // Cria as tabelas, caso não existam
+  checkAndUpdateDatabase(db) // Verifica e atualiza a estrutura do banco de dados
 
   registerIpcHandlers(db) // Registra os IPC handlers
 

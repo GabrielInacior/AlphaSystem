@@ -30,6 +30,7 @@ export function initDB(): Database {
 
 export async function createTables(db: sqlite3.Database): Promise<void> {
   db.serialize(() => {
+    // Criar tabelas se não existirem
     db.run(`
       CREATE TABLE IF NOT EXISTS clientes (
        id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,13 +49,23 @@ export async function createTables(db: sqlite3.Database): Promise<void> {
     `)
 
     db.run(`
+      CREATE TABLE IF NOT EXISTS categorias (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        descricao TEXT
+      );
+    `)
+
+    db.run(`
     CREATE TABLE IF NOT EXISTS produtos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
       custo REAL,
       preco REAL,
       qtdEstoque INTEGER DEFAULT 0,
-      lucroPorcentagem REAL
+      lucroPorcentagem REAL,
+      categoria_id INTEGER,
+      FOREIGN KEY(categoria_id) REFERENCES categorias(id)
     );
     `)
 
@@ -97,6 +108,39 @@ export async function createTables(db: sqlite3.Database): Promise<void> {
     `)
 
   })
+}
+
+// Função para verificar e atualizar a estrutura do banco de dados
+export async function checkAndUpdateDatabase(db: sqlite3.Database): Promise<void> {
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      // Verificar se a coluna categoria_id existe na tabela produtos
+      db.get("SELECT * FROM pragma_table_info('produtos') WHERE name='categoria_id'", (err, row) => {
+        if (err) {
+          console.error('Erro ao verificar coluna categoria_id:', err);
+          reject(err);
+          return;
+        }
+
+        // Se a coluna não existir, adicionar
+        if (!row) {
+          console.log('Adicionando coluna categoria_id à tabela produtos...');
+          db.run("ALTER TABLE produtos ADD COLUMN categoria_id INTEGER REFERENCES categorias(id)", (err) => {
+            if (err) {
+              console.error('Erro ao adicionar coluna categoria_id:', err);
+              reject(err);
+              return;
+            }
+            console.log('Coluna categoria_id adicionada com sucesso.');
+            resolve();
+          });
+        } else {
+          console.log('Coluna categoria_id já existe na tabela produtos.');
+          resolve();
+        }
+      });
+    });
+  });
 }
 
 // Função para consultar o banco de dados
