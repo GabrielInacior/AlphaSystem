@@ -73,7 +73,7 @@ export interface Api {
   getCustoVsLucro: (periodo: string) => Promise<any>;
   getClientesMaisCompraramProdutos: (periodo: string, limite: number) => Promise<any[]>;
   getClientesMaisCompraramServicos: (periodo: string, limite: number) => Promise<any[]>;
-  getVendasProdutosPorMetodoPagamento: (periodo: string) => Promise<any[]>;
+  getVendasProdutosPorMetodoPagamento: (periodo: string, categoria_id?: number) => Promise<any[]>;
   getVendasServicosPorMetodoPagamento: (periodo: string) => Promise<any[]>;
   getProdutosSemEstoque: () => Promise<any[]>;
   getQuantidadeEReceitaProdutos: () => Promise<any>;
@@ -81,8 +81,8 @@ export interface Api {
   getQuantidadeEReceitaServicos: (periodo: string) => Promise<any>;
 
   // Insights por categoria
-  getProdutosMaisVendidosPorCategoria: (periodo: string) => Promise<any[]>;
-  getLucroTotalPorCategoria: (periodo: string) => Promise<any[]>;
+  getProdutosMaisVendidosPorCategoria: (periodo: string, categoria_id?: number) => Promise<any[]>;
+  getLucroTotalPorCategoria: (periodo: string, categoria_id?: number) => Promise<any[]>;
 }
 
 declare global {

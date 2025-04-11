@@ -650,7 +650,8 @@ export function getQuantidadeEReceitaServicosTOTAL(db: Database): Promise<any> {
 // Função para retornar os produtos mais vendidos por categoria
 export function getProdutosMaisVendidosPorCategoria(
   db: Database,
-  periodo: string
+  periodo: string,
+  categoria_id?: number
 ): Promise<any[]> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
@@ -658,6 +659,7 @@ export function getProdutosMaisVendidosPorCategoria(
     SELECT
       c.nome AS categoria_nome,
       p.nome AS produto_nome,
+      p.categoria_id,
       SUM(vi.quantidade) AS quantidade_vendida,
       SUM(vi.valor_total) AS total_vendido
     FROM vendas_itens vi
@@ -665,12 +667,15 @@ export function getProdutosMaisVendidosPorCategoria(
     JOIN categorias c ON p.categoria_id = c.id
     JOIN vendas v ON vi.venda_id = v.id
     WHERE v.data BETWEEN ? AND ?
+    ${categoria_id ? 'AND p.categoria_id = ?' : ''}
     GROUP BY c.id, p.id
     ORDER BY c.nome, quantidade_vendida DESC
   `;
 
+  const params = categoria_id ? [dataInicio, dataFim, categoria_id] : [dataInicio, dataFim];
+
   return new Promise((resolve, reject) => {
-    db.all(query, [dataInicio, dataFim], (err, rows) => {
+    db.all(query, params, (err, rows) => {
       if (err) reject(err);
       else resolve(rows);
     });
@@ -680,13 +685,15 @@ export function getProdutosMaisVendidosPorCategoria(
 // Função para retornar o lucro total por categoria
 export function getLucroTotalPorCategoria(
   db: Database,
-  periodo: string
+  periodo: string,
+  categoria_id?: number
 ): Promise<any[]> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
   const query = `
     SELECT
       c.nome AS categoria_nome,
+      c.id AS categoria_id,
       SUM(vi.valor_total) AS total_vendido,
       SUM(COALESCE(p.custo, 0) * vi.quantidade) AS total_custo,
       SUM(vi.valor_total) - SUM(COALESCE(p.custo, 0) * vi.quantidade) AS lucro_total
@@ -696,12 +703,15 @@ export function getLucroTotalPorCategoria(
     JOIN vendas v ON vi.venda_id = v.id
     WHERE v.data BETWEEN ? AND ?
     AND vi.produto_id IS NOT NULL
+    ${categoria_id ? 'AND p.categoria_id = ?' : ''}
     GROUP BY c.id
     ORDER BY lucro_total DESC
   `;
 
+  const params = categoria_id ? [dataInicio, dataFim, categoria_id] : [dataInicio, dataFim];
+
   return new Promise((resolve, reject) => {
-    db.all(query, [dataInicio, dataFim], (err, rows) => {
+    db.all(query, params, (err, rows) => {
       if (err) reject(err);
       else resolve(rows);
     });

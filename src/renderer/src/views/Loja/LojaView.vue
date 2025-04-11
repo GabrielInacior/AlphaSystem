@@ -535,7 +535,7 @@ export default defineComponent({
     };
 
     const getVendasProdutosPorMetodoPagamento = async (periodo: string) => {
-      const vendasResponse = await window.api.getVendasProdutosPorMetodoPagamento(periodo);
+      const vendasResponse = await window.api.getVendasProdutosPorMetodoPagamento(periodo, categoriaSelecionada.value);
       const labels: string[] = [];
       const data: number[] = [];
       const colors: string[] = ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#EF5350']; // Cores pré-definidas para métodos de pagamento

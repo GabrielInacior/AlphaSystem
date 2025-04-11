@@ -145,7 +145,7 @@ const api = {
 
   getClientesMaisCompraramServicos: (periodo: string, limite: number) => ipcRenderer.invoke('get-clientes-mais-compraram-servicos', periodo, limite),
 
-  getVendasProdutosPorMetodoPagamento: (periodo: string) => ipcRenderer.invoke('get-vendas-produtos-por-metodo-pagamento', periodo),
+  getVendasProdutosPorMetodoPagamento: (periodo: string, categoria_id?: number) => ipcRenderer.invoke('get-vendas-produtos-por-metodo-pagamento', periodo, categoria_id),
 
   getVendasServicosPorMetodoPagamento: (periodo: string) => ipcRenderer.invoke('get-vendas-servicos-por-metodo-pagamento', periodo),
 
@@ -171,11 +171,11 @@ const api = {
   deleteCategoria: (id: number) => ipcRenderer.invoke('delete-categoria', id),
 
   // Insights por categoria
-  getProdutosMaisVendidosPorCategoria: (periodo: string) =>
-    ipcRenderer.invoke('get-produtos-mais-vendidos-por-categoria', periodo),
+  getProdutosMaisVendidosPorCategoria: (periodo: string, categoria_id?: number) =>
+    ipcRenderer.invoke('get-produtos-mais-vendidos-por-categoria', periodo, categoria_id),
 
-  getLucroTotalPorCategoria: (periodo: string) =>
-    ipcRenderer.invoke('get-lucro-total-por-categoria', periodo),
+  getLucroTotalPorCategoria: (periodo: string, categoria_id?: number) =>
+    ipcRenderer.invoke('get-lucro-total-por-categoria', periodo, categoria_id),
 };
 
 if (process.contextIsolated) {

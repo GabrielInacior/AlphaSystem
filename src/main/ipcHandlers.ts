@@ -561,18 +561,18 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Insights por categoria
-  ipcMain.handle('get-produtos-mais-vendidos-por-categoria', async (_event, periodo: string) => {
+  ipcMain.handle('get-produtos-mais-vendidos-por-categoria', async (_event, periodo: string, categoria_id?: number) => {
     try {
-      return await Fechamento.getProdutosMaisVendidosPorCategoria(db, periodo);
+      return await Fechamento.getProdutosMaisVendidosPorCategoria(db, periodo, categoria_id);
     } catch (error) {
       console.error('Erro ao obter produtos mais vendidos por categoria:', error);
       throw error;
     }
   });
 
-  ipcMain.handle('get-lucro-total-por-categoria', async (_event, periodo: string) => {
+  ipcMain.handle('get-lucro-total-por-categoria', async (_event, periodo: string, categoria_id?: number) => {
     try {
-      return await Fechamento.getLucroTotalPorCategoria(db, periodo);
+      return await Fechamento.getLucroTotalPorCategoria(db, periodo, categoria_id);
     } catch (error) {
       console.error('Erro ao obter lucro total por categoria:', error);
       throw error;
