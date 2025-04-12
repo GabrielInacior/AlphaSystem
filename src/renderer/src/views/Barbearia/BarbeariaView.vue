@@ -14,23 +14,11 @@
               </div>
             </div>
             <div class="d-flex align-center">
-              <v-btn
-                color="white"
-                variant="tonal"
-                class="mr-4"
-                prepend-icon="mdi-file-pdf-box"
-                @click="gerarRelatorioServicos"
-                :loading="gerandoRelatorio"
-              >
+              <v-btn color="white" variant="tonal" class="mr-4" prepend-icon="mdi-file-pdf-box"
+                @click="gerarRelatorioServicos" :loading="gerandoRelatorio">
                 Gerar Relatório
             </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                color="white"
-                class="mr-4"
-                size="small"
-              >
+              <v-btn icon variant="text" color="white" class="mr-4" size="small">
                 <v-icon>mdi-information</v-icon>
                 <v-tooltip activator="parent" location="bottom">
                   <div class="tooltip-content">
@@ -41,12 +29,13 @@
                       <li>O arquivo será salvo automaticamente no seu computador</li>
                       <li>Você pode compartilhar este PDF com sua equipe ou clientes</li>
                     </ol>
-                    <p class="mt-2 mb-0 text-caption">Dica: Ajuste os filtros de período antes de gerar o relatório para obter dados específicos.</p>
+                    <p class="mt-2 mb-0 text-caption">Dica: Ajuste os filtros de período antes de gerar o relatório para
+                      obter dados específicos.</p>
                   </div>
                 </v-tooltip>
               </v-btn>
-              <v-avatar size="48" class="welcome-avatar">
-                <v-img src="@/assets/logo.png" alt="Logo" />
+              <v-avatar size="64" class="welcome-avatar">
+                <v-icon size="36" color="white">mdi-content-cut</v-icon>
               </v-avatar>
             </div>
           </v-card-text>
@@ -55,6 +44,75 @@
           </v-row>
 
     <v-row class="mt-2">
+      <!-- Dashboard Cards -->
+      <v-col cols="12" md="4">
+        <v-card class="dashboard-card" elevation="2" color="info">
+          <v-card-text class="d-flex align-center">
+            <div class="d-flex flex-column w-100">
+              <div class="d-flex align-center mb-2">
+                <v-icon color="white" size="20" class="mr-2">mdi-calendar-today</v-icon>
+                <span class="text-caption text-white">Hoje</span>
+              </div>
+              <div class="d-flex align-center">
+                <v-icon size="48" color="white" class="mr-4">mdi-account-multiple-check</v-icon>
+                <div>
+                  <div class="text-subtitle-2 text-white">Clientes Atendidos</div>
+                  <div class="text-h5 font-weight-bold text-white">
+                    {{ clientesAtendidosHoje }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+                    </v-col>
+
+      <v-col cols="12" md="4">
+        <v-card class="dashboard-card" elevation="2" color="success">
+          <v-card-text class="d-flex align-center">
+            <div class="d-flex flex-column w-100">
+              <div class="d-flex align-center mb-2">
+                <v-icon color="white" size="20" class="mr-2">mdi-calendar-today</v-icon>
+                <span class="text-caption text-white">Hoje</span>
+              </div>
+              <div class="d-flex align-center">
+                <v-icon size="48" color="white" class="mr-4">mdi-cash-multiple</v-icon>
+                <div>
+                  <div class="text-subtitle-2 text-white">Receita Total</div>
+                  <div class="text-h5 font-weight-bold text-white">
+                    R$ {{ (valorAtendimentosHoje || 0).toFixed(2) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+                    </v-col>
+
+      <v-col cols="12" md="4">
+        <v-card class="dashboard-card" elevation="2" color="primary">
+          <v-card-text class="d-flex align-center">
+            <div class="d-flex flex-column w-100">
+              <div class="d-flex align-center mb-2">
+                <v-icon color="white" size="20" class="mr-2">mdi-calendar-today</v-icon>
+                <span class="text-caption text-white">Hoje</span>
+              </div>
+              <div class="d-flex align-center">
+                <v-icon size="48" color="white" class="mr-4">mdi-star</v-icon>
+                <div class="w-100">
+                  <div class="text-subtitle-2 text-white">Serviço Mais Vendido</div>
+                  <div class="text-h5 font-weight-bold text-white text-truncate" style="max-width: 200px;">
+                    {{ servicoMaisVendidoHoje?.servico_nome || 'Nenhum serviço' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+                  </v-row>
+
+    <v-row class="mt-4">
       <!-- Top Clientes - Serviços -->
       <v-col cols="12" sm="6" md="4">
         <v-card class="chart-card h-100" elevation="2">
@@ -65,33 +123,20 @@
                 <span class="text-subtitle-1 font-weight-medium">Top Clientes - Serviços</span>
               </div>
             </div>
-            <v-select
-              v-model="periodoVClientesCompraram"
-              :items="periodos"
-              item-title="text"
-              item-value="value"
-              label="Período"
-              density="compact"
-              class="period-select"
-              variant="outlined"
-              hide-details
-              style="max-width: 200px"
-            />
+            <v-select v-model="periodoVClientesCompraram" :items="periodos" item-title="text" item-value="value"
+              label="Período" density="compact" class="period-select" variant="outlined" hide-details
+              style="max-width: 200px" />
           </v-card-title>
           <v-divider />
           <v-card-text class="pa-3">
             <v-list class="mt-2" style="max-height: 250px; overflow-y: auto;">
-              <v-list-item
-                v-for="(cliente, index) in melhoresClientes"
-                :key="index"
-                class="mb-1 rounded-lg"
-                :class="{'bg-primary-lighten-5': index % 2 === 0}"
-              >
+              <v-list-item v-for="(cliente, index) in melhoresClientes" :key="index" class="mb-1 rounded-lg"
+                :class="{ 'bg-primary-lighten-5': index % 2 === 0 }">
                 <template v-slot:prepend>
                   <v-avatar :color="getRankingColor(index)" size="32">
                     <span class="text-subtitle-2 text-white">{{ index + 1 }}</span>
                   </v-avatar>
-                        </template>
+                </template>
                 <v-list-item-title class="text-body-2 font-weight-medium">{{ cliente.cliente_nome }}</v-list-item-title>
                 <v-list-item-subtitle class="d-flex align-center text-caption">
                   <v-icon size="small" color="primary" class="mr-1">mdi-tools</v-icon>
@@ -99,13 +144,8 @@
                 </v-list-item-subtitle>
               </v-list-item>
           </v-list>
-            <v-alert
-              v-if="melhoresClientes.length === 0"
-              type="info"
-              variant="tonal"
-              class="mt-3"
-              icon="mdi-information"
-            >
+            <v-alert v-if="melhoresClientes.length === 0" type="info" variant="tonal" class="mt-3"
+              icon="mdi-information">
               Nenhum cliente encontrado neste período
             </v-alert>
           </v-card-text>
@@ -122,18 +162,8 @@
                 <span class="text-subtitle-1 font-weight-medium">Visão Geral</span>
               </div>
             </div>
-            <v-select
-              v-model="periodoLucroGasto"
-              :items="periodos"
-              item-title="text"
-              item-value="value"
-              label="Período"
-              density="compact"
-              class="period-select"
-              variant="outlined"
-              hide-details
-              style="max-width: 200px"
-            />
+            <v-select v-model="periodoLucroGasto" :items="periodos" item-title="text" item-value="value" label="Período"
+              density="compact" class="period-select" variant="outlined" hide-details style="max-width: 200px" />
           </v-card-title>
           <v-divider />
           <v-card-text class="pa-3">
@@ -145,7 +175,8 @@
                 <v-card class="stat-card" elevation="0">
                   <v-card-text class="text-center pa-3">
                     <v-icon color="primary" size="32" class="mb-2">mdi-tools</v-icon>
-                    <div class="text-h6 font-weight-bold">{{ quantidadeReceitaServicos.total_servicos_vendidos || 0 }}</div>
+                    <div class="text-h6 font-weight-bold">{{ quantidadeReceitaServicos.total_servicos_vendidos || 0 }}
+                    </div>
                     <div class="text-caption text-medium-emphasis">Serviços Vendidos</div>
                   </v-card-text>
                 </v-card>
@@ -172,33 +203,17 @@
                       <span class="text-subtitle-1 font-weight-bold">Média por Serviço</span>
                     </div>
                     <span class="text-h6 font-weight-bold text-info">
-                      {{ quantidadeReceitaServicos.total_servicos_vendidos && quantidadeReceitaServicos.receita_total_servicos ?
-                         'R$ ' + (quantidadeReceitaServicos.receita_total_servicos / quantidadeReceitaServicos.total_servicos_vendidos).toFixed(2) :
-                         'R$ 0,00' }}
+                      {{ quantidadeReceitaServicos.total_servicos_vendidos &&
+                        quantidadeReceitaServicos.receita_total_servicos
+                        ?
+                        'R$ ' + (quantidadeReceitaServicos.receita_total_servicos /
+                          quantidadeReceitaServicos.total_servicos_vendidos).toFixed(2) :
+                      'R$ 0,00' }}
                     </span>
                   </v-card-text>
                 </v-card>
-              </v-col>
-
-              <!-- Top Serviço -->
-              <v-col cols="12">
-                <v-card class="stat-card" elevation="0">
-                  <v-card-text class="d-flex align-center justify-space-between py-2 px-3">
-                    <div class="d-flex align-center">
-                      <v-icon color="warning" size="24" class="mr-2">mdi-star</v-icon>
-                      <span class="text-subtitle-1 font-weight-bold">Serviço Mais Popular</span>
-                    </div>
-                    <div class="text-right">
-                      <div class="text-body-1 font-weight-medium">
-                        {{ servicosMaisVendidos[0]?.servico_nome || 'Nenhum serviço' }}
-                      </div>
-                      <div class="text-caption text-medium-emphasis">
-                        {{ servicosMaisVendidos[0]?.quantidade_vendida || 0 }} vendas
-                      </div>
-                    </div>
-                  </v-card-text>
-                </v-card>
             </v-col>
+
           </v-row>
           </v-card-text>
         </v-card>
@@ -214,33 +229,20 @@
                 <span class="text-subtitle-1 font-weight-medium">Serviços Mais Vendidos</span>
               </div>
             </div>
-            <v-select
-              v-model="periodoMaisVendidos"
-              :items="periodos"
-              item-title="text"
-              item-value="value"
-              label="Período"
-              density="compact"
-              class="period-select"
-              variant="outlined"
-              hide-details
-              style="max-width: 200px"
-            />
+            <v-select v-model="periodoMaisVendidos" :items="periodos" item-title="text" item-value="value"
+              label="Período" density="compact" class="period-select" variant="outlined" hide-details
+              style="max-width: 200px" />
           </v-card-title>
           <v-divider />
           <v-card-text class="pa-3">
             <v-list class="mt-2" style="max-height: 250px; overflow-y: auto;">
-              <v-list-item
-                v-for="(servico, index) in servicosMaisVendidos"
-                :key="index"
-                class="mb-1 rounded-lg"
-                :class="{'bg-primary-lighten-5': index % 2 === 0}"
-              >
+              <v-list-item v-for="(servico, index) in servicosMaisVendidos" :key="index" class="mb-1 rounded-lg"
+                :class="{ 'bg-primary-lighten-5': index % 2 === 0 }">
                 <template v-slot:prepend>
                   <v-avatar :color="getRankingColor(index)" size="32">
                     <span class="text-subtitle-2 text-white">{{ index + 1 }}</span>
                   </v-avatar>
-                        </template>
+                </template>
                 <v-list-item-title class="text-body-2 font-weight-medium">{{ servico.servico_nome }}</v-list-item-title>
                 <v-list-item-subtitle class="d-flex align-center justify-space-between text-caption">
                   <span>
@@ -252,14 +254,9 @@
                   </span>
                 </v-list-item-subtitle>
               </v-list-item>
-          </v-list>
-            <v-alert
-              v-if="servicosMaisVendidos.length === 0"
-              type="info"
-              variant="tonal"
-              class="mt-3"
-              icon="mdi-information"
-            >
+            </v-list>
+            <v-alert v-if="servicosMaisVendidos.length === 0" type="info" variant="tonal" class="mt-3"
+              icon="mdi-information">
               Nenhum serviço vendido neste período
             </v-alert>
           </v-card-text>
@@ -278,28 +275,14 @@
                 <span class="text-h6 font-weight-medium">Quantidade de Serviços Vendidos</span>
               </div>
             </div>
-            <v-select
-              v-model="periodoVendasServicos"
-              :items="periodos"
-              item-title="text"
-              item-value="value"
-              label="Período"
-              density="compact"
-              class="period-select"
-              variant="outlined"
-              hide-details
-              style="max-width: 200px"
-            />
+            <v-select v-model="periodoVendasServicos" :items="periodos" item-title="text" item-value="value"
+              label="Período" density="compact" class="period-select" variant="outlined" hide-details
+              style="max-width: 200px" />
           </v-card-title>
           <v-divider />
           <v-card-text class="pa-4">
             <div class="chart-container mt-2">
-              <apexchart
-                type="line"
-                :options="chartOptionsVendas"
-                :series="vendasServicosSeries"
-                height="350"
-              />
+              <apexchart type="line" :options="chartOptionsVendas" :series="vendasServicosSeries" height="350" />
             </div>
           </v-card-text>
         </v-card>
@@ -318,28 +301,15 @@
                     <span class="text-subtitle-1 font-weight-medium">Vendas por Método de Pagamento</span>
                   </div>
                 </div>
-                <v-select
-                  v-model="periogoPagamentos"
-                  :items="periodos"
-                  item-title="text"
-                  item-value="value"
-                  label="Período"
-                  density="compact"
-                  class="period-select"
-                  variant="outlined"
-                  hide-details
-                  style="max-width: 200px"
-                />
+                <v-select v-model="periogoPagamentos" :items="periodos" item-title="text" item-value="value"
+                  label="Período" density="compact" class="period-select" variant="outlined" hide-details
+                  style="max-width: 200px" />
               </v-card-title>
               <v-divider />
               <v-card-text class="pa-3">
                 <div class="chart-container mt-2">
-                  <apexchart
-                    type="donut"
-                    :options="chartOptionsPagamento"
-                    :series="vendasPorMetodoPagamentoSeries"
-                    height="250"
-                  />
+                  <apexchart type="donut" :options="chartOptionsPagamento" :series="vendasPorMetodoPagamentoSeries"
+                    height="250" />
                 </div>
               </v-card-text>
                     </v-col>
@@ -362,7 +332,8 @@
                     <template v-slot:prepend>
                       <v-icon color="primary" class="mr-2">mdi-cash-multiple</v-icon>
                     </template>
-                    <v-list-item-title class="text-body-2 text-medium-emphasis">Método Mais Utilizado</v-list-item-title>
+                    <v-list-item-title class="text-body-2 text-medium-emphasis">Método Mais
+                      Utilizado</v-list-item-title>
                     <template v-slot:append>
                       <span class="text-subtitle-1 font-weight-bold">
                         {{ chartOptionsPagamento.labels[0] || '---' }}
@@ -374,7 +345,8 @@
                     <template v-slot:prepend>
                       <v-icon color="success" class="mr-2">mdi-chart-pie</v-icon>
                     </template>
-                    <v-list-item-title class="text-body-2 text-medium-emphasis">Distribuição de Pagamentos</v-list-item-title>
+                    <v-list-item-title class="text-body-2 text-medium-emphasis">Distribuição de
+                      Pagamentos</v-list-item-title>
                     <template v-slot:append>
                       <span class="text-subtitle-1 font-weight-bold text-success">
                         {{ chartOptionsPagamento.labels.length }} métodos
@@ -386,12 +358,14 @@
                     <template v-slot:prepend>
                       <v-icon color="info" class="mr-2">mdi-percent</v-icon>
                     </template>
-                    <v-list-item-title class="text-body-2 text-medium-emphasis">Participação do Principal</v-list-item-title>
+                    <v-list-item-title class="text-body-2 text-medium-emphasis">Participação do
+                      Principal</v-list-item-title>
                     <template v-slot:append>
                       <span class="text-subtitle-1 font-weight-bold text-info">
-                        {{ vendasPorMetodoPagamentoSeries.length > 0 && chartOptionsPagamento.labels.length > 0 ?
-                           Math.round((vendasPorMetodoPagamentoSeries[0] / vendasPorMetodoPagamentoSeries.reduce((a, b) => a + b, 0)) * 100) + '%' :
-                           '---' }}
+                        {{vendasPorMetodoPagamentoSeries.length > 0 && chartOptionsPagamento.labels.length > 0 ?
+                          Math.round((vendasPorMetodoPagamentoSeries[0] / vendasPorMetodoPagamentoSeries.reduce((a, b) =>
+                            a + b, 0)) * 100) + '%' :
+                        '---' }}
                       </span>
                     </template>
                   </v-list-item>
@@ -404,9 +378,9 @@
                       <span class="text-subtitle-1 font-weight-bold text-white">Crescimento de Pagamentos</span>
                     </div>
                     <span class="text-h5 font-weight-bold text-white text-break">
-                      {{ vendasPorMetodoPagamentoSeries.length > 0 ?
-                         'R$ ' + vendasPorMetodoPagamentoSeries.reduce((a, b) => a + b, 0).toFixed(2) :
-                         '---' }}
+                      {{vendasPorMetodoPagamentoSeries.length > 0 ?
+                        'R$ ' + vendasPorMetodoPagamentoSeries.reduce((a, b) => a + b, 0).toFixed(2) :
+                        '---'}}
                     </span>
                   </v-card-text>
         </v-card>
@@ -485,6 +459,9 @@ export default defineComponent({
     const quantidadeReceitaServicos = ref<QuantidadeReceita>({ total_servicos_vendidos: 0, receita_total_servicos: 0 });
     const melhoresClientes = ref<Cliente[]>([]);
     const gerandoRelatorio = ref(false);
+    const clientesAtendidosHoje = ref(0);
+    const valorAtendimentosHoje = ref(0);
+    const servicoMaisVendidoHoje = ref<any>(null);
 
     // Períodos
     const periodoVendasServicos = ref('semana');
@@ -511,7 +488,8 @@ export default defineComponent({
         },
         zoom: {
           enabled: false
-        }
+        },
+        foreColor: '#94A3B8' // Cor base para todos os textos do gráfico
       },
       stroke: {
         curve: 'smooth',
@@ -543,7 +521,7 @@ export default defineComponent({
         categories: [],
         labels: {
           style: {
-            colors: '#64748B',
+            colors: '#94A3B8',
             fontSize: '12px',
             fontFamily: 'Inter, sans-serif'
           },
@@ -561,24 +539,32 @@ export default defineComponent({
           title: {
             text: 'Quantidade',
             style: {
-              color: '#64748B',
+              color: '#94A3B8',
               fontSize: '12px',
               fontFamily: 'Inter, sans-serif'
             }
           },
           labels: {
             style: {
-              colors: '#64748B',
+              colors: '#94A3B8',
               fontSize: '12px',
               fontFamily: 'Inter, sans-serif'
             }
           }
         }
-      ]
+      ],
+      tooltip: {
+        theme: 'dark',
+        style: {
+          fontSize: '12px',
+          fontFamily: 'Inter, sans-serif'
+        }
+      }
     });
     const chartOptionsPagamento = ref({
       chart: {
         type: 'donut',
+        foreColor: '#CBD5E1', // Cor base mais clara para todos os textos do gráfico
         animations: {
           enabled: true,
           easing: 'easeinout',
@@ -612,13 +598,13 @@ export default defineComponent({
                 show: true,
                 fontSize: '14px',
                 fontFamily: 'Inter, sans-serif',
-                color: '#1a202c'
+                color: '#CBD5E1'
               },
               value: {
                 show: true,
                 fontSize: '16px',
                 fontFamily: 'Inter, sans-serif',
-                color: '#1a202c',
+                color: '#CBD5E1',
                 formatter: function (val: number) {
                   return 'R$ ' + val.toFixed(2);
                 }
@@ -628,7 +614,7 @@ export default defineComponent({
                 label: 'Total',
                 fontSize: '14px',
                 fontFamily: 'Inter, sans-serif',
-                color: '#1a202c',
+                color: '#CBD5E1',
                 formatter: function (w: any) {
                   const total = w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
                   return 'R$ ' + total.toFixed(2);
@@ -642,6 +628,9 @@ export default defineComponent({
         position: 'bottom',
         fontFamily: 'Inter, sans-serif',
         fontSize: '12px',
+        labels: {
+          colors: '#CBD5E1'
+        },
         markers: {
           width: 12,
           height: 12,
@@ -686,7 +675,7 @@ export default defineComponent({
 
     const getQuantidadeEReceitaServicos = async () => {
       try {
-        const servicosResponse = await window.api.getQuantidadeEReceitaServicos('todos');
+        const servicosResponse = await window.api.getQuantidadeEReceitaServicos(periodoLucroGasto.value);
         quantidadeReceitaServicos.value = servicosResponse || {
           total_servicos_vendidos: 0,
           receita_total_servicos: 0
@@ -824,7 +813,7 @@ export default defineComponent({
               ...chartOptionsVendas.value.xaxis.labels,
               rotate: -45,
               style: {
-                colors: '#64748B',
+                colors: '#94A3B8',
                 fontSize: '12px',
                 fontFamily: 'Inter, sans-serif'
               }
@@ -869,6 +858,36 @@ export default defineComponent({
       }
     };
 
+    const getClientesAtendidosHoje = async () => {
+      try {
+        const response = await window.api.getClientesAtendidosHoje();
+        clientesAtendidosHoje.value = response?.total_clientes || 0;
+      } catch (error) {
+        console.error('Erro ao buscar clientes atendidos hoje:', error);
+        clientesAtendidosHoje.value = 0;
+      }
+    };
+
+    const getValorAtendimentosHoje = async () => {
+      try {
+        const response = await window.api.getValorAtendimentosHoje();
+        valorAtendimentosHoje.value = response?.valor_total || 0;
+      } catch (error) {
+        console.error('Erro ao buscar valor dos atendimentos de hoje:', error);
+        valorAtendimentosHoje.value = 0;
+      }
+    };
+
+    const getServicoMaisVendidoHoje = async () => {
+      try {
+        const response = await window.api.getServicoMaisVendidoHoje();
+        servicoMaisVendidoHoje.value = response;
+      } catch (error) {
+        console.error('Erro ao buscar serviço mais vendido hoje:', error);
+        servicoMaisVendidoHoje.value = null;
+      }
+    };
+
     // Modificar a função carregarDados
     const carregarDados = async () => {
       await getVendasServicosPorData(periodoVendasServicos.value);
@@ -877,6 +896,9 @@ export default defineComponent({
       await getServicosSemEstoque();
       await getQuantidadeEReceitaServicos();
       await getVendasServicosPorMetodoPagamento(periogoPagamentos.value);
+      await getClientesAtendidosHoje();
+      await getValorAtendimentosHoje();
+      await getServicoMaisVendidoHoje();
     };
 
     // Watch para atualizar o gráfico quando o período mudar
@@ -1044,7 +1066,10 @@ export default defineComponent({
       periodos,
       periogoPagamentos,
       gerarRelatorioServicos,
-      gerandoRelatorio
+      gerandoRelatorio,
+      clientesAtendidosHoje,
+      valorAtendimentosHoje,
+      servicoMaisVendidoHoje
     };
   }
 });
@@ -1153,6 +1178,7 @@ export default defineComponent({
   border-radius: 8px;
   border: 1px solid rgba(var(--v-border-color), 0.12);
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  height: 100%;
 }
 
 .stat-card:hover {

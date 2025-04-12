@@ -115,7 +115,7 @@
         </template>
         <v-list-item density="compact" @click="navigateToPage('vendas')" prepend-icon="mdi-account-cash" class="submenu-item">Registrar Nova Venda</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('historico-vendas')" prepend-icon="mdi-clipboard-text-clock-outline" class="submenu-item">Histórico de Vendas</v-list-item>
-        <v-list-item density="compact" @click="navigateToPage('fiados')" prepend-icon="mdi-account-multiple-minus" class="submenu-item">Vendas Pendentes (Fiado)</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('fiados')" prepend-icon="mdi-account-clock" class="submenu-item">Vendas Pendentes (Fiado)</v-list-item>
       </v-list-group>
 
       <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="vendaOpen" class="rail-menu">
@@ -127,27 +127,21 @@
         <v-list density="compact" class="rail-submenu">
           <v-list-item @click="navigateToPage('vendas')" prepend-icon="mdi-account-cash">Registrar Nova venda</v-list-item>
           <v-list-item @click="navigateToPage('historico-vendas')" prepend-icon="mdi-clipboard-text-clock-outline">Histórico de Vendas</v-list-item>
-          <v-list-item @click="navigateToPage('fiados')" prepend-icon="mdi-account-multiple-minus">Vendas pendentes(Fiado)</v-list-item>
+          <v-list-item @click="navigateToPage('fiados')" prepend-icon="mdi-account-clock">Vendas pendentes(Fiado)</v-list-item>
         </v-list>
       </v-menu>
-    </v-list>
 
-    <!-- Footer Section -->
-    <v-list density="compact" nav class="sidebar-footer">
-      <v-list-item @click="toggleTheme" prepend-icon="mdi-theme-light-dark" title="Alterar Tema" class="footer-item">
+      <!-- Games Section -->
+      <v-list-item v-if="!rail" prepend-icon="mdi-gamepad-variant" title="Jogos" @click="navigateToPage('games')" class="menu-item">
         <template v-slot:prepend>
-          <v-icon :color="currentTheme === 'light' ? 'primary' : 'warning'">
-            {{ currentTheme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night' }}
-          </v-icon>
+          <v-icon color="primary">mdi-gamepad-variant</v-icon>
         </template>
-        <v-tooltip v-if="rail" activator="parent" location="start">Alterar tema</v-tooltip>
       </v-list-item>
-      <v-list-item title="Sair" prepend-icon="mdi-power" @click="logout" class="footer-item">
-        <template v-slot:prepend>
-          <v-icon color="error">mdi-power</v-icon>
-        </template>
-        <v-tooltip v-if="rail" activator="parent" location="start">Sair para a área de trabalho</v-tooltip>
-      </v-list-item>
+
+      <v-btn v-if="rail" class="rail-btn" variant="plain" @click="navigateToPage('games')">
+        <v-icon :size="25" color="primary">mdi-gamepad-variant</v-icon>
+        <v-tooltip activator="parent" location="start">Jogos</v-tooltip>
+      </v-btn>
     </v-list>
   </v-navigation-drawer>
 
@@ -194,20 +188,11 @@ export default defineComponent({
       currentTheme.value = newTheme;
     });
 
-    const toggleTheme = () => {
-      const newTheme = currentTheme.value === 'light' ? 'dark' : 'light';
-      global.name.value = newTheme;
-    };
-
     const toggleRail = () => {
       useUserSideBarStore().toggleRail();
     };
     const navigateToPage = (page: string) => {
       router.push({ name: page });
-    };
-
-    const logout = () => {
-      window.api.closeWindow();
     };
 
     return {
@@ -216,8 +201,6 @@ export default defineComponent({
       toggleRail,
       currentTheme,
       navigateToPage,
-      toggleTheme,
-      logout,
       LogoPreta,
       LogoBranca,
       open,
@@ -370,30 +353,6 @@ export default defineComponent({
 :deep(.v-theme--dark) .rail-submenu {
   background: rgb(var(--v-theme-sidebarbg)) !important;
   border-color: var(--color-border) !important;
-}
-
-.sidebar-footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding: 8px;
-  border-top: 1px solid var(--color-border);
-  background: rgb(var(--v-theme-sidebarbg));
-  border-radius: 0 0 16px 16px;
-}
-
-:deep(.v-theme--dark) .sidebar-footer {
-  background: rgb(var(--v-theme-sidebarbg));
-}
-
-.footer-item {
-  border-radius: 12px;
-  margin-bottom: 4px;
-  transition: all 0.3s ease;
-}
-
-.footer-item:hover {
-  background: var(--color-background-mute) !important;
 }
 
 .expand-btn {

@@ -505,6 +505,33 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
+  ipcMain.handle('get-clientes-atendidos-hoje', async () => {
+    try {
+      return await Fechamento.getClientesAtendidosHoje(db);
+    } catch (error) {
+      console.error('Erro ao buscar clientes atendidos hoje:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-valor-atendimentos-hoje', async () => {
+    try {
+      return await Fechamento.getValorAtendimentosHoje(db);
+    } catch (error) {
+      console.error('Erro ao buscar valor dos atendimentos de hoje:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-servico-mais-vendido-hoje', async () => {
+    try {
+      return await Fechamento.getServicoMaisVendidoHoje(db);
+    } catch (error) {
+      console.error('Erro ao buscar serviço mais vendido hoje:', error);
+      throw error;
+    }
+  });
+
   ipcMain.handle('get-clientes-com-vendas-pendentes', async (_event) => {
     try {
       return await Fechamento.getClientesComVendasPendentes(db);

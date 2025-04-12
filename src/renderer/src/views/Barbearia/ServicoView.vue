@@ -14,7 +14,7 @@
               </div>
             </div>
             <v-avatar size="64" class="welcome-avatar">
-              <v-img src="@/assets/logo.png" alt="Logo" />
+              <v-icon size="36" color="white">mdi-hair-dryer</v-icon>
             </v-avatar>
           </v-card-text>
         </v-card>

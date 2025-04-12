@@ -57,7 +57,7 @@
               </div>
             </div>
             <v-avatar size="64" class="welcome-avatar">
-              <v-img src="@/assets/logo.png" alt="Logo" />
+              <v-icon size="36" color="white">mdi-file-document-multiple</v-icon>
             </v-avatar>
           </v-card-text>
         </v-card>
@@ -215,11 +215,11 @@
             <v-window v-model="activeTab">
               <!-- Vista em Lista -->
               <v-window-item value="lista">
-                <v-data-table
-                  :headers="headers"
+            <v-data-table
+              :headers="headers"
                   :items="filteredContas"
-                  :sort-by="sortBy"
-                  :sort-desc="sortDesc"
+              :sort-by="sortBy"
+              :sort-desc="sortDesc"
                   class="elevation-0 rounded-lg"
                   hover
                 >
@@ -231,38 +231,38 @@
                       <div>
                         <div class="font-weight-medium">{{ item.descricao }}</div>
                         <div class="text-caption text-grey">{{ item.fornecedor }}</div>
-                      </div>
                     </div>
-                  </template>
+                </div>
+              </template>
 
-                  <template v-slot:item.valor="{ item }">
+              <template v-slot:item.valor="{ item }">
                     <span class="font-weight-bold" :class="getValorColor(item)">
                       R$ {{ formatarValor(item.valor) }}
-                    </span>
-                  </template>
+                </span>
+              </template>
 
                   <template v-slot:item.data_vencimento="{ item }">
-                    <div class="d-flex align-center">
+                <div class="d-flex align-center">
                       <v-icon size="small" :color="getVencimentoColor(item)" class="mr-1">
                         {{ getVencimentoIcon(item) }}
                       </v-icon>
                       {{ formatarData(item.data_vencimento) }}
-                    </div>
-                  </template>
+                </div>
+              </template>
 
                   <template v-slot:item.status="{ item }">
-                    <v-chip
+                <v-chip
                       :color="getStatusColor(item.status)"
-                      variant="tonal"
-                      size="small"
-                      class="font-weight-medium"
-                    >
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-medium"
+                >
                       {{ getStatusText(item.status) }}
-                    </v-chip>
-                  </template>
+                </v-chip>
+              </template>
 
-                  <template v-slot:item.actions="{ item }">
-                    <div class="d-flex align-center">
+              <template v-slot:item.actions="{ item }">
+                <div class="d-flex align-center">
                       <v-btn
                         v-if="item.status === 'pendente'"
                         icon="mdi-check"
@@ -273,26 +273,26 @@
                         class="action-btn"
                         title="Marcar como paga"
                       />
-                      <v-btn
-                        icon="mdi-pencil"
-                        size="small"
-                        color="primary"
-                        variant="text"
-                        @click="openModal('edit', item)"
-                        class="action-btn"
+                  <v-btn
+                    icon="mdi-pencil"
+                    size="small"
+                    color="primary"
+                    variant="text"
+                    @click="openModal('edit', item)"
+                    class="action-btn"
                         title="Editar"
-                      />
-                      <v-btn
-                        icon="mdi-delete"
-                        size="small"
-                        color="error"
-                        variant="text"
+                  />
+                  <v-btn
+                    icon="mdi-delete"
+                    size="small"
+                    color="error"
+                    variant="text"
                         @click="confirmarExclusao(item)"
-                        class="action-btn"
+                    class="action-btn"
                         title="Excluir"
-                      />
-                    </div>
-                  </template>
+                  />
+                </div>
+              </template>
                 </v-data-table>
               </v-window-item>
 
@@ -357,14 +357,14 @@
                                   variant="text"
                                   @click.stop="openModal('edit', conta)"
                                 />
-                              </div>
-                            </template>
+                </div>
+              </template>
                           </v-list-item>
                         </v-list>
-                      </v-card-text>
-                    </v-card>
-                  </v-col>
-                </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
               </v-window-item>
 
               <!-- Vista em Gráficos -->
@@ -1229,7 +1229,7 @@ export default defineComponent({
           return dataConta.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }) === mes;
         });
 
-        return {
+    return {
           total: contasDoMes.reduce((sum, c) => sum + c.valor, 0),
           pago: contasDoMes
             .filter(c => c.status === 'pago')

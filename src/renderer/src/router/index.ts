@@ -13,6 +13,7 @@ import HistoricoVendas from '@renderer/views/Vendas/HistoricoVendas.vue'
 import VendasView from '@renderer/views/Vendas/VendasView.vue'
 import CategoriaView from '@renderer/views/Loja/CategoriaView.vue'
 import ContasPagarView from '../views/Barbearia/ContasPagar.vue'
+import GamesView from '../views/Games/games.vue'
 
 const routes = [
   {
@@ -88,6 +89,11 @@ const routes = [
         name: 'contas-pagar',
         component: ContasPagarView
       },
+      {
+        path: 'games',
+        name: 'games',
+        component: GamesView
+      }
     ]
   }
 ]

@@ -46,7 +46,7 @@
                 </v-tooltip>
               </v-btn>
               <v-avatar size="48" class="welcome-avatar">
-                <v-img src="@/assets/logo.png" alt="Logo" />
+                <v-icon size="32" color="white">mdi-home</v-icon>
               </v-avatar>
             </div>
           </v-card-text>
@@ -372,7 +372,7 @@ export default defineComponent({
                 show: true,
                 fontSize: '16px',
                 fontFamily: 'Inter, sans-serif',
-                color: '#1a202c',
+                color: '#888888',
                 formatter: function (val: number) {
                   return 'R$ ' + val.toFixed(2);
                 }
@@ -411,6 +411,7 @@ export default defineComponent({
         enabled: true,
         theme: 'dark',
         style: {
+          color: '#888888',
           fontSize: '14px',
           fontFamily: 'Inter, sans-serif'
         },

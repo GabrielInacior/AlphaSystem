@@ -14,7 +14,7 @@
               </div>
             </div>
             <v-avatar size="64" class="welcome-avatar">
-              <v-img src="@/assets/logo.png" alt="Logo" />
+              <v-icon size="36" color="white">mdi-account-clock</v-icon>
             </v-avatar>
           </v-card-text>
         </v-card>
@@ -561,7 +561,6 @@ export default defineComponent({
 }
 
 .content-card {
-  background: white;
   border-radius: 16px;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }

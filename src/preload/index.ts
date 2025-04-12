@@ -174,6 +174,8 @@ const api = {
 
   getClientesComVendasPendentes: () => ipcRenderer.invoke("get-clientes-com-vendas-pendentes"),
 
+  getClientesAtendidosHoje: () => ipcRenderer.invoke("get-clientes-atendidos-hoje"),
+
   getQuantidadeEReceitaServicos: (periodo: string) => ipcRenderer.invoke("get-quantidade-e-receita-servicos", periodo),
 
   // Contas a Pagar
@@ -238,6 +240,10 @@ const api = {
 
   getLucroTotalPorCategoria: (periodo: string, categoria_id?: number) =>
     ipcRenderer.invoke('get-lucro-total-por-categoria', periodo, categoria_id),
+
+  getValorAtendimentosHoje: () => ipcRenderer.invoke("get-valor-atendimentos-hoje"),
+
+  getServicoMaisVendidoHoje: () => ipcRenderer.invoke("get-servico-mais-vendido-hoje"),
 };
 
 if (process.contextIsolated) {
