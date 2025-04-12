@@ -188,11 +188,13 @@ export default defineComponent({
       private ballSize: number = 10;
       private leftPaddleTargetY: number = 0;
       private rightPaddleTargetY: number = 0;
-      private paddleMoveSpeed: number = 0.15; // Velocidade de transição suave (0-1)
-      private aiDifficulty: number = 0.8; // 0-1, onde 1 é perfeito e 0 é aleatório
-      private aiReactionDelay: number = 0.2; // Delay de reação da IA em segundos
+      private paddleMoveSpeed: number = 0.15;
+      private aiDifficulty: number = 0.8;
+      private aiReactionDelay: number = 0.2;
       private aiReactionTimer: number = 0;
       private isTwoPlayerMode: boolean = false;
+      private lastCollisionTime: number = 0;
+      private collisionCooldown: number = 100; // Cooldown em milissegundos
 
       constructor() {
         super({ key: 'PongScene' });
@@ -304,22 +306,43 @@ export default defineComponent({
         // Colisão com o topo e o fundo
         if (this.ball.y <= this.ballSize / 2 || this.ball.y >= GAME_HEIGHT - this.ballSize / 2) {
           this.ballVelocityY *= -1;
+          this.ball.y = this.ball.y <= this.ballSize / 2 ? this.ballSize / 2 : GAME_HEIGHT - this.ballSize / 2;
         }
+
+        const currentTime = time;
+        const canCollide = currentTime - this.lastCollisionTime >= this.collisionCooldown;
 
         // Colisão com a raquete esquerda
         if (
+          canCollide &&
           this.ball.x <= this.paddleWidth &&
           this.ball.y >= this.leftPaddle.y - this.paddleHeight / 2 &&
           this.ball.y <= this.leftPaddle.y + this.paddleHeight / 2
         ) {
-          this.ballVelocityX *= -1;
+          // Garantir que a bola não fique presa na raquete
+          this.ball.x = this.paddleWidth + this.ballSize / 2;
+
+          // Calcular o ponto de impacto relativo ao centro da raquete
+          const relativeImpact = (this.ball.y - this.leftPaddle.y) / (this.paddleHeight / 2);
+
+          // Ajustar o ângulo da bola baseado no ponto de impacto
+          const bounceAngle = relativeImpact * Math.PI / 4; // 45 graus máximo
+          const speed = Math.sqrt(this.ballVelocityX * this.ballVelocityX + this.ballVelocityY * this.ballVelocityY);
+
+          this.ballVelocityX = Math.abs(speed * Math.cos(bounceAngle));
+          this.ballVelocityY = speed * Math.sin(bounceAngle);
+
+          this.lastCollisionTime = currentTime;
           score.value += 1;
 
           // Aumentar a velocidade da bola a cada 5 pontos
           if (score.value % 5 === 0) {
-            const speedMultiplier = 1 + (score.value / 5) * 0.1; // Aumenta 10% a cada 5 pontos
-            this.ballVelocityX = BALL_SPEED * speedMultiplier * (this.ballVelocityX > 0 ? 1 : -1);
-            this.ballVelocityY = BALL_SPEED * speedMultiplier * (this.ballVelocityY > 0 ? 1 : -1);
+            const speedMultiplier = 1 + (score.value / 5) * 0.1;
+            const currentSpeed = Math.sqrt(this.ballVelocityX * this.ballVelocityX + this.ballVelocityY * this.ballVelocityY);
+            const newSpeed = currentSpeed * speedMultiplier;
+            const angle = Math.atan2(this.ballVelocityY, this.ballVelocityX);
+            this.ballVelocityX = newSpeed * Math.cos(angle);
+            this.ballVelocityY = newSpeed * Math.sin(angle);
           }
 
           if (score.value > highScore.value) {
@@ -327,7 +350,6 @@ export default defineComponent({
             emit('update-score', 'pong', highScore.value);
           }
 
-          // Atualizar texto de pontuação
           if (this.scoreText) {
             this.scoreText.setText(score.value.toString());
           }
@@ -335,18 +357,35 @@ export default defineComponent({
 
         // Colisão com a raquete direita
         if (
+          canCollide &&
           this.ball.x >= GAME_WIDTH - this.paddleWidth &&
           this.ball.y >= this.rightPaddle.y - this.paddleHeight / 2 &&
           this.ball.y <= this.rightPaddle.y + this.paddleHeight / 2
         ) {
-          this.ballVelocityX *= -1;
+          // Garantir que a bola não fique presa na raquete
+          this.ball.x = GAME_WIDTH - this.paddleWidth - this.ballSize / 2;
+
+          // Calcular o ponto de impacto relativo ao centro da raquete
+          const relativeImpact = (this.ball.y - this.rightPaddle.y) / (this.paddleHeight / 2);
+
+          // Ajustar o ângulo da bola baseado no ponto de impacto
+          const bounceAngle = relativeImpact * Math.PI / 4; // 45 graus máximo
+          const speed = Math.sqrt(this.ballVelocityX * this.ballVelocityX + this.ballVelocityY * this.ballVelocityY);
+
+          this.ballVelocityX = -Math.abs(speed * Math.cos(bounceAngle));
+          this.ballVelocityY = speed * Math.sin(bounceAngle);
+
+          this.lastCollisionTime = currentTime;
           score.value += 1;
 
           // Aumentar a velocidade da bola a cada 5 pontos
           if (score.value % 5 === 0) {
-            const speedMultiplier = 1 + (score.value / 5) * 0.1; // Aumenta 10% a cada 5 pontos
-            this.ballVelocityX = BALL_SPEED * speedMultiplier * (this.ballVelocityX > 0 ? 1 : -1);
-            this.ballVelocityY = BALL_SPEED * speedMultiplier * (this.ballVelocityY > 0 ? 1 : -1);
+            const speedMultiplier = 1 + (score.value / 5) * 0.1;
+            const currentSpeed = Math.sqrt(this.ballVelocityX * this.ballVelocityX + this.ballVelocityY * this.ballVelocityY);
+            const newSpeed = currentSpeed * speedMultiplier;
+            const angle = Math.atan2(this.ballVelocityY, this.ballVelocityX);
+            this.ballVelocityX = newSpeed * Math.cos(angle);
+            this.ballVelocityY = newSpeed * Math.sin(angle);
           }
 
           if (score.value > highScore.value) {
@@ -354,7 +393,6 @@ export default defineComponent({
             emit('update-score', 'pong', highScore.value);
           }
 
-          // Atualizar texto de pontuação
           if (this.scoreText) {
             this.scoreText.setText(score.value.toString());
           }
