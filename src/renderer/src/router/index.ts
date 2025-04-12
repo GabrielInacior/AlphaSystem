@@ -11,6 +11,7 @@ import Inicio from '@renderer/views/Inicio.vue'
 import DespesaView from '@renderer/views/Loja/DespesaView.vue'
 import HistoricoVendas from '@renderer/views/Vendas/HistoricoVendas.vue'
 import VendasView from '@renderer/views/Vendas/VendasView.vue'
+import CategoriaView from '@renderer/views/Loja/CategoriaView.vue'
 
 const routes = [
   {
@@ -28,6 +29,11 @@ const routes = [
         path: 'clientes',
         name: 'clientes',
         component: ClienteView,
+      },
+      {
+        path: 'categorias',
+        name: 'categorias',
+        component: CategoriaView
       },
 
       {

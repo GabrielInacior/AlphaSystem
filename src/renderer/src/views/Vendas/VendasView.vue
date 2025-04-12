@@ -1,232 +1,514 @@
 <template>
-  <v-container>
-    <!-- Produtos e Serviços -->
-    <v-expansion-panels v-model="expanded" class="mb-3" elevation="10">
-      <v-expansion-panel title="Selecionar produtos e serviços">
-        <v-expansion-panel-text class="pb-4" style="max-height: 450px; overflow-y: auto;">
-          <v-row class="elevation-0">
-            <v-col cols="12" sm="6">
-              <v-card class="scroll-card elevation-0">
-                <v-card-title class="text-h6">Produtos</v-card-title>
-                <v-row class="align-center search-bar pb-4" style="max-height: 200px;">
-                  <v-col cols="9" class="px-5 ml-2">
-                    <v-text-field density="compact" v-model="filtroProduto" label="Buscar Produto"
-                      prepend-inner-icon="mdi-magnify" dense hide-details class="search-input" />
-                  </v-col>
-                  <v-col cols="auto" class="d-flex align-center pa-0 pr-3">
-                    <v-btn color="primary" @click="openModalProduto" height="40" class="search-btn">
-                      <v-icon>mdi-plus</v-icon>
-                      <v-tooltip activator="parent" location="start">Cadastrar novo produto</v-tooltip>
-                    </v-btn>
-                  </v-col>
-                </v-row>
-
-                <v-list dense class="lista-scroll" style="height: 200px; overflow-y: auto;">
-                  <v-list-item v-for="produto in produtosFiltrados" :key="produto.id" @click="adicionarProduto(produto)"
-                    :class="{ 'estoque-insuficiente': produto.qtdEstoque === 0 }">
-                    <v-list-item-title>
-                      {{ produto.nome }}
-                      <span class="qtd-estoque" :style="{ color: produto.qtdEstoque === 0 ? 'red' : '#888' }">
-                        ({{ produto.qtdEstoque }} em estoque)
-                      </span>
-                      <!-- Exibe a quantidade em estoque -->
-                      <v-btn icon class="ml-2" color="primary" variant="plain" height="20" size="small"
-                        v-if="itensVenda.some(item => item.id === produto.id && item.tipo === 'produto')">
-                        <v-icon>mdi-plus</v-icon>
-                        <v-tooltip activator="parent" location="start">Produto adicionado a venda</v-tooltip>
-                      </v-btn>
-                    </v-list-item-title>
-                    <v-list-item-subtitle class="text-right">R$ {{ produto.preco.toFixed(2) }}</v-list-item-subtitle>
-                    <v-divider></v-divider>
-                  </v-list-item>
-                </v-list>
-              </v-card>
-            </v-col>
-
-            <v-divider vertical></v-divider>
-
-            <v-col cols="12" sm="6">
-              <v-card class="scroll-card elevation-0">
-                <v-card-title class="text-h6">Serviços</v-card-title>
-                <v-row class="align-center search-bar pb-4" style="max-height: 200px;">
-                  <v-col cols="9" class="px-5 ml-2">
-                    <v-text-field density="compact" v-model="filtroServico" label="Buscar Serviço"
-                      prepend-inner-icon="mdi-magnify" dense hide-details class="search-input" />
-                  </v-col>
-                  <v-col cols="auto" class="d-flex align-center pa-0 pr-3">
-                    <v-btn color="primary" @click="openModalServico" height="40" class="search-btn">
-                      <v-icon>mdi-plus</v-icon>
-                      <v-tooltip activator="parent" location="start">Cadastrar novo serviço</v-tooltip>
-                    </v-btn>
-                  </v-col>
-                </v-row>
-
-                <v-list dense class="lista-scroll" style="height: 200px; overflow-y: auto;">
-                  <v-list-item v-for="servico in servicosFiltrados" :key="servico.id"
-                    @click="adicionarServico(servico)">
-                    <v-list-item-title>
-                      {{ servico.nome }}
-                      <!-- Ícone de selecionado para serviço -->
-                      <v-btn icon class="ml-2" color="primary" variant="plain" size="small" height="20"
-                        v-if="itensVenda.some(item => item.id === servico.id && item.tipo === 'servico')">
-                        <v-icon>mdi-plus</v-icon>
-                        <v-tooltip activator="parent" location="start">Serviço adicionado a venda</v-tooltip>
-                      </v-btn>
-                    </v-list-item-title>
-                    <v-list-item-subtitle class="text-right">R$ {{ servico.preco.toFixed(2) }}</v-list-item-subtitle>
-                    <v-divider></v-divider>
-                  </v-list-item>
-                </v-list>
-              </v-card>
-            </v-col>
-          </v-row>
-
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
-
-    <!-- Resumo da Venda -->
+  <v-container fluid class="vendas-container pa-6">
+    <!-- Header Section with Parallax Effect -->
     <v-row>
-      <v-col cols="12" >
-        <v-card elevation="10">
-          <v-card-title class="text-h6">Resumo da Venda
-            <v-row>
-              <v-col cols="12" sm="6">
-                <v-autocomplete density="compact" v-model="clienteSelecionado" :items="clientes" item-title="nome"
-                  item-value="id" label="Cliente" prepend-inner-icon="mdi-account" required>
-                </v-autocomplete>
-              </v-col>
-              <v-col cols="12" sm="6">
-                <v-btn color="primary" @click="openModalCliente" height="40" class="search-btn">
-                  <v-icon>mdi-plus</v-icon>
-                  <v-tooltip activator="parent" location="start">Cadastrar novo cliente</v-tooltip>
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-card-title>
-          <v-divider></v-divider>
-
-          <!-- Lista rolável de itens -->
-          <v-table dense style="max-height: 300px; overflow-y: auto;" fixed-header>
-            <thead>
-              <tr>
-                <th>Produto/Serviço</th>
-                <th>Tipo</th>
-                <th>Estoque</th>
-                <th>Qtd</th>
-                <th>Preço Unitário</th>
-                <th>Preço Total</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in itensVenda" :key="item.id">
-                <td>{{ item.nome }}</td>
-                <td>{{ item.tipo === 'produto' ? 'Produto' : 'Serviço' }}</td>
-                <td> {{ item.tipo === 'produto' ? item.qtdEstoque + ' Unidade(s)' : 'Indisponível' }}</td>
-                <td class="d-flex align-center" style="justify-content: center; max-width: 70px;">
-                  <template v-if="item.tipo === 'produto'">
-                    <v-btn icon size="small" @click="alterarQuantidade(item, -1)" :disabled="item.quantidade <= 1"
-                      class="mr-2" variant="text">
-                      <v-icon>mdi-minus</v-icon>
-                    </v-btn>
-                    {{ item.quantidade }}
-                    <v-btn icon size="small" @click="alterarQuantidade(item, 1)" class="ml-2" variant="text">
-                      <v-icon>mdi-plus</v-icon>
-                    </v-btn>
-                  </template>
-                  <template v-else>
-                    <v-btn icon size="small" @click="alterarQuantidade(item, -1)" :disabled="item.quantidade <= 1"
-                      class="mr-2" variant="text">
-                      <v-icon>mdi-minus</v-icon>
-                    </v-btn>
-                    {{ item.quantidade }}
-                    <v-btn icon size="small" @click="alterarQuantidade(item, 1)" class="ml-2" variant="text">
-                      <v-icon>mdi-plus</v-icon>
-                    </v-btn>
-                  </template>
-
-                </td>
-                <td>R$ {{ item.preco.toFixed(2) }}</td>
-                <td>R$ {{ (item.preco * item.quantidade).toFixed(2) }}</td>
-                <td>
-                  <v-btn icon size="small" color="error" @click="removerItemVenda(item)" variant="text">
-                    <v-icon>mdi-trash-can</v-icon>
-                  </v-btn>
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
-
-          <v-divider></v-divider>
-
-          <!-- Total da Venda -->
-          <v-card-text class="text-right text-h6">
-            Total: <strong>R$ {{ formatarValor(totalVenda) }}</strong>
+      <v-col cols="12">
+        <v-card class="welcome-card" elevation="0">
+          <v-card-text class="d-flex align-center justify-space-between">
+            <div>
+              <h1 class="text-h4 font-weight-bold welcome-text mb-2">
+                Nova Venda
+              </h1>
+              <div class="text-subtitle-1 text-white opacity-75">
+                Registre produtos e serviços vendidos
+              </div>
+            </div>
+            <v-avatar size="64" class="welcome-avatar">
+              <v-img src="@/assets/logo.png" alt="Logo" />
+            </v-avatar>
           </v-card-text>
-
-          <!-- Informações de Pagamento -->
-          <v-row class="pt-3 px-4">
-            <v-col cols="12" sm="5">
-              <v-number-input density="compact" v-model="valorPago" label="Valor Pago" prefix="R$" :precision="2"
-                :min="0" :max="totalVenda"
-                hint="O valor pago pelo cliente. Se for menor que o valor total a venda será pendente (fiado)"
-                prepend-inner-icon="mdi-cash" required>
-              </v-number-input>
-            </v-col>
-
-            <v-col cols="auto">
-              <v-btn @click="pagarDeUmaVez" color="success" variant="flat" :disabled="itensVenda.length === 0"
-                style="margin-left: 4px;">
-                <v-icon>mdi-plus</v-icon>
-                <v-tooltip activator="parent" location="start">Preencher com valor total</v-tooltip>
-              </v-btn>
-            </v-col>
-
-            <v-col cols="10" sm="3">
-              <v-autocomplete density="compact" v-model="metodoPagamento" :items="metodosPagamento"
-                label="Forma de Pagamento" prepend-inner-icon="mdi-credit-card" required>
-              </v-autocomplete>
-            </v-col>
-
-            <v-col cols="auto">
-              <v-btn @click="finalizarVenda" variant="flat" :disabled="!clienteSelecionado || itensVenda.length === 0"
-                v-if="valorPago === totalVenda">
-                <v-icon>mdi-check</v-icon>
-                Finalizar Venda
-              </v-btn>
-              <v-btn @click="openModalFiado()" variant="flat" :disabled="!clienteSelecionado || itensVenda.length === 0"
-                v-else>
-                <v-icon>mdi-check</v-icon>
-                Finalizar Venda
-              </v-btn>
-            </v-col>
-          </v-row>
         </v-card>
       </v-col>
     </v-row>
 
+    <!-- Produtos e Serviços -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-card class="selection-card" elevation="2">
+          <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
+            <div class="d-flex align-center">
+              <v-icon color="primary" class="mr-2">mdi-cart</v-icon>
+              <span class="text-h6 font-weight-medium">Selecionar Produtos e Serviços</span>
+            </div>
+            <v-btn
+              color="primary"
+              variant="tonal"
+              @click="expanded = expanded.length ? [] : [0]"
+              class="toggle-btn"
+            >
+              <v-icon>{{ expanded.length ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+              {{ expanded.length ? 'Recolher' : 'Expandir' }}
+            </v-btn>
+          </v-card-title>
+          <v-expand-transition>
+            <div v-show="expanded.length">
+              <v-divider />
+              <v-card-text class="pa-6">
+                <v-row>
+                  <v-col cols="12" md="6" class="pr-2">
+                    <v-card class="product-card h-100" elevation="0">
+                      <v-card-title class="d-flex align-center justify-space-between py-3 px-4">
+                        <div class="d-flex align-center">
+                          <v-icon color="primary" class="mr-2">mdi-package-variant</v-icon>
+                          <span class="text-subtitle-1 font-weight-medium">Produtos</span>
+                        </div>
+                        <v-btn
+                          color="primary"
+                          size="small"
+                          @click="openModalProduto"
+                          class="add-btn"
+                        >
+                          <v-icon size="small" class="mr-1">mdi-plus</v-icon>
+                          Novo Produto
+                        </v-btn>
+                      </v-card-title>
+                      <v-divider />
+                      <v-card-text class="pa-4">
+                        <v-text-field
+                          v-model="filtroProduto"
+                          label="Buscar Produto"
+                          prepend-inner-icon="mdi-magnify"
+                          density="compact"
+                          variant="outlined"
+                          hide-details
+                          class="search-field mb-4"
+                        />
+                        <v-list class="product-list" style="max-height: 300px; overflow-y: auto;">
+                          <v-list-item
+                            v-for="produto in produtosFiltrados"
+                            :key="produto.id"
+                            @click="adicionarProduto(produto)"
+                            class="mb-2 rounded-lg"
+                            :class="{
+                              'bg-primary-lighten-5': itensVenda.some(item => item.id === produto.id && item.tipo === 'produto'),
+                              'estoque-insuficiente': produto.qtdEstoque === 0
+                            }"
+                          >
+                            <template v-slot:prepend>
+                              <v-avatar color="primary" size="40">
+                                <span class="text-h6 text-white">{{ produto.nome.charAt(0) }}</span>
+                              </v-avatar>
+                            </template>
+                            <v-list-item-title class="font-weight-medium">{{ produto.nome }}</v-list-item-title>
+                            <v-list-item-subtitle class="d-flex align-center justify-space-between">
+                              <span :class="{ 'text-error': produto.qtdEstoque === 0 }">
+                                <v-icon size="small" :color="produto.qtdEstoque === 0 ? 'error' : 'success'" class="mr-1">
+                                  {{ produto.qtdEstoque === 0 ? 'mdi-alert-circle' : 'mdi-check-circle' }}
+                                </v-icon>
+                                {{ produto.qtdEstoque }} em estoque
+                              </span>
+                              <span class="text-primary font-weight-bold">R$ {{ produto.preco.toFixed(2) }}</span>
+                            </v-list-item-subtitle>
+                          </v-list-item>
+                          <v-alert
+                            v-if="produtosFiltrados.length === 0"
+                            type="info"
+                            variant="tonal"
+                            class="mt-4"
+                            icon="mdi-information"
+                          >
+                            Nenhum produto encontrado
+                          </v-alert>
+                        </v-list>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+
+                  <v-col cols="12" md="6" class="pl-2">
+                    <v-card class="service-card h-100" elevation="0">
+                      <v-card-title class="d-flex align-center justify-space-between py-3 px-4">
+                        <div class="d-flex align-center">
+                          <v-icon color="primary" class="mr-2">mdi-tools</v-icon>
+                          <span class="text-subtitle-1 font-weight-medium">Serviços</span>
+                        </div>
+                        <v-btn
+                          color="primary"
+                          size="small"
+                          @click="openModalServico"
+                          class="add-btn"
+                        >
+                          <v-icon size="small" class="mr-1">mdi-plus</v-icon>
+                          Novo Serviço
+                        </v-btn>
+                      </v-card-title>
+                      <v-divider />
+                      <v-card-text class="pa-4">
+                        <v-text-field
+                          v-model="filtroServico"
+                          label="Buscar Serviço"
+                          prepend-inner-icon="mdi-magnify"
+                          density="compact"
+                          variant="outlined"
+                          hide-details
+                          class="search-field mb-4"
+                        />
+                        <v-list class="service-list" style="max-height: 300px; overflow-y: auto;">
+                          <v-list-item
+                            v-for="servico in servicosFiltrados"
+                            :key="servico.id"
+                            @click="adicionarServico(servico)"
+                            class="mb-2 rounded-lg"
+                            :class="{'bg-primary-lighten-5': itensVenda.some(item => item.id === servico.id && item.tipo === 'servico')}"
+                          >
+                            <template v-slot:prepend>
+                              <v-avatar color="primary" size="40">
+                                <span class="text-h6 text-white">{{ servico.nome.charAt(0) }}</span>
+                              </v-avatar>
+                            </template>
+                            <v-list-item-title class="font-weight-medium">{{ servico.nome }}</v-list-item-title>
+                            <v-list-item-subtitle class="d-flex align-center justify-space-between">
+                              <span>
+                                <v-icon size="small" color="success" class="mr-1">mdi-check-circle</v-icon>
+                                Disponível
+                              </span>
+                              <span class="text-primary font-weight-bold">R$ {{ servico.preco.toFixed(2) }}</span>
+                            </v-list-item-subtitle>
+                          </v-list-item>
+                          <v-alert
+                            v-if="servicosFiltrados.length === 0"
+                            type="info"
+                            variant="tonal"
+                            class="mt-4"
+                            icon="mdi-information"
+                          >
+                            Nenhum serviço encontrado
+                          </v-alert>
+                        </v-list>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </div>
+          </v-expand-transition>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Resumo da Venda -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-card class="summary-card" elevation="2">
+          <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
+            <div class="d-flex align-center">
+              <v-icon color="primary" class="mr-2">mdi-cart-check</v-icon>
+              <span class="text-h6 font-weight-medium">Resumo da Venda</span>
+            </div>
+            <v-chip
+              v-if="itensVenda.length > 0"
+              color="success"
+              class="font-weight-bold"
+            >
+              {{ itensVenda.length }} {{ itensVenda.length === 1 ? 'item' : 'itens' }}
+            </v-chip>
+          </v-card-title>
+          <v-divider />
+          <v-card-text class="pa-6">
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-autocomplete
+                  v-model="clienteSelecionado"
+                  :items="clientes"
+                  item-title="nome"
+                  item-value="id"
+                  label="Cliente"
+                  prepend-inner-icon="mdi-account"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="mb-4"
+                  required
+                />
+              </v-col>
+              <v-col cols="12" md="6" class="d-flex align-center">
+                <v-btn
+                  color="primary"
+                  @click="openModalCliente"
+                  class="add-client-btn"
+                >
+                  <v-icon class="mr-2">mdi-plus</v-icon>
+                  Cadastrar Novo Cliente
+                </v-btn>
+              </v-col>
+            </v-row>
+
+            <!-- Lista de Itens -->
+            <v-card class="items-card mt-4" elevation="0">
+              <v-card-title class="d-flex align-center py-3 px-4">
+                <v-icon color="primary" class="mr-2">mdi-list-status</v-icon>
+                <span class="text-subtitle-1 font-weight-medium">Itens da Venda</span>
+              </v-card-title>
+              <v-divider />
+              <v-card-text class="pa-0">
+                <v-table class="items-table">
+                  <thead>
+                    <tr>
+                      <th class="text-left">Item</th>
+                      <th class="text-center">Tipo</th>
+                      <th class="text-center">Qtd</th>
+                      <th class="text-right">Preço Unit.</th>
+                      <th class="text-right">Total</th>
+                      <th class="text-center">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(item, index) in itensVenda" :key="index" :class="{'bg-primary-lighten-5': index % 2 === 0}">
+                      <td>
+                        <div class="d-flex align-center">
+                          <v-avatar :color="item.tipo === 'produto' ? 'primary' : 'success'" size="32" class="mr-3">
+                            <span class="text-caption text-white">{{ item.nome.charAt(0) }}</span>
+                          </v-avatar>
+                          <span class="font-weight-medium text-truncate" style="max-width: 120px;" :title="item.nome">{{ item.nome }}</span>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <v-chip
+                          :color="item.tipo === 'produto' ? 'primary' : 'success'"
+                          size="small"
+                          variant="tonal"
+                        >
+                          {{ item.tipo === 'produto' ? 'Produto' : 'Serviço' }}
+                        </v-chip>
+                      </td>
+                      <td class="text-center">
+                        <div class="d-flex align-center justify-center">
+                          <v-btn
+                            icon="mdi-minus"
+                            size="small"
+                            variant="text"
+                            @click="alterarQuantidade(item, -1)"
+                            :disabled="item.quantidade <= 1"
+                            class="quantity-btn"
+                          />
+                          <span class="mx-2 font-weight-medium">{{ item.quantidade }}</span>
+                          <v-btn
+                            icon="mdi-plus"
+                            size="small"
+                            variant="text"
+                            @click="alterarQuantidade(item, 1)"
+                            class="quantity-btn"
+                          />
+                        </div>
+                      </td>
+                      <td class="text-right">R$ {{ item.preco.toFixed(2) }}</td>
+                      <td class="text-right font-weight-bold">R$ {{ (item.preco * item.quantidade).toFixed(2) }}</td>
+                      <td class="text-center">
+                        <v-btn
+                          icon="mdi-delete"
+                          size="small"
+                          color="error"
+                          variant="text"
+                          @click="removerItemVenda(item)"
+                        />
+                      </td>
+                    </tr>
+                    <tr v-if="itensVenda.length === 0">
+                      <td colspan="6" class="text-center py-4">
+                        <v-icon color="grey" size="48" class="mb-2">mdi-cart-off</v-icon>
+                        <div class="text-subtitle-1 text-grey">Nenhum item adicionado à venda</div>
+                        <div class="text-caption text-grey">Selecione produtos ou serviços acima</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-card-text>
+            </v-card>
+
+            <!-- Informações de Pagamento -->
+            <v-card class="payment-card mt-6" elevation="0">
+              <v-card-title class="d-flex align-center py-3 px-4">
+                <v-icon color="primary" class="mr-2">mdi-credit-card</v-icon>
+                <span class="text-subtitle-1 font-weight-medium">Informações de Pagamento</span>
+              </v-card-title>
+              <v-divider />
+              <v-card-text class="pa-4">
+                <v-row>
+                  <v-col cols="12" md="4">
+                    <v-number-input
+                      v-model="valorPago"
+                      label="Valor Pago"
+                      prefix="R$"
+                      :precision="2"
+                      :min="0"
+                      :max="totalVenda"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      class="mb-4"
+                      prepend-inner-icon="mdi-cash"
+                      required
+                    />
+                  </v-col>
+                  <v-col cols="12" md="4">
+                    <v-autocomplete
+                      v-model="metodoPagamento"
+                      :items="metodosPagamento"
+                      label="Forma de Pagamento"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      class="mb-4"
+                      prepend-inner-icon="mdi-credit-card"
+                      required
+                    />
+                  </v-col>
+                  <v-col cols="12" md="4" class="d-flex align-center">
+                    <v-btn
+                      color="success"
+                      variant="tonal"
+                      @click="pagarDeUmaVez"
+                      :disabled="itensVenda.length === 0"
+                      class="fill-btn"
+                    >
+                      <v-icon class="mr-2">mdi-cash-multiple</v-icon>
+                      Preencher Valor Total
+                    </v-btn>
+                  </v-col>
+                </v-row>
+
+                <v-row>
+                  <v-col cols="12" md="6">
+                    <v-number-input
+                      v-model="desconto"
+                      label="Desconto"
+                      prefix="R$"
+                      :precision="2"
+                      :min="0"
+                      :max="totalVenda"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      class="mb-4"
+                      prepend-inner-icon="mdi-percent"
+                      @update:model-value="calcularTotalComDesconto"
+                    />
+                  </v-col>
+                </v-row>
+
+                <v-divider class="my-4" />
+
+                <div class="d-flex align-center justify-space-between">
+                  <div class="d-flex align-center">
+                    <v-icon color="primary" size="32" class="mr-4">mdi-cart-check</v-icon>
+                    <span class="text-h6 font-weight-bold">Total da Venda</span>
+                  </div>
+                  <div class="text-right">
+                    <div v-if="desconto > 0" class="text-caption text-medium-emphasis text-decoration-line-through">
+                      R$ {{ formatarValor(totalVenda) }}
+                    </div>
+                    <span class="text-h4 font-weight-bold" :class="{'text-success': desconto > 0, 'text-primary': desconto === 0}">
+                      R$ {{ formatarValor(totalComDesconto) }}
+                    </span>
+                    <div v-if="desconto > 0" class="text-caption text-success">
+                      Desconto: R$ {{ formatarValor(desconto) }}
+                    </div>
+                  </div>
+                </div>
+
+                <div v-if="valorPago < totalComDesconto" class="mt-4">
+                  <v-alert
+                    type="warning"
+                    variant="tonal"
+                    icon="mdi-alert-circle"
+                    class="mb-4"
+                  >
+                    <div class="d-flex align-center justify-space-between">
+                      <span>Valor pendente (Fiado):</span>
+                      <span class="font-weight-bold">R$ {{ formatarValor(totalComDesconto - valorPago) }}</span>
+                    </div>
+                  </v-alert>
+                </div>
+
+                <div class="d-flex justify-space-between align-center mt-6">
+                  <v-alert
+                    v-if="itensVenda.length > 0 && !clienteSelecionado"
+                    type="error"
+                    variant="tonal"
+                    icon="mdi-alert-circle"
+                    density="compact"
+                    class="mb-0"
+                    style="max-width: 400px;"
+                  >
+                    Selecione um cliente para finalizar a venda
+                  </v-alert>
+                  <v-spacer v-else></v-spacer>
+                  <v-btn
+                    @click="finalizarVenda"
+                    variant="flat"
+                    :color="valorPago < totalComDesconto ? 'warning' : 'primary'"
+                    size="large"
+                    :disabled="!clienteSelecionado || itensVenda.length === 0"
+                    class="finish-btn"
+                  >
+                    <v-icon class="mr-2">{{ valorPago < totalComDesconto ? 'mdi-alert' : 'mdi-check' }}</v-icon>
+                    {{ valorPago < totalComDesconto ? 'Finalizar Venda a Fiado' : 'Finalizar Venda' }}
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Modais -->
     <v-dialog v-model="modalConfirmacaoFiado" max-width="500px">
-      <v-card>
-        <v-card-title class="text-h6">Atenção!</v-card-title>
-        <v-card-text style="white-space: normal; word-break: break-word;">
-          O valor pago é menor que o valor total da venda. Esse registro será salvo como uma venda pendente (Fiado).
-          Deseja
-          continuar?
+      <v-card class="fiado-dialog">
+        <v-card-title class="d-flex align-center py-4 px-6">
+          <v-icon color="warning" size="32" class="mr-4">mdi-alert</v-icon>
+          <span class="text-h6 font-weight-bold">Atenção!</span>
+        </v-card-title>
+        <v-card-text class="pa-6">
+          <div class="text-body-1 mb-4">
+            O valor pago é menor que o valor total da venda. Esse registro será salvo como uma venda pendente (Fiado).
+          </div>
+          <div class="d-flex align-center mb-4">
+            <v-icon color="error" class="mr-2">mdi-cash-minus</v-icon>
+            <span class="text-subtitle-1">Valor pendente: <strong class="text-error">R$ {{ (totalComDesconto - valorPago).toFixed(2) }}</strong></span>
+          </div>
+          <div class="text-body-2 text-grey">
+            Deseja continuar com a venda pendente?
+          </div>
         </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn @click="closeModalFiado()" color="grey">Cancelar</v-btn>
-          <v-btn @click="finalizarVenda()" color="red">Finalizar venda</v-btn>
+        <v-card-actions class="pa-6 pt-0">
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="closeModalFiado"
+            variant="outlined"
+            color="grey"
+            class="mr-2"
+          >
+            Cancelar
+          </v-btn>
+          <v-btn
+            @click="confirmarFiado"
+            color="error"
+            variant="flat"
+          >
+            Finalizar Venda Pendente
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-
     <v-dialog v-model="showModalSucesso" max-width="400px">
-      <v-card>
-        <v-card-title class="text-h6">Venda Finalizada com Sucesso</v-card-title>
-        <v-card-actions class="d-flex justify-end">
-          <v-btn color="primary" @click="closeModalSucesso">Fechar</v-btn>
+      <v-card class="success-dialog">
+        <v-card-text class="pa-6 text-center">
+          <v-icon color="success" size="64" class="mb-4">mdi-check-circle</v-icon>
+          <h2 class="text-h5 font-weight-bold mb-2">Venda Finalizada com Sucesso!</h2>
+          <p class="text-body-1 text-grey">
+            A venda foi registrada no sistema.
+          </p>
+        </v-card-text>
+        <v-card-actions class="pa-6 pt-0 justify-center">
+          <v-btn
+            color="primary"
+            variant="flat"
+            @click="closeModalSucesso"
+            class="px-6"
+          >
+            Fechar
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -238,7 +520,6 @@
     <ModalServico v-model="showModalServico" @close="closeModalServico" @sucesso="carregarProdutosServicos()" />
   </v-container>
 </template>
-
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed } from 'vue';
@@ -259,6 +540,8 @@ export default defineComponent({
     const metodoPagamento = ref('Cartão');
     const valorPago = ref(0);
     const totalVenda = ref(0);
+    const desconto = ref(0);
+    const totalComDesconto = ref(0);
     const metodosPagamento = ['Cartão', 'Dinheiro', 'PIX'];
     const filtroProduto = ref('');
     const expanded = ref([0]);
@@ -281,6 +564,8 @@ export default defineComponent({
       clienteSelecionado.value = null;
       itensVenda.value = [];
       valorPago.value = 0;
+      desconto.value = 0;
+      totalComDesconto.value = 0;
       metodoPagamento.value = 'Cartão';
       totalVenda.value = 0;
     };
@@ -294,9 +579,20 @@ export default defineComponent({
     }
 
     const pagarDeUmaVez = () => {
-      valorPago.value = totalVenda.value
+      valorPago.value = totalComDesconto.value;
     }
 
+    const calcularTotalComDesconto = () => {
+      if (desconto.value > totalVenda.value) {
+        desconto.value = totalVenda.value;
+      }
+      totalComDesconto.value = totalVenda.value - desconto.value;
+
+      // Se o valor pago for maior que o novo total com desconto, ajusta
+      if (valorPago.value > totalComDesconto.value) {
+        valorPago.value = totalComDesconto.value;
+      }
+    };
 
     const openModalProduto = () => {
       showModalProduto.value = true;
@@ -373,7 +669,6 @@ export default defineComponent({
       }
     };
 
-
     const adicionarServico = (servico: ServicoEntity) => {
       const itemExistente = itensVenda.value.find(item => item.id === servico.id && item.tipo === 'servico');
       if (itemExistente) {
@@ -390,7 +685,6 @@ export default defineComponent({
       }
       atualizarTotalVenda();
     };
-
 
     const removerItemVenda = (item: any) => {
       itensVenda.value = itensVenda.value.filter(i => i.id !== item.id);
@@ -413,20 +707,31 @@ export default defineComponent({
       }
     };
 
-
     const atualizarTotalVenda = () => {
       totalVenda.value = itensVenda.value.reduce((total, item) => total + (item.preco * item.quantidade), 0);
+      calcularTotalComDesconto();
     }
 
     const formatarValor = (valor: number) => {
       return valor.toFixed(2).replace('.', ',');
     }
 
-
     const finalizarVenda = async () => {
       try {
-        closeModalFiado();
+        // Verifica se precisa mostrar o modal de fiado
+        if (valorPago.value < totalComDesconto.value) {
+          modalConfirmacaoFiado.value = true;
+          return;
+        }
 
+        await processarVenda();
+      } catch (error) {
+        console.error("Erro ao finalizar venda:", error);
+      }
+    };
+
+    const processarVenda = async () => {
+      try {
         if (!clienteSelecionado.value) {
           console.error("Nenhum cliente selecionado.");
           return;
@@ -453,9 +758,9 @@ export default defineComponent({
                 valor_total: item.preco,
               };
             }
-            return null; // Evita undefined no array final
+            return null;
           })
-          .filter(Boolean); // Remove valores nulos
+          .filter(Boolean);
 
         atualizarTotalVenda();
 
@@ -464,16 +769,14 @@ export default defineComponent({
           cliente_id: clienteSelecionado.value,
           nome_cliente: "",
           metodo_pagamento: metodoPagamento.value,
-          status: valorPago.value >= totalVenda.value ? "pago" : "pendente",
+          status: valorPago.value >= totalComDesconto.value ? "pago" : "pendente",
           valor_pago: valorPago.value,
-          valor_total: totalVenda.value,
+          valor_total: totalComDesconto.value,
+          desconto: desconto.value,
           data: new Date().toISOString(),
           itens: itensComValorTotal as any,
         };
 
-        console.log(venda.valor_total)
-
-        // Aguarda a criação da venda antes de continuar
         await window.api.createVenda(
           venda.cliente_id,
           venda.valor_total,
@@ -481,20 +784,23 @@ export default defineComponent({
           venda.metodo_pagamento,
           venda.status,
           venda.data,
-          venda.itens as any
+          venda.itens as any,
+          venda.desconto
         );
 
-      } catch (error) {
-        console.error("Erro ao finalizar venda:", error);
-      } finally {
         showModalSucesso.value = true;
         resetarVenda();
         carregarProdutosServicos();
         carregarClientes();
+      } catch (error) {
+        console.error("Erro ao processar venda:", error);
       }
     };
 
-
+    const confirmarFiado = () => {
+      modalConfirmacaoFiado.value = false;
+      processarVenda();
+    };
 
     return {
       filtroProduto,
@@ -507,6 +813,8 @@ export default defineComponent({
       carregarClientes,
       itensVenda,
       totalVenda,
+      totalComDesconto,
+      desconto,
       clienteSelecionado,
       metodosPagamento,
       metodoPagamento,
@@ -534,17 +842,205 @@ export default defineComponent({
       modalConfirmacaoFiado,
       closeModalFiado,
       openModalFiado,
+      calcularTotalComDesconto,
+      confirmarFiado,
     };
   }
 });
 </script>
 
 <style scoped>
-.qtd-estoque {
-  font-size: 0.75rem;
+.vendas-container {
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+.welcome-card {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.welcome-text {
+  color: white;
+}
+
+.welcome-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.selection-card, .summary-card {
+  border-radius: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.selection-card:hover, .summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+}
+
+.product-card, .service-card {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover, .service-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+}
+
+.product-card .v-card-text, .service-card .v-card-text {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-list, .service-list {
+  flex-grow: 1;
+  border-radius: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+  min-height: 200px;
+}
+
+.v-list-item {
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.v-list-item:hover {
+  background-color: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.1);
+  transform: translateX(4px);
 }
 
 .estoque-insuficiente {
-  background-color: rgba(255, 0, 0, 0.1);
+  background-color: rgba(255, 0, 0, 0.05);
+  border-color: rgba(255, 0, 0, 0.1);
+}
+
+.search-field {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.search-field:hover, .search-field:focus-within {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.add-btn {
+  transition: all 0.2s ease;
+}
+
+.add-btn:hover {
+  transform: scale(1.05);
+}
+
+.quantity-btn {
+  min-width: 32px;
+  height: 32px;
+}
+
+.items-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.finish-btn {
+  min-width: 200px;
+}
+
+.fiado-dialog, .success-dialog {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Vuetify Overrides */
+:deep(.v-list-item) {
+  min-height: 64px;
+  padding: 8px 16px;
+}
+
+:deep(.v-list-item--active) {
+  background: transparent;
+}
+
+:deep(.v-card-title) {
+  font-size: 1.25rem;
+}
+
+:deep(.v-select .v-field) {
+  border-radius: 8px;
+}
+
+:deep(.v-alert) {
+  border-radius: 8px;
+}
+
+:deep(.v-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-table th) {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+:deep(.v-table td) {
+  padding: 12px 16px;
+}
+
+:deep(.v-btn) {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.payment-card {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.payment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments for side-by-side layout */
+@media (min-width: 960px) {
+  .product-card, .service-card {
+    height: 100%;
+  }
+
+  .product-list, .service-list {
+    max-height: 400px;
+  }
 }
 </style>

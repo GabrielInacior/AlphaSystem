@@ -5,25 +5,19 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-image: url('./wavy-lines.svg');
-  background-size: cover;
+  background: var(--color-background);
   user-select: none;
+  transition: background-color 0.3s ease;
 }
 
 code {
   font-weight: 600;
   padding: 3px 5px;
-  border-radius: 2px;
+  border-radius: 4px;
   background-color: var(--color-background-mute);
-  font-family:
-    ui-monospace,
-    SFMono-Regular,
-    SF Mono,
-    Menlo,
-    Consolas,
-    Liberation Mono,
-    monospace;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
   font-size: 85%;
+  color: var(--color-text);
 }
 
 #app {
@@ -32,6 +26,8 @@ code {
   justify-content: center;
   flex-direction: column;
   margin-bottom: 80px;
+  width: 100%;
+  height: 100vh;
 }
 
 .logo {
@@ -40,24 +36,25 @@ code {
   height: 128px;
   width: 128px;
   will-change: filter;
-  transition: filter 300ms;
+  transition: filter 300ms, transform 300ms;
 }
 
 .logo:hover {
-  filter: drop-shadow(0 0 1.2em #6988e6aa);
+  filter: drop-shadow(0 0 1.2em var(--color-primary));
+  transform: scale(1.05);
 }
 
 .creator {
   font-size: 14px;
   line-height: 16px;
-  color: var(--ev-c-text-2);
+  color: var(--color-text-soft);
   font-weight: 600;
   margin-bottom: 10px;
 }
 
 .text {
   font-size: 28px;
-  color: var(--ev-c-text-1);
+  color: var(--color-text);
   font-weight: 700;
   line-height: 32px;
   text-align: center;
@@ -68,12 +65,12 @@ code {
 .tip {
   font-size: 16px;
   line-height: 24px;
-  color: var(--ev-c-text-2);
+  color: var(--color-text-soft);
   font-weight: 600;
 }
 
 .vue {
-  background: -webkit-linear-gradient(315deg, #42d392 25%, #647eff);
+  background: linear-gradient(135deg, var(--color-success) 25%, var(--color-primary));
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -81,7 +78,7 @@ code {
 }
 
 .ts {
-  background: -webkit-linear-gradient(315deg, #3178c6 45%, #f0dc4e);
+  background: linear-gradient(135deg, var(--color-info) 45%, var(--color-warning));
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -94,6 +91,7 @@ code {
   margin: -6px;
   flex-wrap: wrap;
   justify-content: flex-start;
+  gap: 12px;
 }
 
 .action {
@@ -104,24 +102,27 @@ code {
 .action a {
   cursor: pointer;
   text-decoration: none;
-  display: inline-block;
-  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
   text-align: center;
   font-weight: 600;
   white-space: nowrap;
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 0 20px;
   line-height: 38px;
   font-size: 14px;
-  border-color: var(--ev-button-alt-border);
-  color: var(--ev-button-alt-text);
-  background-color: var(--ev-button-alt-bg);
+  color: var(--color-text);
+  background-color: var(--color-background-soft);
+  transition: all 0.3s ease;
 }
 
 .action a:hover {
-  border-color: var(--ev-button-alt-hover-border);
-  color: var(--ev-button-alt-hover-text);
-  background-color: var(--ev-button-alt-hover-bg);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-background-mute);
+  transform: translateY(-1px);
 }
 
 .versions {
@@ -133,22 +134,122 @@ code {
   display: inline-flex;
   overflow: hidden;
   align-items: center;
-  border-radius: 22px;
-  background-color: #202127;
+  border-radius: 12px;
+  background-color: var(--color-background-soft);
   backdrop-filter: blur(24px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 6px -1px var(--color-shadow);
 }
 
 .versions li {
   display: block;
   float: left;
-  border-right: 1px solid var(--ev-c-gray-1);
+  border-right: 1px solid var(--color-border);
   padding: 0 20px;
   font-size: 14px;
   line-height: 14px;
   opacity: 0.8;
-  &:last-child {
-    border: none;
-  }
+  color: var(--color-text-soft);
+  transition: opacity 0.3s ease;
+}
+
+.versions li:hover {
+  opacity: 1;
+}
+
+.versions li:last-child {
+  border: none;
+}
+
+/* Modern table styling */
+.v-data-table {
+  background: var(--color-background-soft) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.v-data-table th {
+  background: var(--color-background-mute) !important;
+  color: var(--color-text) !important;
+  font-weight: 600 !important;
+}
+
+.v-data-table td {
+  color: var(--color-text-soft) !important;
+}
+
+/* Modern form styling */
+.v-text-field,
+.v-select {
+  background: var(--color-background-soft) !important;
+  border-radius: 8px !important;
+}
+
+.v-text-field .v-field__input,
+.v-select .v-field__input {
+  color: var(--color-text) !important;
+}
+
+/* Modern card styling */
+.v-card {
+  background: var(--color-background-soft) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--color-border);
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px -1px var(--color-shadow-hover) !important;
+}
+
+/* Modern button styling */
+.v-btn {
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  transition: all 0.3s ease !important;
+}
+
+.v-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Modern dialog styling */
+.v-dialog {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.v-dialog .v-card {
+  background: var(--color-background) !important;
+}
+
+/* Modern menu styling */
+.v-menu {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.v-menu .v-list {
+  background: var(--color-background-soft) !important;
+  border: 1px solid var(--color-border);
+}
+
+/* Modern navigation drawer styling */
+.v-navigation-drawer {
+  background: var(--color-background-soft) !important;
+  border-right: 1px solid var(--color-border) !important;
+}
+
+/* Modern tooltip styling */
+.v-tooltip {
+  background: var(--color-background-mute) !important;
+  color: var(--color-text) !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  padding: 8px 12px !important;
 }
 
 @media (max-width: 720px) {

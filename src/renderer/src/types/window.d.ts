@@ -9,6 +9,7 @@ declare global {
       getClienteById: (id: number) => Promise<any>;
       updateCliente: (id: number, nome: string, aniversario: string, telefone: string) => Promise<void>;
       deleteCliente: (id: number) => Promise<void>;
+      getHistoricoComprasCliente: (cliente_id: number) => Promise<any[]>;
 
       // Serviços
       createServico: (nome: string, preco: number) => Promise<void>;
@@ -18,12 +19,19 @@ declare global {
       deleteServico: (id: number) => Promise<void>;
 
       // Produtos
-      createProduto: (nome: string, custo: number, preco: number, qtdEstoque: number) => Promise<void>;
+      createProduto: (nome: string, custo: number, preco: number, qtdEstoque: number, categoria_id: number) => Promise<void>;
       getAllProdutos: () => Promise<any[]>;
       getProdutoById: (id: number) => Promise<any>;
-      updateProduto: (id: number, nome: string, custo: number, preco: number, qtdEstoque: number) => Promise<void>;
+      updateProduto: (id: number, nome: string, custo: number, preco: number, qtdEstoque: number, categoria_id: number) => Promise<void>;
       deleteProduto: (id: number) => Promise<void>;
       atualizarEstoqueProduto: (id: number, quantidadeVendida: number) => Promise<void>;
+
+      // Categorias
+      createCategoria: (nome: string, descricao: string) => Promise<void>;
+      getAllCategorias: () => Promise<any[]>;
+      getCategoriaById: (id: number) => Promise<any>;
+      updateCategoria: (id: number, nome: string, descricao: string) => Promise<void>;
+      deleteCategoria: (id: number) => Promise<void>;
 
       // Vendas
       createVenda: (

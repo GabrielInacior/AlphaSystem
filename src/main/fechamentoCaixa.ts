@@ -47,34 +47,36 @@ export function getVendasServicosPorData(
 
   switch (periodo) {
     case 'dia':
-      groupBy = 'strftime("%Y-%m-%d %H", datetime(v.data, "-3 hours"))'
+      groupBy = 'strftime("%Y-%m-%d", v.data)';
       break;
     case 'semana':
       groupBy = 'strftime("%Y-%m-%d", v.data)';
       break;
     case 'mes':
-      groupBy = `date(v.data, '-' || ((cast(strftime('%d', v.data) as integer)) % 2) || ' days')`;
+      groupBy = 'strftime("%Y-%m-%d", v.data)';
       break;
     case 'ano':
       groupBy = 'strftime("%Y-%m", v.data)';
       break;
     case 'todos':
-      groupBy = 'strftime("%Y", v.data)';
+      groupBy = 'strftime("%Y-%m-%d", v.data)';
       break;
   }
 
   const query = `
-    SELECT ${groupBy} AS periodo,
-           SUM(vi.quantidade) AS quantidade_vendida,
-           SUM(vi.valor_total) AS total_vendido
+    SELECT
+      ${groupBy} AS periodo,
+      s.nome AS servico_nome,
+      SUM(vi.quantidade) AS quantidade_vendida,
+      SUM(vi.valor_total) AS total_vendido
     FROM vendas_itens vi
     JOIN vendas v ON vi.venda_id = v.id
-    LEFT JOIN servicos s ON vi.servico_id = s.id
+    JOIN servicos s ON vi.servico_id = s.id
     WHERE v.data BETWEEN ? AND ?
       AND vi.servico_id IS NOT NULL
       AND vi.produto_id IS NULL
-    GROUP BY periodo
-    ORDER BY periodo ASC
+    GROUP BY periodo, s.id
+    ORDER BY periodo ASC, servico_nome
   `;
 
   return new Promise((resolve, reject) => {
@@ -87,7 +89,8 @@ export function getVendasServicosPorData(
 
 export function getVendasProdutosPorData(
   db: Database,
-  periodo: string
+  periodo: string,
+  categoria_id?: number
 ): Promise<any[]> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
@@ -112,21 +115,27 @@ export function getVendasProdutosPorData(
   }
 
   const query = `
-    SELECT ${groupBy} AS periodo,
-          SUM(vi.quantidade) AS quantidade_total_vendida,
-          SUM(vi.valor_total) AS total_vendido
+    SELECT
+      ${groupBy} AS periodo,
+      c.nome AS categoria_nome,
+      SUM(vi.quantidade) AS quantidade_total_vendida,
+      SUM(vi.valor_total) AS total_vendido
     FROM vendas_itens vi
     JOIN vendas v ON vi.venda_id = v.id
-    LEFT JOIN produtos p ON vi.produto_id = p.id
+    JOIN produtos p ON vi.produto_id = p.id
+    LEFT JOIN categorias c ON p.categoria_id = c.id
     WHERE v.data BETWEEN ? AND ?
     AND vi.produto_id IS NOT NULL
     AND vi.servico_id IS NULL
-    GROUP BY periodo
-    ORDER BY periodo ASC
+    ${categoria_id ? 'AND p.categoria_id = ?' : ''}
+    GROUP BY periodo, c.id
+    ORDER BY periodo ASC, categoria_nome
   `;
 
+  const params = categoria_id ? [dataInicio, dataFim, categoria_id] : [dataInicio, dataFim];
+
   return new Promise((resolve, reject) => {
-    db.all(query, [dataInicio, dataFim], (err, rows) => {
+    db.all(query, params, (err, rows) => {
       if (err) reject(err);
       else resolve(rows);
     });
@@ -159,23 +168,33 @@ export function getMelhoresClientes(
 // Função para retornar os produtos mais vendidos
 export function getProdutosMaisVendidos(
   db: Database,
-  periodo: string // "dia", "semana", "mes", "ano"
+  periodo: string,
+  categoria_id?: number
 ): Promise<any[]> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
   const query = `
-    SELECT p.nome AS produto_nome, SUM(vi.quantidade) AS quantidade_vendida, SUM(vi.valor_total) AS total_vendido
+    SELECT
+      p.nome AS produto_nome,
+      c.nome AS categoria_nome,
+      c.id AS categoria_id,
+      SUM(vi.quantidade) AS quantidade_vendida,
+      SUM(vi.valor_total) AS total_vendido
     FROM vendas_itens vi
     JOIN produtos p ON vi.produto_id = p.id
+    LEFT JOIN categorias c ON p.categoria_id = c.id
     JOIN vendas v ON vi.venda_id = v.id
     WHERE v.data BETWEEN ? AND ?
+    ${categoria_id ? 'AND p.categoria_id = ?' : ''}
     GROUP BY p.id
     ORDER BY quantidade_vendida DESC
     LIMIT 50
   `;
 
+  const params = categoria_id ? [dataInicio, dataFim, categoria_id] : [dataInicio, dataFim];
+
   return new Promise((resolve, reject) => {
-    db.all(query, [dataInicio, dataFim], (err, rows) => {
+    db.all(query, params, (err, rows) => {
       if (err) reject(err);
       else resolve(rows);
     });
@@ -408,7 +427,8 @@ export function getVendasProdutosVsServicos(
 
 export function getCustoVsLucro(
   db: Database,
-  periodo: string // "dia", "semana", "mes", "ano"
+  periodo: string,
+  categoria_id?: number
 ): Promise<any> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
@@ -420,11 +440,15 @@ export function getCustoVsLucro(
     FROM vendas_itens vi
     JOIN produtos p ON vi.produto_id = p.id
     JOIN vendas v ON vi.venda_id = v.id
-    WHERE v.data BETWEEN ? AND ? AND p.id IS NOT NULL
+    WHERE v.data BETWEEN ? AND ?
+    AND p.id IS NOT NULL
+    ${categoria_id ? 'AND p.categoria_id = ?' : ''}
   `;
 
+  const params = categoria_id ? [dataInicio, dataFim, categoria_id] : [dataInicio, dataFim];
+
   return new Promise((resolve, reject) => {
-    db.get(query, [dataInicio, dataFim], (err, row) => {
+    db.get(query, params, (err, row) => {
       if (err) reject(err);
       else resolve(row);
     });
@@ -435,27 +459,34 @@ export function getCustoVsLucro(
 // Função para retornar os clientes que mais compraram produtos
 export function getClientesMaisCompraramProdutos(
   db: Database,
-  periodo: string, // "dia", "semana", "mes", "ano"
-  limite: number // Número máximo de clientes a retornar
+  periodo: string,
+  limite: number,
+  categoria_id?: number
 ): Promise<any[]> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
   const query = `
-    SELECT c.nome AS cliente_nome,
-           SUM(vi.valor_total) AS total_comprado_produtos,
-           SUM(vi.quantidade) AS quantidade_produtos_comprados
+    SELECT
+      c.nome AS cliente_nome,
+      COUNT(DISTINCT vi.venda_id) AS quantidade_compras,
+      SUM(vi.quantidade) AS quantidade_produtos_comprados,
+      SUM(vi.valor_total) AS total_gasto
     FROM vendas v
+    JOIN vendas_itens vi ON v.id = vi.venda_id
+    JOIN produtos p ON vi.produto_id = p.id
     JOIN clientes c ON v.cliente_id = c.id
-    LEFT JOIN vendas_itens vi ON v.id = vi.venda_id
-    LEFT JOIN produtos p ON vi.produto_id = p.id
-    WHERE v.data BETWEEN ? AND ? AND vi.produto_id IS NOT NULL
+    WHERE v.data BETWEEN ? AND ?
+      AND vi.produto_id IS NOT NULL
+      ${categoria_id ? 'AND p.categoria_id = ?' : ''}
     GROUP BY c.id
-    ORDER BY total_comprado_produtos DESC
+    ORDER BY total_gasto DESC
     LIMIT ?
   `;
 
+  const params = categoria_id ? [dataInicio, dataFim, categoria_id, limite] : [dataInicio, dataFim, limite];
+
   return new Promise((resolve, reject) => {
-    db.all(query, [dataInicio, dataFim, limite], (err, rows) => {
+    db.all(query, params, (err, rows) => {
       if (err) reject(err);
       else resolve(rows);
     });
@@ -493,7 +524,8 @@ export function getClientesMaisCompraramServicos(
 
 export function getVendasProdutosPorMetodoPagamento(
   db: Database,
-  periodo: string
+  periodo: string,
+  categoria_id?: number
 ): Promise<any[]> {
   const { dataInicio, dataFim } = calcularPeriodo(periodo);
 
@@ -502,14 +534,18 @@ export function getVendasProdutosPorMetodoPagamento(
            SUM(vi.valor_total) AS total_vendas
     FROM vendas v
     JOIN vendas_itens vi ON v.id = vi.venda_id
+    JOIN produtos p ON vi.produto_id = p.id
     WHERE v.data BETWEEN ? AND ?
       AND vi.produto_id IS NOT NULL
+      ${categoria_id ? 'AND p.categoria_id = ?' : ''}
     GROUP BY v.metodo_pagamento
     ORDER BY total_vendas DESC
   `;
 
+  const params = categoria_id ? [dataInicio, dataFim, categoria_id] : [dataInicio, dataFim];
+
   return new Promise((resolve, reject) => {
-    db.all(query, [dataInicio, dataFim], (err, rows) => {
+    db.all(query, params, (err, rows) => {
       if (err) reject(err);
       else resolve(rows);
     });
@@ -616,6 +652,77 @@ export function getQuantidadeEReceitaServicosTOTAL(db: Database): Promise<any> {
     db.get(query, (err, row) => {
       if (err) reject(err);
       else resolve(row);
+    });
+  });
+}
+
+// Função para retornar os produtos mais vendidos por categoria
+export function getProdutosMaisVendidosPorCategoria(
+  db: Database,
+  periodo: string,
+  categoria_id?: number
+): Promise<any[]> {
+  const { dataInicio, dataFim } = calcularPeriodo(periodo);
+
+  const query = `
+    SELECT
+      c.nome AS categoria_nome,
+      p.nome AS produto_nome,
+      p.categoria_id,
+      SUM(vi.quantidade) AS quantidade_vendida,
+      SUM(vi.valor_total) AS total_vendido
+    FROM vendas_itens vi
+    JOIN produtos p ON vi.produto_id = p.id
+    JOIN categorias c ON p.categoria_id = c.id
+    JOIN vendas v ON vi.venda_id = v.id
+    WHERE v.data BETWEEN ? AND ?
+    ${categoria_id ? 'AND p.categoria_id = ?' : ''}
+    GROUP BY c.id, p.id
+    ORDER BY c.nome, quantidade_vendida DESC
+  `;
+
+  const params = categoria_id ? [dataInicio, dataFim, categoria_id] : [dataInicio, dataFim];
+
+  return new Promise((resolve, reject) => {
+    db.all(query, params, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
+// Função para retornar o lucro total por categoria
+export function getLucroTotalPorCategoria(
+  db: Database,
+  periodo: string,
+  categoria_id?: number
+): Promise<any[]> {
+  const { dataInicio, dataFim } = calcularPeriodo(periodo);
+
+  const query = `
+    SELECT
+      c.nome AS categoria_nome,
+      c.id AS categoria_id,
+      SUM(vi.valor_total) AS total_vendido,
+      SUM(COALESCE(p.custo, 0) * vi.quantidade) AS total_custo,
+      SUM(vi.valor_total) - SUM(COALESCE(p.custo, 0) * vi.quantidade) AS lucro_total
+    FROM vendas_itens vi
+    JOIN produtos p ON vi.produto_id = p.id
+    JOIN categorias c ON p.categoria_id = c.id
+    JOIN vendas v ON vi.venda_id = v.id
+    WHERE v.data BETWEEN ? AND ?
+    AND vi.produto_id IS NOT NULL
+    ${categoria_id ? 'AND p.categoria_id = ?' : ''}
+    GROUP BY c.id
+    ORDER BY lucro_total DESC
+  `;
+
+  const params = categoria_id ? [dataInicio, dataFim, categoria_id] : [dataInicio, dataFim];
+
+  return new Promise((resolve, reject) => {
+    db.all(query, params, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
     });
   });
 }

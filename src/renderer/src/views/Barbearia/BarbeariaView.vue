@@ -1,205 +1,420 @@
 <template>
-  <v-container>
+  <v-container fluid class="dashboard-container pa-4">
+    <!-- Header Section with Parallax Effect -->
     <v-row>
-      <!-- Gráfico de Vendas de Servicos por Data -->
-      <v-col cols="7" md="4" lg="4">
-        <v-card class="pa-1" style="min-height: 150px;" elevation="10">
-          <v-card-title style="font-size: 16px; font-weight: bold;justify-content: space-between; width: 100%;">
-            Top clientes - Serviços
-            <v-btn variant="plain" size="small">
-              <v-icon icon="mdi-information"> </v-icon>
-              <v-tooltip activator="parent" location="start">Clientes que mais gastaram com serviços, ranqueados por
-                valor gasto</v-tooltip>
+      <v-col cols="12">
+        <v-card class="welcome-card" elevation="0">
+          <v-card-text class="d-flex align-center justify-space-between">
+            <div>
+              <h1 class="text-h5 font-weight-bold welcome-text mb-2">
+                Dashboard de Serviços
+              </h1>
+              <div class="text-subtitle-2 text-white opacity-75">
+                Visão geral do seu negócio de serviços
+              </div>
+            </div>
+            <div class="d-flex align-center">
+              <v-btn
+                color="white"
+                variant="tonal"
+                class="mr-4"
+                prepend-icon="mdi-file-pdf-box"
+                @click="gerarRelatorioServicos"
+                :loading="gerandoRelatorio"
+              >
+                Gerar Relatório
             </v-btn>
-          </v-card-title>
-          <v-row style="max-height: 90px;">
-            <v-col style="width: 100%;">
-              <v-select v-model="periodoVClientesCompraram" :items="periodos" item-title="text" item-value="value"
-                label="Selecione o Período" density="compact" outlined />
+              <v-btn
+                icon
+                variant="text"
+                color="white"
+                class="mr-4"
+                size="small"
+              >
+                <v-icon>mdi-information</v-icon>
+                <v-tooltip activator="parent" location="bottom">
+                  <div class="tooltip-content">
+                    <p class="font-weight-bold mb-1">Como gerar um relatório:</p>
+                    <ol class="mb-0">
+                      <li>Clique no botão "Gerar Relatório"</li>
+                      <li>O sistema criará um PDF com os dados atuais da tela</li>
+                      <li>O arquivo será salvo automaticamente no seu computador</li>
+                      <li>Você pode compartilhar este PDF com sua equipe ou clientes</li>
+                    </ol>
+                    <p class="mt-2 mb-0 text-caption">Dica: Ajuste os filtros de período antes de gerar o relatório para obter dados específicos.</p>
+                  </div>
+                </v-tooltip>
+              </v-btn>
+              <v-avatar size="48" class="welcome-avatar">
+                <v-img src="@/assets/logo.png" alt="Logo" />
+              </v-avatar>
+            </div>
+          </v-card-text>
+        </v-card>
             </v-col>
           </v-row>
-          <v-list style="width: 100%; overflow-y: auto; max-height: 300px;">
-            <v-list-item-group v-for="(cliente, index) in melhoresClientes" :key="index">
-              <v-list-item>
-                <v-list-item-content>
-                  <v-row class="d-flex align-center" style="width: 100%; ">
-                    <v-col cols="3" class="text-center">
-                      <!-- Medalha com icone e a colocação em negrito -->
-                      <v-icon :class="getRankingClass(index)" small>{{ getMedalIcon(index) }}</v-icon>
-                      <span class="font-weight-bold">{{ index + 1 }}º</span>
-                    </v-col>
 
-                    <v-col cols="4">
-                      <v-tooltip :text="cliente.cliente_nome">
-                        <template v-slot:activator="{ props }">
-                          <v-list-item-title v-bind="props" style="font-size: 14px;" class="text-truncate">{{ cliente.cliente_nome
-                      }}</v-list-item-title>
+    <v-row class="mt-2">
+      <!-- Top Clientes - Serviços -->
+      <v-col cols="12" sm="6" md="4">
+        <v-card class="chart-card h-100" elevation="2">
+          <v-card-title class="d-flex flex-column py-3 px-4">
+            <div class="d-flex align-center justify-space-between w-100 mb-2">
+              <div class="d-flex align-center">
+                <v-icon color="primary" class="mr-2">mdi-account-group</v-icon>
+                <span class="text-subtitle-1 font-weight-medium">Top Clientes - Serviços</span>
+              </div>
+            </div>
+            <v-select
+              v-model="periodoVClientesCompraram"
+              :items="periodos"
+              item-title="text"
+              item-value="value"
+              label="Período"
+              density="compact"
+              class="period-select"
+              variant="outlined"
+              hide-details
+              style="max-width: 200px"
+            />
+          </v-card-title>
+          <v-divider />
+          <v-card-text class="pa-3">
+            <v-list class="mt-2" style="max-height: 250px; overflow-y: auto;">
+              <v-list-item
+                v-for="(cliente, index) in melhoresClientes"
+                :key="index"
+                class="mb-1 rounded-lg"
+                :class="{'bg-primary-lighten-5': index % 2 === 0}"
+              >
+                <template v-slot:prepend>
+                  <v-avatar :color="getRankingColor(index)" size="32">
+                    <span class="text-subtitle-2 text-white">{{ index + 1 }}</span>
+                  </v-avatar>
                         </template>
-                      </v-tooltip>
-
-                    </v-col>
-
-                    <v-col cols="5" class="text-right">
-                      <v-list-item-subtitle style="font-size: 12px;">{{ cliente.quantidade_servicos_comprados }}
-                        Serviços
-                        comprados</v-list-item-subtitle>
-                    </v-col>
-
-                  </v-row>
-                </v-list-item-content>
+                <v-list-item-title class="text-body-2 font-weight-medium">{{ cliente.cliente_nome }}</v-list-item-title>
+                <v-list-item-subtitle class="d-flex align-center text-caption">
+                  <v-icon size="small" color="primary" class="mr-1">mdi-tools</v-icon>
+                  {{ cliente.quantidade_servicos_comprados }} Serviços comprados
+                </v-list-item-subtitle>
               </v-list-item>
-              <v-divider></v-divider>
-            </v-list-item-group>
           </v-list>
+            <v-alert
+              v-if="melhoresClientes.length === 0"
+              type="info"
+              variant="tonal"
+              class="mt-3"
+              icon="mdi-information"
+            >
+              Nenhum cliente encontrado neste período
+            </v-alert>
+          </v-card-text>
         </v-card>
       </v-col>
 
-      <!-- Gráfico Comparação Lucro x Gasto -->
-      <v-col cols="3" md="3" lg="3">
-        <v-card class="pa-1" style="min-height: 250px; position: relative;" elevation="10">
-          <v-card-title style="font-size: 16px; font-weight: bold;">
-            Informações adicionais
+      <!-- Informações Gerais -->
+      <v-col cols="12" sm="6" md="4">
+        <v-card class="chart-card h-100" elevation="2">
+          <v-card-title class="d-flex flex-column py-3 px-4">
+            <div class="d-flex align-center justify-space-between w-100 mb-2">
+              <div class="d-flex align-center">
+                <v-icon color="primary" class="mr-2">mdi-chart-box</v-icon>
+                <span class="text-subtitle-1 font-weight-medium">Visão Geral</span>
+              </div>
+            </div>
+            <v-select
+              v-model="periodoLucroGasto"
+              :items="periodos"
+              item-title="text"
+              item-value="value"
+              label="Período"
+              density="compact"
+              class="period-select"
+              variant="outlined"
+              hide-details
+              style="max-width: 200px"
+            />
           </v-card-title>
+          <v-divider />
+          <v-card-text class="pa-3">
+            <v-row>
+              <!-- Card de Lucro Total -->
 
-          <v-row style="max-height: 90px;">
-            <v-col style="width: 100%;">
-              <v-select v-model="periodoTotal" :items="periodos" item-title="text" item-value="value"
-                label="Selecione o Período" density="compact" outlined />
+              <!-- Estatísticas -->
+              <v-col cols="6">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="text-center pa-3">
+                    <v-icon color="primary" size="32" class="mb-2">mdi-tools</v-icon>
+                    <div class="text-h6 font-weight-bold">{{ quantidadeReceitaServicos.total_servicos_vendidos || 0 }}</div>
+                    <div class="text-caption text-medium-emphasis">Serviços Vendidos</div>
+                  </v-card-text>
+                </v-card>
+            </v-col>
+
+              <v-col cols="6">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="text-center pa-3">
+                    <v-icon color="success" size="32" class="mb-2">mdi-cash</v-icon>
+                    <div class="text-h6 font-weight-bold text-success">
+                      R$ {{ (quantidadeReceitaServicos.receita_total_servicos || 0).toFixed(2) }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">Receita Total</div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+
+              <!-- Média por Serviço -->
+              <v-col cols="12">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="d-flex align-center justify-space-between py-2 px-3">
+                    <div class="d-flex align-center">
+                      <v-icon color="info" size="24" class="mr-2">mdi-chart-areaspline</v-icon>
+                      <span class="text-subtitle-1 font-weight-bold">Média por Serviço</span>
+                    </div>
+                    <span class="text-h6 font-weight-bold text-info">
+                      {{ quantidadeReceitaServicos.total_servicos_vendidos && quantidadeReceitaServicos.receita_total_servicos ?
+                         'R$ ' + (quantidadeReceitaServicos.receita_total_servicos / quantidadeReceitaServicos.total_servicos_vendidos).toFixed(2) :
+                         'R$ 0,00' }}
+                    </span>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+
+              <!-- Top Serviço -->
+              <v-col cols="12">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="d-flex align-center justify-space-between py-2 px-3">
+                    <div class="d-flex align-center">
+                      <v-icon color="warning" size="24" class="mr-2">mdi-star</v-icon>
+                      <span class="text-subtitle-1 font-weight-bold">Serviço Mais Popular</span>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-body-1 font-weight-medium">
+                        {{ servicosMaisVendidos[0]?.servico_nome || 'Nenhum serviço' }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        {{ servicosMaisVendidos[0]?.quantidade_vendida || 0 }} vendas
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
             </v-col>
           </v-row>
-
-          <v-row style="max-height: 70px;">
-            <v-col cols="6" md="6" style="min-width: 260px;">
-              <v-list dense>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title style="font-size: 14px;">
-                      Serviços vendidos no total
-                    </v-list-item-title>
-                    <v-list-item-subtitle style="font-size: 12px;">
-                      {{ quantidadeReceitaServicos.total_servicos_vendidos || '--' }}
-                    </v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title style="font-size: 14px;">
-                      Receita total com Serviços
-                    </v-list-item-title>
-                    <v-list-item-subtitle style="font-size: 20px; font-weight: bold;">
-                      <span v-if="quantidadeReceitaServicos.receita_total_servicos">
-                        {{ 'R$' +
-                          quantidadeReceitaServicos.receita_total_servicos.toFixed(2) }}</span>
-                      <span v-else>---</span>
-                    </v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-
-              </v-list>
-            </v-col>
-          </v-row>
+          </v-card-text>
         </v-card>
       </v-col>
 
-
-      <!-- Ranking dos Servicos Mais Vendidos -->
-      <v-col cols="12" md="6" lg="5">
-        <v-card class="pa-1" style="min-height: 100px;" elevation="10">
-          <v-card-title style="font-size: 16px; font-weight: bold;">
-            Serviços mais vendidos
-            <v-btn variant="plain" size="small">
-              <v-icon icon="mdi-information"> </v-icon>
-              <v-tooltip activator="parent" location="start">Serviços mais vendidos, ranqueados por
-                quantidade de vendas</v-tooltip>
-            </v-btn>
+      <!-- Serviços Mais Vendidos -->
+      <v-col cols="12" sm="6" md="4">
+        <v-card class="chart-card h-100" elevation="2">
+          <v-card-title class="d-flex flex-column py-3 px-4">
+            <div class="d-flex align-center justify-space-between w-100 mb-2">
+              <div class="d-flex align-center">
+                <v-icon color="primary" class="mr-2">mdi-tools</v-icon>
+                <span class="text-subtitle-1 font-weight-medium">Serviços Mais Vendidos</span>
+              </div>
+            </div>
+            <v-select
+              v-model="periodoMaisVendidos"
+              :items="periodos"
+              item-title="text"
+              item-value="value"
+              label="Período"
+              density="compact"
+              class="period-select"
+              variant="outlined"
+              hide-details
+              style="max-width: 200px"
+            />
           </v-card-title>
-          <v-row style="max-height: 90px;"> <!-- Adicionando flex-wrap para se ajustar ao espaço -->
-            <v-col style="width: 100%;">
-              <v-select item-title="text" item-value="value" v-model="periodoMaisVendidos" :items="periodos"
-                label="Selecione o Período" density="compact" outlined />
-            </v-col>
-          </v-row>
-          <v-list style="overflow-y: auto; max-height: 300px;">
-            <v-list-item-group v-for="(produto, index) in servicosMaisVendidos" :key="index">
-              <v-list-item>
-                <v-list-item-content>
-                  <v-row class="d-flex align-center" style="gap: 8px; flex-wrap: wrap;">
-                    <!-- Flex wrap e gap entre os itens -->
-                    <!-- Posição de Ranking -->
-                    <v-col cols="2" class="text-center">
-                      <v-icon :class="getRankingClass(index)" size="small">{{ getMedalIcon(index) }}</v-icon>
-                      <span class="font-weight-bold" style="font-size: 13px;">{{ index + 1 }}º</span>
-                    </v-col>
-
-                    <!-- Nome do Produto -->
-                    <v-col cols="3" class="text-truncate" style="min-width: 120px;">
-                      <v-tooltip :text="produto.servico_nome">
-                        <template v-slot:activator="{ props }">
-                          <v-list-item-title v-bind="props" style="font-size: 14px;">{{ produto.servico_nome }}</v-list-item-title>
+          <v-divider />
+          <v-card-text class="pa-3">
+            <v-list class="mt-2" style="max-height: 250px; overflow-y: auto;">
+              <v-list-item
+                v-for="(servico, index) in servicosMaisVendidos"
+                :key="index"
+                class="mb-1 rounded-lg"
+                :class="{'bg-primary-lighten-5': index % 2 === 0}"
+              >
+                <template v-slot:prepend>
+                  <v-avatar :color="getRankingColor(index)" size="32">
+                    <span class="text-subtitle-2 text-white">{{ index + 1 }}</span>
+                  </v-avatar>
                         </template>
-                      </v-tooltip>
-
-                    </v-col>
-
-                    <!-- Quantidade de Vendas -->
-                    <v-col cols="2" class="text-right">
-                      <v-list-item-subtitle style="font-size: 12px;">{{ produto.quantidade_vendida }}
-                        vendas</v-list-item-subtitle>
-                    </v-col>
-
-                    <!-- Total Vendido -->
-                    <v-col cols="3" class="text-right">
-                      <v-list-item-subtitle style="font-size: 12px;">{{ 'R$' + produto.total_vendido.toFixed(2) || '---'
-                        }}</v-list-item-subtitle>
-                    </v-col>
-                  </v-row>
-                </v-list-item-content>
+                <v-list-item-title class="text-body-2 font-weight-medium">{{ servico.servico_nome }}</v-list-item-title>
+                <v-list-item-subtitle class="d-flex align-center justify-space-between text-caption">
+                  <span>
+                    <v-icon size="small" color="primary" class="mr-1">mdi-tools</v-icon>
+                    {{ servico.quantidade_vendida }} vendas
+                  </span>
+                  <span class="text-success font-weight-bold">
+                    R$ {{ servico.total_vendido.toFixed(2) }}
+                  </span>
+                </v-list-item-subtitle>
               </v-list-item>
-
-              <!-- Divider entre os itens -->
-              <v-divider></v-divider>
-            </v-list-item-group>
           </v-list>
+            <v-alert
+              v-if="servicosMaisVendidos.length === 0"
+              type="info"
+              variant="tonal"
+              class="mt-3"
+              icon="mdi-information"
+            >
+              Nenhum serviço vendido neste período
+            </v-alert>
+          </v-card-text>
         </v-card>
-      </v-col>
-
-    </v-row>
-
-    <v-row>
-      <v-col cols="12" md="6" lg="6">
-        <v-card class="pa-1" style="min-height: 300px; width: 100%;" elevation="10">
-          <v-card-title style="font-size: 16px;font-weight: bold;">
-            Evoluçao de serviços vendidos
-          </v-card-title>
-          <v-row cols="auto" class="px-8 my-1" style="max-height: 80px;">
-            <v-select item-title="text" item-value="value" v-model="periodoVendasServicos" :items="periodos"
-              label="Selecione o Período" density="compact" />
+            </v-col>
           </v-row>
-          <LineChart :data="vendasServicosData" :options="chartOptions" />
-        </v-card>
-      </v-col>
 
-      <v-col cols="12" md="6" lg="6">
-        <v-card class="pa-1" style="min-height: 300px; width: 100%;" elevation="10">
+    <v-row class="mt-4">
+      <!-- Quantidade de Serviços Vendidos -->
+      <v-col cols="12" md="6">
+        <v-card class="chart-card h-100" elevation="2">
+          <v-card-title class="d-flex flex-column py-4 px-6">
+            <div class="d-flex align-center justify-space-between w-100 mb-2">
+              <div class="d-flex align-center">
+                <v-icon color="primary" class="mr-2">mdi-chart-line</v-icon>
+                <span class="text-h6 font-weight-medium">Quantidade de Serviços Vendidos</span>
+              </div>
+            </div>
+            <v-select
+              v-model="periodoVendasServicos"
+              :items="periodos"
+              item-title="text"
+              item-value="value"
+              label="Período"
+              density="compact"
+              class="period-select"
+              variant="outlined"
+              hide-details
+              style="max-width: 200px"
+            />
+          </v-card-title>
+          <v-divider />
+          <v-card-text class="pa-4">
+            <div class="chart-container mt-2">
+              <apexchart
+                type="line"
+                :options="chartOptionsVendas"
+                :series="vendasServicosSeries"
+                height="350"
+              />
+            </div>
+          </v-card-text>
+        </v-card>
+                    </v-col>
+
+
+      <!-- Vendas por Método de Pagamento e Informações -->
+      <v-col cols="12" md="6">
+        <v-card class="chart-card h-100" elevation="2">
           <v-row no-gutters>
-            <!-- Gráfico do Método de Pagamento (50%) -->
-            <v-col cols="12" md="12">
-              <v-card-title style="font-size: 14px; font-weight: bold;">
-                Vendas de serviços p/ Método de Pagamento
+            <v-col cols="12" md="6">
+              <v-card-title class="d-flex flex-column py-3 px-4">
+                <div class="d-flex align-center justify-space-between w-100 mb-2">
+                  <div class="d-flex align-center">
+                    <v-icon color="primary" class="mr-2">mdi-credit-card</v-icon>
+                    <span class="text-subtitle-1 font-weight-medium">Vendas por Método de Pagamento</span>
+                  </div>
+                </div>
+                <v-select
+                  v-model="periogoPagamentos"
+                  :items="periodos"
+                  item-title="text"
+                  item-value="value"
+                  label="Período"
+                  density="compact"
+                  class="period-select"
+                  variant="outlined"
+                  hide-details
+                  style="max-width: 200px"
+                />
               </v-card-title>
-              <v-row cols="auto" class="px-4 my-1" style="max-height: 80px;">
-                <v-select item-title="text" item-value="value" v-model="periogoPagamentos" :items="periodos"
-                  label="Selecione o Período" density="compact" />
-              </v-row>
-              <DoughnutChart :data="vendasPorMetodoPagamentoData" :options="chartOptionsVendasPagamento" />
+              <v-divider />
+              <v-card-text class="pa-3">
+                <div class="chart-container mt-2">
+                  <apexchart
+                    type="donut"
+                    :options="chartOptionsPagamento"
+                    :series="vendasPorMetodoPagamentoSeries"
+                    height="250"
+                  />
+                </div>
+              </v-card-text>
+                    </v-col>
+
+            <v-divider vertical />
+
+            <v-col cols="12" md="6">
+              <v-card-title class="d-flex flex-column py-3 px-4">
+                <div class="d-flex align-center justify-space-between w-100 mb-2">
+                  <div class="d-flex align-center">
+                    <v-icon color="primary" class="mr-2">mdi-credit-card</v-icon>
+                    <span class="text-subtitle-1 font-weight-medium">Insights de Pagamento</span>
+                  </div>
+                </div>
+              </v-card-title>
+              <v-divider />
+              <v-card-text class="pa-3">
+                <v-list class="info-list bg-transparent">
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="primary" class="mr-2">mdi-cash-multiple</v-icon>
+                    </template>
+                    <v-list-item-title class="text-body-2 text-medium-emphasis">Método Mais Utilizado</v-list-item-title>
+                    <template v-slot:append>
+                      <span class="text-subtitle-1 font-weight-bold">
+                        {{ chartOptionsPagamento.labels[0] || '---' }}
+                      </span>
+                    </template>
+              </v-list-item>
+
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="success" class="mr-2">mdi-chart-pie</v-icon>
+                    </template>
+                    <v-list-item-title class="text-body-2 text-medium-emphasis">Distribuição de Pagamentos</v-list-item-title>
+                    <template v-slot:append>
+                      <span class="text-subtitle-1 font-weight-bold text-success">
+                        {{ chartOptionsPagamento.labels.length }} métodos
+                      </span>
+                    </template>
+                  </v-list-item>
+
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="info" class="mr-2">mdi-percent</v-icon>
+                    </template>
+                    <v-list-item-title class="text-body-2 text-medium-emphasis">Participação do Principal</v-list-item-title>
+                    <template v-slot:append>
+                      <span class="text-subtitle-1 font-weight-bold text-info">
+                        {{ vendasPorMetodoPagamentoSeries.length > 0 && chartOptionsPagamento.labels.length > 0 ?
+                           Math.round((vendasPorMetodoPagamentoSeries[0] / vendasPorMetodoPagamentoSeries.reduce((a, b) => a + b, 0)) * 100) + '%' :
+                           '---' }}
+                      </span>
+                    </template>
+                  </v-list-item>
+          </v-list>
+
+                <v-card class="payment-insights-card mt-3" elevation="0">
+                  <v-card-text class="d-flex flex-column py-2 px-3">
+                    <div class="d-flex align-center mb-1">
+                      <v-icon color="white" size="24" class="mr-2">mdi-trending-up</v-icon>
+                      <span class="text-subtitle-1 font-weight-bold text-white">Crescimento de Pagamentos</span>
+                    </div>
+                    <span class="text-h5 font-weight-bold text-white text-break">
+                      {{ vendasPorMetodoPagamentoSeries.length > 0 ?
+                         'R$ ' + vendasPorMetodoPagamentoSeries.reduce((a, b) => a + b, 0).toFixed(2) :
+                         '---' }}
+                    </span>
+                  </v-card-text>
+        </v-card>
+              </v-card-text>
             </v-col>
           </v-row>
         </v-card>
       </v-col>
-    </v-row>
-    <v-row>
-
     </v-row>
   </v-container>
 </template>
@@ -207,35 +422,77 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { Line, Doughnut, } from 'vue-chartjs';
-import { Chart as ChartJS, Title, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement } from 'chart.js';
+import VueApexCharts from 'vue3-apexcharts';
+import type { ApexOptions } from 'apexcharts';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
-// Registrando os tipos do chart.js
-ChartJS.register(Title, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement);
+// Tipos
+interface ServicoVendido {
+  servico_nome: string;
+  quantidade_vendida: number;
+  total_vendido: number;
+}
+
+interface Cliente {
+  cliente_nome: string;
+  quantidade_servicos_comprados: number;
+}
+
+interface QuantidadeReceita {
+  total_servicos_vendidos: number;
+  receita_total_servicos: number;
+}
+
+// Tipos para as opções do gráfico
+interface ChartOptions extends ApexOptions {
+  xaxis: {
+    categories: string[];
+    labels: {
+      style: {
+        colors: string;
+        fontSize: string;
+        fontFamily: string;
+      };
+      rotate?: number;
+    };
+    axisBorder: {
+      show: boolean;
+    };
+    axisTicks: {
+      show: boolean;
+    };
+  };
+}
+
+// Verificar se o componente ApexChart está disponível
+console.log('[APEXCHART] Componente disponível:', !!VueApexCharts);
 
 export default defineComponent({
   name: 'BarbeariaView',
   components: {
-    LineChart: Line,
-    DoughnutChart: Doughnut
+    apexchart: VueApexCharts
   },
   setup() {
-    // Dados e opções dos gráficos
     const router = useRouter();
-    const vendasServicosData = ref<any>({ labels: [], datasets: [] });
-    const vendasPorMetodoPagamentoData = ref<any>({ labels: [], datasets: [] });
-    const servicosMaisVendidos = ref<any[]>([]);
+    const vendasServicosSeries = ref<any[]>([]);
+    const vendasPorMetodoPagamentoSeries = ref<number[]>([]);
+    const lucroTotal = ref({ lucroTotal: 0, cor: '#8B5CF6' });
+    const servicosMaisVendidos = ref<ServicoVendido[]>([]);
     const servicosSemEstoque = ref<any[]>([]);
-    const chartOptionVendas = ref<any>();
-    const quantidadeReceitaServicos = ref<any>([]);
-    const melhoresClientes = ref<any[]>([]);
-    const exemploData = ref<any>({ labels: [], datasets: [] });
-    const chartOptionsLucroGasto = ref<any>();
+    const quantidadeReceitaServicos = ref<QuantidadeReceita>({ total_servicos_vendidos: 0, receita_total_servicos: 0 });
+    const melhoresClientes = ref<Cliente[]>([]);
+    const gerandoRelatorio = ref(false);
+
+    // Períodos
     const periodoVendasServicos = ref('semana');
     const periodoMaisVendidos = ref('semana');
     const periodoVClientesCompraram = ref('semana');
-    const periodoTotal = ref('semana');
     const periogoPagamentos = ref('semana');
+    const periodoLucroGasto = ref('semana');
+
     const periodos = [
       { value: 'dia', text: 'Últimas 24 horas' },
       { value: 'semana', text: 'Última Semana' },
@@ -243,214 +500,208 @@ export default defineComponent({
       { value: 'ano', text: 'Último Ano' },
       { value: 'todos', text: 'Todos' },
     ];
-    const getVendasServicosPorData = async (periodo: string) => {
-      try {
-        const vendasServicosResponse = await window.api.getVendasServicosPorData(periodo);
-        console.log('[VENDAS RESPONSE]', vendasServicosResponse);
 
-        const labels: string[] = [];
-        const dataTotalVendido: number[] = [];
-        const dataQuantidadeServicos: number[] = [];
-
-        let lastPeriod = '';
-        let periodSumTotal = 0;
-        let periodSumQuantidade = 0;
-
-        vendasServicosResponse.forEach((item: any) => {
-          let label = '';
-
-          switch (periodo) {
-            case 'dia':
-              // Ajuste no formato de hora para garantir que ele seja tratado como data válida
-              const periodoDate = new Date(item.periodo + ":00"); // Certifique-se de adicionar ':00' para os minutos
-              console.log(item.periodo);
-
-              // Criação do label com a hora
-              label = periodoDate.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              });
-
-              // Verifica se o label já existe para somar os valores
-              if (!labels.includes(label)) {
-                labels.push(label);
-                dataTotalVendido.push(0); // Inicia com 0 para somar depois
-                dataQuantidadeServicos.push(0); // Inicia com 0 para somar depois
-              }
-
-              const indexDia = labels.indexOf(label);
-              dataTotalVendido[indexDia] += Number(item.total_vendido);
-              dataQuantidadeServicos[indexDia] += Number(item.quantidade_vendida);
-              break;
-
-            case 'semana':
-              const diasDaSemana: string[] = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-              const dataPeriodo = new Date(item.periodo);
-              let diaSemana = (dataPeriodo.getDay() + 1) % 7;
-
-              label = diasDaSemana[diaSemana];
-
-              if (!labels.includes(label)) {
-                labels.push(label);
-                dataTotalVendido.push(0);
-                dataQuantidadeServicos.push(0);
-              }
-
-              const dayIndex = labels.indexOf(label);
-              dataTotalVendido[dayIndex] += Number(item.total_vendido);
-              dataQuantidadeServicos[dayIndex] += Number(item.quantidade_vendida);
-              break;
-
-            case 'mes':
-              const dataInicio = new Date(item.periodo);
-              const dataFim = new Date(dataInicio);
-              dataFim.setDate(dataFim.getDate() + 1);
-
-              const formatarData = (data: Date) =>
-                data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-
-              label = `${formatarData(dataInicio)} a ${formatarData(dataFim)}`;
-
-              if (lastPeriod === label) {
-                periodSumTotal += Number(item.total_vendido);
-                periodSumQuantidade += Number(item.quantidade_vendida);
-              } else {
-                if (lastPeriod !== '') {
-                  labels.push(lastPeriod);
-                  dataTotalVendido.push(periodSumTotal);
-                  dataQuantidadeServicos.push(periodSumQuantidade);
-                }
-                periodSumTotal = Number(item.total_vendido);
-                periodSumQuantidade = Number(item.quantidade_vendida);
-              }
-
-              lastPeriod = label;
-              break;
-
-            case 'ano':
-              const mesAno = new Date(item.periodo);
-              label = mesAno.toLocaleString('default', { month: 'long' });
-
-              if (!labels.includes(label)) {
-                labels.push(label);
-                dataTotalVendido.push(0);
-                dataQuantidadeServicos.push(0);
-              }
-
-              const idxAno = labels.indexOf(label);
-              dataTotalVendido[idxAno] += Number(item.total_vendido);
-              dataQuantidadeServicos[idxAno] += Number(item.quantidade_vendida);
-              break;
-
-            case 'todos':
-              label = item.periodo;
-              if (!labels.includes(label)) {
-                labels.push(label);
-                dataTotalVendido.push(0);
-                dataQuantidadeServicos.push(0);
-              }
-              const idxTodos = labels.indexOf(label);
-              dataTotalVendido[idxTodos] += Number(item.total_vendido);
-              dataQuantidadeServicos[idxTodos] += Number(item.quantidade_vendida);
-              break;
-
-            default:
-              label = new Date(item.periodo).toLocaleDateString();
-          }
-        });
-
-        // Adiciona os últimos valores se estiver no modo 'mes'
-        if (lastPeriod !== '' && periodo === 'mes') {
-          labels.push(lastPeriod);
-          dataTotalVendido.push(periodSumTotal);
-          dataQuantidadeServicos.push(periodSumQuantidade);
+    // Opções dos gráficos ApexCharts
+    const chartOptionsVendas = ref<ChartOptions>({
+      chart: {
+        type: 'line',
+        height: 350,
+        toolbar: {
+          show: false
+        },
+        zoom: {
+          enabled: false
         }
-
-        // Atualiza os dados do gráfico
-        vendasServicosData.value = {
-          labels,
-          datasets: [
-            {
-              label: 'Valor Total Vendido (R$)',
-              data: dataTotalVendido,
-              backgroundColor: 'rgba(76, 175, 80, 0.2)',
-              borderColor: '#4CAF50',
-              borderWidth: 2,
-              hoverBackgroundColor: '#4CAF50',
-              hoverBorderColor: '#2E7D32',
-              tension: 0.3,
-              fill: false,
-              yAxisID: 'y1',
-            },
-            {
-              label: 'Quantidade de Serviços Vendidos',
-              data: dataQuantidadeServicos,
-              backgroundColor: 'rgba(33, 150, 243, 0.2)',
-              borderColor: '#2196F3',
-              borderWidth: 2,
-              hoverBackgroundColor: '#2196F3',
-              hoverBorderColor: '#1565C0',
-              tension: 0.3,
-              fill: false,
-              yAxisID: 'y2',
-            },
-          ],
-        };
-
-        // Atualiza opções do gráfico
-        chartOptionVendas.value = {
-          responsive: true,
-          interaction: {
-            mode: 'index',
-            intersect: false,
+      },
+      stroke: {
+        curve: 'smooth',
+        width: 3,
+        lineCap: 'round'
+      },
+      grid: {
+        borderColor: '#f1f1f1',
+        strokeDashArray: 4,
+        xaxis: {
+          lines: {
+            show: true
+          }
+        },
+        yaxis: {
+          lines: {
+            show: true
+          }
+        }
+      },
+      markers: {
+        size: 6,
+        strokeWidth: 0,
+        hover: {
+          size: 8
+        }
+      },
+      xaxis: {
+        categories: [],
+        labels: {
+          style: {
+            colors: '#64748B',
+            fontSize: '12px',
+            fontFamily: 'Inter, sans-serif'
           },
-          scales: {
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              title: {
-                display: true,
-                text: 'Valor Total (R$)',
-              },
-              grid: {
-                drawOnChartArea: false,
-              },
-            },
-            y2: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              title: {
-                display: true,
-                text: 'Quantidade de Serviços',
-              },
-              grid: {
-                drawOnChartArea: true,
-              },
-            },
+          rotate: -45
+        },
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false
+        }
+      },
+      yaxis: [
+        {
+          title: {
+            text: 'Quantidade',
+            style: {
+              color: '#64748B',
+              fontSize: '12px',
+              fontFamily: 'Inter, sans-serif'
+            }
           },
-        };
-
-      } catch (error) {
-        console.error('Erro ao buscar dados de vendas:', error);
+          labels: {
+            style: {
+              colors: '#64748B',
+              fontSize: '12px',
+              fontFamily: 'Inter, sans-serif'
+            }
+          }
+        }
+      ]
+    });
+    const chartOptionsPagamento = ref({
+      chart: {
+        type: 'donut',
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800,
+          animateGradually: {
+            enabled: true,
+            delay: 150
+          },
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350
+          }
+        },
+        dropShadow: {
+          enabled: true,
+          opacity: 0.3,
+          blur: 3,
+          left: 1,
+          top: 1
+        }
+      },
+      labels: [],
+      colors: ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#EF5350'],
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '70%',
+            labels: {
+              show: true,
+              name: {
+                show: true,
+                fontSize: '14px',
+                fontFamily: 'Inter, sans-serif',
+                color: '#1a202c'
+              },
+              value: {
+                show: true,
+                fontSize: '16px',
+                fontFamily: 'Inter, sans-serif',
+                color: '#1a202c',
+                formatter: function (val: number) {
+                  return 'R$ ' + val.toFixed(2);
+                }
+              },
+              total: {
+                show: true,
+                label: 'Total',
+                fontSize: '14px',
+                fontFamily: 'Inter, sans-serif',
+                color: '#1a202c',
+                formatter: function (w: any) {
+                  const total = w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
+                  return 'R$ ' + total.toFixed(2);
+                }
+              }
+            }
+          }
+        }
+      },
+      legend: {
+        position: 'bottom',
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '12px',
+        markers: {
+          width: 12,
+          height: 12,
+          radius: 6
+        },
+        itemMargin: {
+          horizontal: 10,
+          vertical: 5
+        }
+      },
+      tooltip: {
+        enabled: true,
+        theme: 'dark',
+        style: {
+          fontSize: '14px',
+          fontFamily: 'Inter, sans-serif'
+        },
+        y: {
+          formatter: function (val: number) {
+            return 'R$ ' + val.toFixed(2);
+          }
+        }
       }
+    });
+
+
+    const getRankingColor = (index: number) => {
+      if (index === 0) return '#FFD700'; // Ouro
+      if (index === 1) return '#C0C0C0'; // Prata
+      if (index === 2) return '#CD7F32'; // Bronze
+      return '#42A5F5'; // Azul padrão
     };
 
     const getServicosMaisVendidos = async (periodo: string) => {
-      const produtosResponse = await window.api.getServicosMaisVendidos(periodo);
-      servicosMaisVendidos.value = produtosResponse;
+      try {
+        const servicosResponse = await window.api.getServicosMaisVendidos(periodo);
+        servicosMaisVendidos.value = servicosResponse;
+      } catch (error) {
+        console.error('Erro ao buscar serviços mais vendidos:', error);
+      }
     };
 
-    const getQuantidadeEReceitaServicos = async (periodo: string) => {
-      const produtosResponse = await window.api.getQuantidadeEReceitaServicos(periodo);
-      console.log(produtosResponse)
-      quantidadeReceitaServicos.value = produtosResponse;
+    const getQuantidadeEReceitaServicos = async () => {
+      try {
+        const servicosResponse = await window.api.getQuantidadeEReceitaServicos('todos');
+        quantidadeReceitaServicos.value = servicosResponse || {
+          total_servicos_vendidos: 0,
+          receita_total_servicos: 0
+        };
+      } catch (error) {
+        console.error('Erro ao buscar quantidade e receita:', error);
+        quantidadeReceitaServicos.value = {
+          total_servicos_vendidos: 0,
+          receita_total_servicos: 0
+        };
+      }
     };
 
-    const getProdutosSemEstoque = async () => {
-      const produtosResponse = await window.api.getProdutosSemEstoque();
-      servicosSemEstoque.value = produtosResponse;
+    const getServicosSemEstoque = async () => {
+      servicosSemEstoque.value = [];
     };
 
     const getClientesMaisCompraramServicos = async (periodo: string, limite: number) => {
@@ -459,200 +710,508 @@ export default defineComponent({
     };
 
     const getVendasServicosPorMetodoPagamento = async (periodo: string) => {
+      try {
       const vendasResponse = await window.api.getVendasServicosPorMetodoPagamento(periodo);
       const labels: string[] = [];
       const data: number[] = [];
-      const colors: string[] = ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#EF5350']; // Cores pré-definidas para métodos de pagamento
 
+        if (vendasResponse && Array.isArray(vendasResponse)) {
       vendasResponse.forEach((item: any) => {
-        labels.push(item.metodo); // Corrigido para 'metodo'
-        data.push(item.total_vendas); // Corrigido para 'total_vendas'
-      });
+            if (item && item.metodo && typeof item.total_vendas === 'number') {
+              labels.push(item.metodo);
+              data.push(item.total_vendas);
+            }
+          });
+        }
 
-      vendasPorMetodoPagamentoData.value = {
-        labels: labels,
-        datasets: [
-          {
-            data: data,
-            backgroundColor: colors.slice(0, labels.length),
-            hoverBackgroundColor: colors.slice(0, labels.length).map(color => color + 'CC'), // Adicionando transparência no hover
-          },
-        ],
-      };
-    };
-
-    const goToProdutos = () => {
-      router.push('produtos');
-    }
-
-
-    const getMedalIcon = (index) => {
-      if (index === 0) {
-        return 'mdi-medal';
-      } else if (index === 1) {
-        return 'mdi-medal';
-      } else if (index === 2) {
-        return 'mdi-medal';
+        chartOptionsPagamento.value.labels = labels;
+        vendasPorMetodoPagamentoSeries.value = data;
+      } catch (error) {
+        console.error('Erro ao buscar vendas por método de pagamento:', error);
+        chartOptionsPagamento.value.labels = [];
+        vendasPorMetodoPagamentoSeries.value = [];
       }
-      return '';
     };
 
-    const getRankingClass = (index) => {
-      if (index === 0) return 'gold-rank';
-      else if (index === 1) return 'silver-rank';
-      else if (index === 2) return 'bronze-rank';
-      return '';
+    const getVendasServicosPorData = async (periodo: string) => {
+      try {
+        const vendasServicosResponse = await window.api.getVendasServicosPorData(periodo);
+        console.log('[VENDAS RESPONSE]', vendasServicosResponse);
+
+        const labels: string[] = [];
+        const dataQuantidade: number[] = [];
+        const dataTotalVendido: number[] = [];
+
+        if (vendasServicosResponse && Array.isArray(vendasServicosResponse)) {
+          // Ordenar os dados por período
+          vendasServicosResponse.sort((a, b) => {
+            return new Date(a.periodo).getTime() - new Date(b.periodo).getTime();
+          });
+
+          // Agrupar dados por período
+          const dadosPorPeriodo = new Map();
+
+          vendasServicosResponse.forEach((item: any) => {
+            if (!item || !item.periodo) return;
+
+            const data = new Date(item.periodo);
+            const periodoKey = data.toISOString().split('T')[0];
+
+            if (!dadosPorPeriodo.has(periodoKey)) {
+              dadosPorPeriodo.set(periodoKey, {
+                quantidade: 0,
+                total: 0
+              });
+            }
+
+            const dados = dadosPorPeriodo.get(periodoKey);
+            dados.quantidade += Number(item.quantidade_vendida) || 0;
+            dados.total += Number(item.total_vendido) || 0;
+          });
+
+          // Converter para arrays
+          dadosPorPeriodo.forEach((dados, periodo) => {
+            const data = new Date(periodo);
+            let label = '';
+
+            switch (periodo) {
+              case 'dia':
+                label = data.toLocaleTimeString('pt-BR', {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+                break;
+              case 'semana':
+                label = data.toLocaleDateString('pt-BR', {
+                  weekday: 'short',
+                  day: '2-digit'
+                });
+                break;
+              case 'mes':
+                label = data.toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit'
+                });
+                break;
+              case 'ano':
+                label = data.toLocaleDateString('pt-BR', {
+                  month: 'short'
+                });
+                break;
+              case 'todos':
+                label = data.toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit'
+                });
+                break;
+              default:
+                label = data.toLocaleDateString('pt-BR');
+            }
+
+            labels.push(label);
+            dataQuantidade.push(dados.quantidade);
+            dataTotalVendido.push(dados.total);
+          });
+        }
+
+        // Atualizar as opções do gráfico
+        chartOptionsVendas.value = {
+          ...chartOptionsVendas.value,
+          xaxis: {
+            ...chartOptionsVendas.value.xaxis,
+            categories: labels,
+            labels: {
+              ...chartOptionsVendas.value.xaxis.labels,
+              rotate: -45,
+              style: {
+                colors: '#64748B',
+                fontSize: '12px',
+                fontFamily: 'Inter, sans-serif'
+              }
+            }
+          }
+        };
+
+        // Atualizar as séries do gráfico
+        vendasServicosSeries.value = [
+          {
+            name: 'Quantidade Vendida',
+            data: dataQuantidade,
+            color: '#8B5CF6'
+          },
+          {
+            name: 'Valor Total Vendido (R$)',
+            data: dataTotalVendido,
+            color: '#10B981'
+          }
+        ];
+
+        console.log('[CHART DATA]', {
+          labels,
+          dataQuantidade,
+          dataTotalVendido
+        });
+      } catch (error) {
+        console.error('Erro ao buscar dados de vendas:', error);
+        chartOptionsVendas.value.xaxis.categories = [];
+        vendasServicosSeries.value = [
+          {
+            name: 'Quantidade Vendida',
+            data: [],
+            color: '#8B5CF6'
+          },
+          {
+            name: 'Valor Total Vendido (R$)',
+            data: [],
+            color: '#10B981'
+          }
+        ];
+      }
     };
 
+    // Modificar a função carregarDados
     const carregarDados = async () => {
       await getVendasServicosPorData(periodoVendasServicos.value);
       await getServicosMaisVendidos(periodoMaisVendidos.value);
       await getClientesMaisCompraramServicos(periodoVClientesCompraram.value, 50);
-      await getProdutosSemEstoque();
-      await getQuantidadeEReceitaServicos(periodoTotal.value);
+      await getServicosSemEstoque();
+      await getQuantidadeEReceitaServicos();
       await getVendasServicosPorMetodoPagamento(periogoPagamentos.value);
     };
 
-    onMounted(() => {
-      carregarDados();
+    // Watch para atualizar o gráfico quando o período mudar
+    watch(periodoVendasServicos, async (newPeriodo) => {
+      await getVendasServicosPorData(newPeriodo);
     });
 
-    watch(() => periodoTotal.value, async (val) => {
-      if (val) {
-        await getQuantidadeEReceitaServicos(val);
-      }
+    // Adicionar watchers para os outros períodos
+    watch(periodoMaisVendidos, async (newPeriodo) => {
+      await getServicosMaisVendidos(newPeriodo);
     });
 
-    watch(() => periodoMaisVendidos.value, async (val) => {
-      if (val) {
-        await getServicosMaisVendidos(val);
-      }
+    watch(periodoVClientesCompraram, async (newPeriodo) => {
+      await getClientesMaisCompraramServicos(newPeriodo, 50);
     });
 
-    watch(() => periodoVClientesCompraram.value, async (val) => {
-      if (val) {
-        await getClientesMaisCompraramServicos(val, 50);
-      }
+    watch(periogoPagamentos, async (newPeriodo) => {
+      await getVendasServicosPorMetodoPagamento(newPeriodo);
     });
 
-    watch(() => periogoPagamentos.value, async (val) => {
-      if (val) {
-        await getVendasServicosPorMetodoPagamento(val);
-      }
+    watch(periodoLucroGasto, async (newPeriodo) => {
+      await getQuantidadeEReceitaServicos();
     });
 
-    watch(() => periodoVendasServicos.value, async (val) => {
-      if (val) {
-        await getVendasServicosPorData(val);
-      }
+    onMounted(async () => {
+      await carregarDados();
     });
 
-    // Opções do gráfico (geral para todos)
-    const chartOptions = {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true,  // Inicia o eixo Y do zero
-          ticks: {
-            stepSize: 1,  // Intervalo de passos no eixo Y
-          }
-        },
-        x: {
-          beginAtZero: true,  // Inicia o eixo X do zero
-        },
-      },
-      maintainAspectRatio: false,  // Evita o gráfico de expandir infinitamente
-      plugins: {
-        title: {
-          display: true,
-          text: 'Gráfico de Vendas e Comparações'
-        }
-      },
-      layout: {
-        padding: 20
+    const goToProdutos = () => {
+      router.push('/produtos');
+    };
+
+    const gerarRelatorioServicos = async () => {
+      try {
+        gerandoRelatorio.value = true;
+
+        // Criar um novo documento PDF
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+
+        // Título do relatório
+        pdf.setFontSize(20);
+        pdf.setTextColor(99, 102, 241); // Cor roxa
+        pdf.text('Relatório de Serviços', pageWidth / 2, 20, { align: 'center' });
+
+        // Data e hora da geração
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 100, 100);
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        const horaAtual = new Date().toLocaleTimeString('pt-BR');
+        pdf.text(`Gerado em: ${dataAtual} às ${horaAtual}`, pageWidth / 2, 30, { align: 'center' });
+
+        // Informações de período
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Período do Relatório:', 20, 45);
+
+        // Adicionar informações de período selecionado
+        const periodoText = periodos.find(p => p.value === periodoVendasServicos.value)?.text || 'Período não definido';
+        pdf.setFontSize(10);
+        pdf.text(`Vendas: ${periodoText}`, 30, 55);
+
+        const periodoMaisVendidosText = periodos.find(p => p.value === periodoMaisVendidos.value)?.text || 'Período não definido';
+        pdf.text(`Serviços Mais Vendidos: ${periodoMaisVendidosText}`, 30, 62);
+
+        const periodoClientesText = periodos.find(p => p.value === periodoVClientesCompraram.value)?.text || 'Período não definido';
+        pdf.text(`Clientes: ${periodoClientesText}`, 30, 69);
+
+        const periodoPagamentosText = periodos.find(p => p.value === periogoPagamentos.value)?.text || 'Período não definido';
+        pdf.text(`Pagamentos: ${periodoPagamentosText}`, 30, 76);
+
+        // Resumo de vendas
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Resumo de Vendas', 20, 90);
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Total de Serviços Vendidos: ${quantidadeReceitaServicos.value?.total_servicos_vendidos || 0}`, 30, 100);
+        pdf.text(`Receita Total: R$ ${quantidadeReceitaServicos.value?.receita_total_servicos?.toFixed(2) || '0.00'}`, 30, 107);
+
+        // Serviços mais vendidos
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Serviços Mais Vendidos', 20, 120);
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+
+        let yPos = 130;
+        servicosMaisVendidos.value.slice(0, 5).forEach((servico, index) => {
+          pdf.text(`${index + 1}. ${servico.servico_nome}`, 30, yPos);
+          pdf.text(`   Quantidade: ${servico.quantidade_vendida} | Total: R$ ${servico.total_vendido.toFixed(2)}`, 30, yPos + 7);
+          yPos += 15;
+        });
+
+        // Clientes que mais compraram
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Clientes que Mais Compraram', 20, yPos + 10);
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+
+        yPos += 20;
+        melhoresClientes.value.slice(0, 5).forEach((cliente, index) => {
+          pdf.text(`${index + 1}. ${cliente.cliente_nome}`, 30, yPos);
+          pdf.text(`   Serviços comprados: ${cliente.quantidade_servicos_comprados}`, 30, yPos + 7);
+          yPos += 15;
+        });
+
+        // Métodos de Pagamento
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Métodos de Pagamento', 20, yPos + 10);
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+
+        yPos += 20;
+
+        // Obter os métodos de pagamento do gráfico de donut
+        const metodosPagamento = chartOptionsPagamento.value.labels || [];
+        const valoresPagamento = vendasPorMetodoPagamentoSeries.value || [];
+
+        // Calcular o total de vendas por método de pagamento
+        const totalVendas = valoresPagamento.reduce((sum, val) => sum + val, 0);
+
+        // Adicionar cada método de pagamento com sua porcentagem
+        metodosPagamento.forEach((metodo, index) => {
+          const valor = valoresPagamento[index] || 0;
+          const porcentagem = totalVendas > 0 ? ((valor / totalVendas) * 100).toFixed(1) : '0.0';
+
+          pdf.text(`${index + 1}. ${metodo}`, 30, yPos);
+          pdf.text(`   Valor: R$ ${valor.toFixed(2)} | ${porcentagem}% do total`, 30, yPos + 7);
+          yPos += 15;
+        });
+
+        // Salvar o PDF
+        pdf.save('relatorio-servicos.pdf');
+
+        gerandoRelatorio.value = false;
+      } catch (error) {
+        console.error('Erro ao gerar relatório de serviços:', error);
+        gerandoRelatorio.value = false;
       }
     };
 
-    const chartOptionsVendasPagamento = ref({
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom' as const,
-        },
-        tooltip: {
-          callbacks: {
-            label: (tooltipItem: any) => {
-              const value = tooltipItem.raw || 0;
-              return ` R$ ${value.toFixed(2)}`;
-            },
-          },
-        },
-      },
-    });
-
     return {
-      vendasServicosData,
+      vendasServicosSeries,
       servicosMaisVendidos,
       melhoresClientes,
       periodoVendasServicos,
       periodoMaisVendidos,
-      chartOptionsLucroGasto,
-      vendasPorMetodoPagamentoData,
-      chartOptionsVendasPagamento,
+      lucroTotal,
+      vendasPorMetodoPagamentoSeries,
+      chartOptionsPagamento,
       periodoVClientesCompraram,
-      exemploData,
-      chartOptions,
+      periodoLucroGasto,
+      chartOptionsVendas,
       quantidadeReceitaServicos,
       goToProdutos,
       servicosSemEstoque,
-      getMedalIcon,
-      periodoTotal,
-      getRankingClass,
+      getRankingColor,
       periodos,
       periogoPagamentos,
+      gerarRelatorioServicos,
+      gerandoRelatorio
     };
   }
 });
 </script>
 
 <style scoped>
-.v-card {
+.dashboard-container {
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+.welcome-card {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.welcome-text {
+  color: white;
+}
+
+.welcome-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.chart-card {
+  border-radius: 12px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.chart-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+}
+
+.chart-container {
+  position: relative;
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  min-height: 250px;
 }
 
-.gold-rank {
-  color: #FFD700;
-  /* Ouro */
+.profit-card {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
-.silver-rank {
-  color: #C0C0C0;
-  /* Prata */
+.info-list {
+  border-radius: 8px;
 }
 
-.bronze-rank {
-  color: #CD7F32;
-  /* Bronze */
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
 }
 
-.other-place {
-  background-color: #e0e0e0;
-  /* Cor para os outros lugares */
-  color: black;
-  /* Cor do texto */
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 2px;
 }
 
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
 
-.v-card canvas {
-  flex-grow: 1;
-  /* Faz o gráfico preencher o espaço disponível */
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Vuetify Overrides */
+:deep(.v-list-item) {
+  min-height: 48px;
+  padding: 4px 12px;
+}
+
+:deep(.v-list-item--active) {
+  background: transparent;
+}
+
+:deep(.v-card-title) {
+  font-size: 1rem;
+}
+
+:deep(.v-select .v-field) {
+  border-radius: 6px;
+  min-height: 32px;
+}
+
+:deep(.v-select .v-field__input) {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+:deep(.v-select .v-field__append-inner) {
+  padding-top: 4px;
+}
+
+:deep(.v-alert) {
+  border-radius: 6px;
+}
+
+.stat-card {
+  background: rgb(var(--v-theme-surface));
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1);
+}
+
+.text-info {
+  color: #0EA5E9 !important;
+}
+
+@media (max-width: 1366px) {
+  .dashboard-container {
+    padding: 8px !important;
+  }
+
+  .chart-container {
   min-height: 200px;
-  /* Limita a altura mínima dos gráficos para telas menores */
-  max-height: 300px;
+  }
+
+  :deep(.v-select .v-field) {
+    font-size: 0.875rem;
+  }
+
+  .welcome-card {
+    border-radius: 8px;
+  }
+
+  .chart-card {
+    border-radius: 8px;
+  }
+
+  .stat-card {
+    margin-bottom: 8px;
+  }
+
+  .text-h6 {
+    font-size: 1.1rem !important;
+  }
+
+  .text-subtitle-1 {
+    font-size: 0.9rem !important;
+  }
 }
 
-@media screen {}
+.payment-insights-card {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.text-break {
+  word-break: break-word;
+  white-space: normal;
+}
+
+@media (max-width: 1366px) {
+  .payment-insights-card .text-h5 {
+    font-size: 1.1rem !important;
+  }
+}
 </style>

@@ -6,6 +6,7 @@ import * as Produto from './produtos';
 import * as Venda from './vendas';
 import * as Despesa from './despesas';
 import * as Fechamento from './fechamentoCaixa';
+import * as Categoria from './categorias';
 import { Database } from 'sqlite3';
 
 // Função que recebe a instância do banco de dados e registra os handlers IPC
@@ -66,6 +67,15 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
+  ipcMain.handle('get-historico-compras-cliente', async (_event, cliente_id: number) => {
+    try {
+      return await Cliente.getHistoricoComprasCliente(db, cliente_id);
+    } catch (error) {
+      console.error('Erro ao obter histórico de compras do cliente:', error);
+      throw error;
+    }
+  });
+
   // Serviços
   ipcMain.handle('create-servico', async (_event, nome: string, preco: number) => {
     try {
@@ -113,9 +123,9 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Produtos
-  ipcMain.handle('create-produto', async (_event, nome: string, custo: number, preco: number, qtdEstoque: number) => {
+  ipcMain.handle('create-produto', async (_event, nome: string, custo: number, preco: number, qtdEstoque: number, categoria_id: number) => {
     try {
-      await Produto.createProduto(db, nome, custo, preco, qtdEstoque);
+      await Produto.createProduto(db, nome, custo, preco, qtdEstoque, categoria_id);
     } catch (error) {
       console.error('Erro ao criar produto:', error);
       throw error;
@@ -140,9 +150,9 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
-  ipcMain.handle('update-produto', async (_event, id: number, nome: string, custo: number, preco: number, qtdEstoque: number) => {
+  ipcMain.handle('update-produto', async (_event, id: number, nome: string, custo: number, preco: number, qtdEstoque: number, categoria_id: number) => {
     try {
-      await Produto.updateProduto(db, id, nome, custo, preco, qtdEstoque);
+      await Produto.updateProduto(db, id, nome, custo, preco, qtdEstoque, categoria_id);
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
       throw error;
@@ -322,9 +332,9 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Função para obter vendas de produtos por data
-  ipcMain.handle('get-vendas-produtos-por-data', async (_event, periodo: string) => {
+  ipcMain.handle('get-vendas-produtos-por-data', async (_event, periodo: string, categoria_id?: number) => {
     try {
-      return await Fechamento.getVendasProdutosPorData(db, periodo);
+      return await Fechamento.getVendasProdutosPorData(db, periodo, categoria_id);
     } catch (error) {
       console.error('Erro ao obter vendas de produtos por data:', error);
       throw error;
@@ -342,9 +352,9 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Função para obter os produtos mais vendidos
-  ipcMain.handle('get-produtos-mais-vendidos', async (_event, periodo: string) => {
+  ipcMain.handle('get-produtos-mais-vendidos', async (_event, periodo: string, categoria_id?: number) => {
     try {
-      return await Fechamento.getProdutosMaisVendidos(db, periodo);
+      return await Fechamento.getProdutosMaisVendidos(db, periodo, categoria_id);
     } catch (error) {
       console.error('Erro ao obter produtos mais vendidos:', error);
       throw error;
@@ -422,20 +432,20 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Função para comparar custo vs lucro
-  ipcMain.handle('get-custo-vs-lucro', async (_event, periodo: string) => {
+  ipcMain.handle('get-custo-vs-lucro', async (_event, periodo: string, categoria_id?: number) => {
     try {
-      return await Fechamento.getCustoVsLucro(db, periodo);
+      return await Fechamento.getCustoVsLucro(db, periodo, categoria_id);
     } catch (error) {
       console.error('Erro ao comparar custo vs lucro:', error);
       throw error;
     }
   });
 
-  ipcMain.handle('get-clientes-mais-compraram-produtos', async (_event, periodo: string, limite: number) => {
+  ipcMain.handle('get-clientes-mais-compraram-produtos', async (_event, periodo: string, limite: number, categoria_id?: number) => {
     try {
-      return await Fechamento.getClientesMaisCompraramProdutos(db, periodo, limite);
+      return await Fechamento.getClientesMaisCompraramProdutos(db, periodo, limite, categoria_id);
     } catch (error) {
-      console.error('Erro ao comparar custo vs lucro:', error);
+      console.error('Erro ao obter clientes que mais compraram produtos:', error);
       throw error;
     }
   });
@@ -449,9 +459,9 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
-  ipcMain.handle('get-vendas-produtos-por-metodo-pagamento', async (_event, periodo: string) => {
+  ipcMain.handle('get-vendas-produtos-por-metodo-pagamento', async (_event, periodo: string, categoria_id?: number) => {
     try {
-      return await Fechamento.getVendasProdutosPorMetodoPagamento(db, periodo);
+      return await Fechamento.getVendasProdutosPorMetodoPagamento(db, periodo, categoria_id);
     } catch (error) {
       console.error('Erro ao buscar dados', error);
       throw error;
@@ -499,6 +509,81 @@ export const registerIpcHandlers = (db: Database) => {
       return await Fechamento.getClientesComVendasPendentes(db);
     } catch (error) {
       console.error('Erro ao buscar dados', error);
+      throw error;
+    }
+  });
+
+  // Categorias
+  ipcMain.handle('create-categoria', async (_event, nome: string, descricao: string) => {
+    try {
+      return await Categoria.createCategoria(db, nome, descricao);
+    } catch (error) {
+      console.error('Erro ao criar categoria:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-all-categorias', async () => {
+    try {
+      return await Categoria.getAllCategorias(db);
+    } catch (error) {
+      console.error('Erro ao obter todas as categorias:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-categoria-by-id', async (_event, id: number) => {
+    try {
+      return await Categoria.getCategoriaById(db, id);
+    } catch (error) {
+      console.error('Erro ao obter categoria:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('update-categoria', async (_event, id: number, nome: string, descricao: string) => {
+    try {
+      await Categoria.updateCategoria(db, id, nome, descricao);
+      return { id, nome, descricao };
+    } catch (error) {
+      console.error('Erro ao atualizar categoria:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('delete-categoria', async (_event, id: number) => {
+    try {
+      await Categoria.deleteCategoria(db, id);
+    } catch (error) {
+      console.error('Erro ao deletar categoria:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-produtos-por-categoria', async (_event, categoriaId: number) => {
+    try {
+      return await Categoria.getProdutosPorCategoria(db, categoriaId);
+    } catch (error) {
+      console.error('Erro ao obter produtos por categoria:', error);
+      throw error;
+    }
+  });
+
+  // Insights por categoria
+  ipcMain.handle('get-produtos-mais-vendidos-por-categoria', async (_event, periodo: string, categoria_id?: number) => {
+    try {
+      return await Fechamento.getProdutosMaisVendidosPorCategoria(db, periodo, categoria_id);
+    } catch (error) {
+      console.error('Erro ao obter produtos mais vendidos por categoria:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-lucro-total-por-categoria', async (_event, periodo: string, categoria_id?: number) => {
+    try {
+      return await Fechamento.getLucroTotalPorCategoria(db, periodo, categoria_id);
+    } catch (error) {
+      console.error('Erro ao obter lucro total por categoria:', error);
       throw error;
     }
   });

@@ -1,161 +1,314 @@
 <template>
-  <v-container style="height: 90vh; width: 100%;">
-    <v-card class="elevation-2" style="height: 100%; width: 100%; border-radius: 12px;" elevation="10">
-      <v-card-title>
-        <span class="text-h6">Vendas pendentes (Fiado)</span>
-        <v-spacer></v-spacer>
-        <v-row dense>
-          <v-col cols="12" sm="6" md="4">
-            <v-text-field density="compact" v-model="searchCliente" label="Filtrar por Cliente" clearable dense outlined
-              color="grey" class="search-input" />
-          </v-col>
+  <v-container fluid class="fiado-container pa-6">
+    <!-- Header Section with Parallax Effect -->
+    <v-row>
+      <v-col cols="12">
+        <v-card class="welcome-card" elevation="0">
+          <v-card-text class="d-flex align-center justify-space-between">
+            <div>
+              <h1 class="text-h4 font-weight-bold welcome-text mb-2">
+                Vendas Pendentes
+              </h1>
+              <div class="text-subtitle-1 text-white opacity-75">
+                Gerencie as vendas a prazo e fiados
+              </div>
+            </div>
+            <v-avatar size="64" class="welcome-avatar">
+              <v-img src="@/assets/logo.png" alt="Logo" />
+            </v-avatar>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
-          <v-col cols="12" sm="6" md="4">
-            <v-text-field density="compact" v-model="searchData" label="Filtrar por Data" clearable dense outlined color="grey"
-            type="date" class="search-input" />
-          </v-col>
-        </v-row>
-      </v-card-title>
+    <!-- Main Content Card -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-card class="content-card" elevation="2">
+          <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
+            <div class="d-flex align-center">
+              <v-icon color="error" class="mr-2">mdi-alert-circle</v-icon>
+              <span class="text-h6 font-weight-medium">Vendas Pendentes (Fiado)</span>
+            </div>
+          </v-card-title>
+          <v-divider />
+          <v-card-text class="pa-6">
+            <!-- Search and Filter Section -->
+            <v-row class="mb-4">
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="searchCliente"
+                  label="Filtrar por Cliente"
+                  prepend-inner-icon="mdi-account-search"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="search-field"
+                  placeholder="Digite o nome do cliente..."
+                  clearable
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="searchData"
+                  label="Filtrar por Data"
+                  type="date"
+                  prepend-inner-icon="mdi-calendar"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="search-field"
+                  clearable
+                />
+              </v-col>
+            </v-row>
 
-      <v-data-table density="compact" :headers="headers" :items="filteredFiados" items-per-page-text="Itens por página"
-        class="fiados-table elevation-1" style="height: 74%; width: 100%;" item-value="id"
-        no-data-text="Nenhuma venda pendente encontrada">
-        <template v-slot:headers>
-          <tr>
-            <th v-for="header in headers" :key="header.value" class="font-weight-bold text-left">
-              {{ header.text }}
-            </th>
-          </tr>
-        </template>
+            <!-- Data Table -->
+            <v-data-table
+              :headers="headers"
+              :items="filteredFiados"
+              class="elevation-0 rounded-lg"
+              density="comfortable"
+              hover
+              :no-data-text="'Nenhuma venda pendente encontrada'"
+              :loading-text="'Carregando vendas pendentes...'"
+              :sort-by="sortBy"
+              :sort-desc="sortDesc"
+              :items-per-page="10"
+              :items-per-page-options="[5, 10, 25, 50]"
+              @update:sort-by="handleSortBy"
+              @update:sort-desc="handleSortDesc"
+            >
+              <template v-slot:headers>
+                <tr>
+                  <th v-for="header in headers" :key="header.value" class="text-left font-weight-bold">
+                    <div class="d-flex align-center">
+                      {{ header.text }}
+                      <v-icon
+                        v-if="header.sortable !== false && header.value !== 'status'"
+                        size="small"
+                        color="grey"
+                        class="sort-icon ml-1"
+                        @click="handleSort(header.value)"
+                      >
+                        {{ getSortIcon(header.value) }}
+                      </v-icon>
+                    </div>
+                  </th>
+                </tr>
+              </template>
 
-        <template v-slot:item.status="{ item }">
-          <td>
-            <span :class="item.status === 'pendente' ? 'text-danger' : 'text-success'">
-              {{ item.status }}
-            </span>
-            <v-icon v-if="item.status === 'pendente'" color="red">mdi-close-circle</v-icon>
-            <v-icon v-if="item.status === 'pago'" color="green">mdi-check-circle</v-icon>
-          </td>
-        </template>
+              <template v-slot:item.status="{ item }">
+                <v-chip
+                  :color="item.status === 'pago' ? 'success' : 'error'"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-medium"
+                >
+                  <v-icon size="small" class="mr-1">
+                    {{ item.status === 'pago' ? 'mdi-check-circle' : 'mdi-close-circle' }}
+                  </v-icon>
+                  {{ item.status === 'pago' ? 'Pago' : 'Pendente' }}
+                </v-chip>
+              </template>
 
-        <template v-slot:item.valor_total="{ item }">
-          <td>
-            <span>
-              {{ 'R$' + item.valor_total.toFixed(2) || 'Indispónivel' }}
-            </span>
-          </td>
-        </template>
+              <template v-slot:item.valor_total="{ item }">
+                <span class="font-weight-bold">
+                  R$ {{ item.valor_total.toFixed(2) || '0.00' }}
+                </span>
+              </template>
 
-        <template v-slot:item.divida="{ item }">
-          <td>
-            <span style="color: red;">
-              R$ -{{ (item.valor_total - item.valor_pago).toFixed(2) || 'Indisponível' }}
-            </span>
-          </td>
-        </template>
-        <template v-slot:item.data="{ item }">
-          <td>{{ formatData(item.data) }}</td>
-        </template>
-        <template v-slot:item.valor_pago="{ item }">
-          <td>
-            <span>
-              {{ 'R$' + item.valor_pago.toFixed(2) || 'Indispónivel' }}
-            </span>
-          </td>
-        </template>
+              <template v-slot:item.divida="{ item }">
+                <span class="font-weight-bold text-error">
+                  R$ {{ (item.valor_total - item.valor_pago).toFixed(2) || '0.00' }}
+                </span>
+              </template>
 
-        <template v-slot:item.actions="{ item }">
-          <v-row dense justify="start" align="center">
-            <v-col cols="auto">
-              <v-btn color="success" @click="markAsPaid(item)" v-if="item.status !== 'pago'" elevation="2"
-                size="x-small" class="d-flex align-center justify-center" rounded>
-                <v-icon left>mdi-check</v-icon> Alterar status
-              </v-btn>
-            </v-col>
-          </v-row>
-        </template>
-      </v-data-table>
-    </v-card>
+              <template v-slot:item.data="{ item }">
+                <div class="d-flex align-center">
+                  <v-icon size="small" color="primary" class="mr-1">mdi-calendar</v-icon>
+                  {{ formatData(item.data) }}
+                </div>
+              </template>
+
+              <template v-slot:item.valor_pago="{ item }">
+                <span class="font-weight-bold text-success">
+                  R$ {{ item.valor_pago.toFixed(2) || '0.00' }}
+                </span>
+              </template>
+
+              <template v-slot:item.actions="{ item }">
+                <v-btn
+                  v-if="item.status !== 'pago'"
+                  color="success"
+                  variant="tonal"
+                  size="small"
+                  @click="markAsPaid(item)"
+                  class="action-btn"
+                >
+                  <v-icon left size="small">mdi-check</v-icon>
+                  Alterar status
+                </v-btn>
+              </template>
+
+              <template v-slot:no-data>
+                <div class="text-center py-6">
+                  <v-icon color="grey" size="48" class="mb-2">mdi-cash-check</v-icon>
+                  <div class="text-subtitle-1 text-grey">Nenhuma venda pendente encontrada</div>
+                  <div class="text-caption text-grey">Não há fiados pendentes no momento</div>
+                </div>
+              </template>
+            </v-data-table>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <!-- Modal de Detalhes do Fiado -->
     <v-dialog v-model="modalOpen" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="text-h6">Detalhes do Fiado</span>
+      <v-card class="modal-card">
+        <v-card-title class="d-flex align-center py-4 px-6">
+          <v-icon color="primary" size="32" class="mr-4">mdi-cash-multiple</v-icon>
+          <span class="text-h6 font-weight-bold">Detalhes do Fiado</span>
         </v-card-title>
-        <v-card-text class="mt-n4">
-          <v-list>
+        <v-divider />
+        <v-card-text class="pa-6">
+          <v-list class="bg-transparent">
             <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title class="font-weight-bold">Cliente: {{ fiadoSelecionado?.nome_cliente
-                }}</v-list-item-title>
-                <v-list-item-title>Valor total da venda: <span class="text-primary">R$ {{
-                  fiadoSelecionado?.valor_total.toFixed(2) || '0.00'
-                    }}</span></v-list-item-title>
-                <v-list-item-title>Valor pago pelo cliente: <span style="color: red;">R$ {{
-                  fiadoSelecionado?.valor_pago.toFixed(2) || '0.00'
-                    }}</span></v-list-item-title>
-                <v-list-item-title v-if="fiadoSelecionado?.data">Data: {{ formatData(fiadoSelecionado?.data)
-                }}</v-list-item-title>
-                <v-list-item-title>Método de pagamento: {{ fiadoSelecionado?.metodo_pagamento }}</v-list-item-title>
-              </v-list-item-content>
+              <template v-slot:prepend>
+                <v-icon color="primary" class="mr-4">mdi-account</v-icon>
+              </template>
+              <v-list-item-title class="font-weight-bold">Cliente: {{ fiadoSelecionado?.nome_cliente }}</v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="success" class="mr-4">mdi-cash</v-icon>
+              </template>
+              <v-list-item-title>Valor total da venda: <span class="font-weight-bold text-success">R$ {{ fiadoSelecionado?.valor_total.toFixed(2) || '0.00' }}</span></v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="error" class="mr-4">mdi-cash-minus</v-icon>
+              </template>
+              <v-list-item-title>Valor pago pelo cliente: <span class="font-weight-bold text-error">R$ {{ fiadoSelecionado?.valor_pago.toFixed(2) || '0.00' }}</span></v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="primary" class="mr-4">mdi-calendar</v-icon>
+              </template>
+              <v-list-item-title v-if="fiadoSelecionado?.data">Data: {{ formatData(fiadoSelecionado?.data) }}</v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="primary" class="mr-4">mdi-credit-card</v-icon>
+              </template>
+              <v-list-item-title>Método de pagamento: {{ fiadoSelecionado?.metodo_pagamento }}</v-list-item-title>
             </v-list-item>
           </v-list>
 
-          <v-divider></v-divider>
+          <v-divider class="my-4"></v-divider>
 
           <!-- Seção de Dívida Atual -->
-          <v-list>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title class="font-weight-bold">Dívida Atual</v-list-item-title>
-                <v-list-item-subtitle style="color: red;">
-                  R$ {{ ((fiadoSelecionado?.valor_total ?? 0) - (fiadoSelecionado?.valor_pago ?? 0)).toFixed(2) }}
-                </v-list-item-subtitle>
-              </v-list-item-content>
+          <v-card class="debt-card mb-4" elevation="0">
+            <v-card-text class="d-flex align-center justify-space-between">
+              <div class="d-flex align-center">
+                <v-icon color="error" size="32" class="mr-4">mdi-alert-circle</v-icon>
+                <span class="text-h6 font-weight-bold">Dívida Atual</span>
+              </div>
+              <span class="text-h5 font-weight-bold text-error">
+                R$ {{ ((fiadoSelecionado?.valor_total ?? 0) - (fiadoSelecionado?.valor_pago ?? 0)).toFixed(2) }}
+              </span>
+            </v-card-text>
+          </v-card>
+
+          <v-divider class="my-4"></v-divider>
+
+          <div class="text-subtitle-1 font-weight-bold mb-2">Itens da Venda</div>
+          <v-list dense class="bg-transparent" style="max-height: 200px; overflow-y: auto;">
+            <v-list-item v-for="item in fiadoSelecionado?.itens" :key="item.produto_id || item.servico_id" class="mb-2">
+              <template v-slot:prepend>
+                <v-icon color="primary" size="small" class="mr-2">
+                  {{ item.produto_id ? 'mdi-package-variant' : 'mdi-tools' }}
+                </v-icon>
+              </template>
+              <v-list-item-title>
+                {{ item.nome_item }} -
+                <span class="font-weight-bold">
+                  R$ {{ item.valor_unitario }} x {{ item.quantidade }}
+                </span>
+              </v-list-item-title>
             </v-list-item>
           </v-list>
 
-          <v-divider></v-divider>
+          <v-divider class="my-4"></v-divider>
 
-          <v-list dense style="max-height: 200px; overflow-y: auto;">
-            <v-list-item v-for="item in fiadoSelecionado?.itens" :key="item.produto_id || item.servico_id">
-              <v-list-item-content>
-                <v-list-item-title>{{ item.nome_item }} - <span class="font-weight-bold">R$ {{ item.valor_unitario }} x
-                    {{ item.quantidade }}</span></v-list-item-title>
-              </v-list-item-content>
-              <v-divider></v-divider>
-            </v-list-item>
-          </v-list>
+          <v-autocomplete
+            v-model="metodoPagamento"
+            :items="metodosPagamento"
+            label="Forma de Pagamento"
+            prepend-inner-icon="mdi-credit-card"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="mb-4"
+            required
+          />
 
-          <v-divider></v-divider>
-
-          <v-autocomplete density="compact" v-model="metodoPagamento" :items="metodosPagamento"
-            label="Forma de Pagamento" prepend-inner-icon="mdi-credit-card" required outlined dense color="grey"
-            class="mt-2" />
-
-          <v-number-input density="compact" v-model="valorPago" label="Valor Pago" required :min="0"
-            :max="(fiadoSelecionado?.valor_total ?? 0) - (fiadoSelecionado?.valor_pago ?? 0)" prefix="R$"
-            :rules="[val => val >= 0 || 'Valor deve ser maior que zero']" :error-messages="valorPagoError"
-            :precision="2" control-variant="stacked" class="mt-2">
-          </v-number-input>
-
-
+          <v-text-field
+            v-model="valorPago"
+            label="Valor Pago"
+            prepend-inner-icon="mdi-currency-brl"
+            density="compact"
+            variant="outlined"
+            hide-details
+            prefix="R$"
+            type="number"
+            step="0.01"
+            min="0"
+            :max="(fiadoSelecionado?.valor_total ?? 0) - (fiadoSelecionado?.valor_pago ?? 0)"
+            :rules="[val => val >= 0 || 'Valor deve ser maior que zero']"
+            :error-messages="valorPagoError"
+            required
+          />
         </v-card-text>
-
-        <v-card-actions class="d-flex justify-end">
-          <v-btn @click="closeModal" class="mr-2" outlined color="grey darken-1">Fechar</v-btn>
-          <v-btn @click="confirmarPagamento" color="primary">Confirmar Pagamento</v-btn>
+        <v-divider />
+        <v-card-actions class="pa-6">
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="closeModal"
+            variant="outlined"
+            color="grey"
+            class="mr-2"
+          >
+            <v-icon class="mr-2">mdi-close</v-icon>
+            Fechar
+          </v-btn>
+          <v-btn
+            color="success"
+            variant="flat"
+            @click="confirmarPagamento"
+          >
+            <v-icon class="mr-2">mdi-check</v-icon>
+            Confirmar Pagamento
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </v-container>
 </template>
 
-
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import { VendaEntity } from '@renderer/entities/VendaEntity';
+
+interface SortItem {
+  key: string;
+  order: 'asc' | 'desc';
+}
 
 export default defineComponent({
   name: 'FiadoView',
@@ -172,13 +325,13 @@ export default defineComponent({
     const searchData = ref(null);
 
     const headers = [
-      { text: 'Cliente', value: 'nome_cliente' },
-      { text: 'Valor Pago', value: 'valor_pago' },
-      { text: 'Valor Total', value: 'valor_total' },
-      { text: 'Dívida', value: 'divida' },
-      { text: 'Tipo Pagamento', value: 'metodo_pagamento' },
-      { text: 'Data', value: 'data' },
-      { text: 'Status', value: 'status' },
+      { text: 'Cliente', value: 'nome_cliente', sortable: true },
+      { text: 'Valor Pago', value: 'valor_pago', sortable: true },
+      { text: 'Valor Total', value: 'valor_total', sortable: true },
+      { text: 'Dívida', value: 'divida', sortable: true },
+      { text: 'Tipo Pagamento', value: 'metodo_pagamento', sortable: true },
+      { text: 'Data', value: 'data', sortable: true },
+      { text: 'Status', value: 'status', sortable: false },
       { text: 'Ações', value: 'actions', sortable: false }
     ];
 
@@ -193,8 +346,42 @@ export default defineComponent({
           : true;
 
         return filtroCliente && filtroData;
-      })
+      }).map(f => ({
+        ...f,
+        divida: f.valor_total - f.valor_pago
+      }))
     );
+
+    const sortBy = ref<SortItem[]>([{ key: 'data', order: 'desc' }]);
+    const sortDesc = ref(true);
+
+    const handleSort = (key: string) => {
+      if (!key) return;
+
+      if (sortBy.value[0]?.key === key) {
+        // Se já está ordenando por esta coluna, inverte a direção
+        sortDesc.value = !sortDesc.value;
+        sortBy.value = [{ key, order: sortDesc.value ? 'desc' : 'asc' }];
+      } else {
+        // Se é uma nova coluna, ordena ascendente
+        sortBy.value = [{ key, order: 'asc' }];
+        sortDesc.value = false;
+      }
+    };
+
+    const getSortIcon = (key: string) => {
+      if (!key) return 'mdi-arrow-up-down';
+      if (sortBy.value[0]?.key !== key) return 'mdi-arrow-up-down';
+      return sortDesc.value ? 'mdi-arrow-down' : 'mdi-arrow-up';
+    };
+
+    const handleSortBy = (value: SortItem[]) => {
+      sortBy.value = value;
+    };
+
+    const handleSortDesc = (value: boolean) => {
+      sortDesc.value = value;
+    };
 
     // Função para formatar a data para comparação, retirando hora, minuto e segundo
     const formatDateForComparison = (data: string) => {
@@ -287,7 +474,125 @@ export default defineComponent({
       closeModal,
       valorPago,
       valorPagoError,
+      sortBy,
+      sortDesc,
+      handleSort,
+      handleSortBy,
+      handleSortDesc,
+      getSortIcon,
     };
   }
 });
 </script>
+
+<style scoped>
+.fiado-container {
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+.welcome-card {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.welcome-text {
+  color: white;
+}
+
+.welcome-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.content-card {
+  background: white;
+  border-radius: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.content-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+}
+
+.search-field {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.search-field:hover, .search-field:focus-within {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.action-btn {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.modal-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.debt-card {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-radius: 12px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Vuetify Overrides */
+:deep(.v-data-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-data-table th) {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+:deep(.v-data-table td) {
+  padding: 12px 16px;
+}
+
+:deep(.v-btn) {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+:deep(.v-alert) {
+  border-radius: 8px;
+}
+
+.sort-icon {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.sort-icon:hover {
+  opacity: 1;
+}
+</style>

@@ -1,159 +1,383 @@
 <template>
-  <v-container style="height: 90vh; width: 100%; display: flex; flex-direction: column;">
-    <v-card style="height: 100%; width: 100%; display: flex; flex-direction: column;" elevation="10">
-      <v-card-title>
-        Histórico de Vendas
-        <v-spacer></v-spacer>
-        <v-row dense>
-          <!-- Filtros existentes -->
-          <v-col cols="12" sm="6" md="4">
-            <v-text-field density="compact" v-model="searchCliente" label="Filtrar por Cliente" dense outlined
-              color="grey" class="search-input" />
-          </v-col>
-          <v-col cols="12" sm="6" md="4">
-            <v-text-field density="compact" v-model="searchData" label="Filtrar por Data" clearable dense outlined
-              color="grey" type="date" class="search-input" />
-          </v-col>
-          <v-col cols="12" sm="6" md="4">
-            <v-select v-model="searchPagamento" :items="metodosPagamento" label="Filtrar por Método de Pagamento"
-              outlined color="grey" class="search-input" density="compact">
-              <template v-slot:prepend-item>
-                <v-list-item ripple @click="searchPagamento = ''">
-                  <v-list-item-content>
-                    <v-list-item-title>Todos</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </template>
-            </v-select>
-          </v-col>
-        </v-row>
-      </v-card-title>
-
-      <v-data-table density="compact" style="height: 74%; width: 100%;" :headers="headers" :items="filteredVendas"
-        class="elevation-1" items-per-page-text="Itens por página" no-data-text="Nenhum registro de venda encontrado">
-        <template v-slot:headers>
-          <tr>
-            <th v-for="header in headers" :key="header.value" class="font-weight-bold text-left">{{ header.text }}</th>
-          </tr>
-        </template>
-
-        <template v-slot:item.actions="{ item }">
-          <v-icon small class="mr-1" @click="openEditarVenda(item)">mdi-pencil</v-icon> <!-- Ícone de editar -->
-          <v-icon small class="mr-1" color="primary" @click="openVendaInfo(item)">mdi-information-variant</v-icon>
-          <!-- Ícone de editar -->
-          <v-icon small color="red" @click="confirmarExclusao(item.id)">mdi-delete</v-icon> <!-- Ícone de excluir -->
-        </template>
-
-        <template v-slot:item.itens="{ item }">
-          <td>
-            <div v-for="itens in item.itens" :key="itens.produto_id || itens.servico_id">
-              <span v-if="itens.produto_id">{{ itens.nome_item }} - R$ {{ itens.valor_unitario }} x {{ itens.quantidade
-              }}</span>
-              <span v-else>{{ itens.nome_item }} - R$ {{ itens.valor_unitario }} x {{ itens.quantidade }}</span>
+  <v-container fluid class="historico-container pa-6">
+    <!-- Header Section with Parallax Effect -->
+    <v-row>
+      <v-col cols="12">
+        <v-card class="welcome-card" elevation="0">
+          <v-card-text class="d-flex align-center justify-space-between">
+            <div>
+              <h1 class="text-h4 font-weight-bold welcome-text mb-2">
+                Histórico de Vendas
+              </h1>
+              <div class="text-subtitle-1 text-white opacity-75">
+                Acompanhe todas as vendas realizadas
+              </div>
             </div>
-          </td>
-        </template>
+            <v-avatar size="64" class="welcome-avatar">
+              <v-img src="@/assets/logo.png" alt="Logo" />
+            </v-avatar>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
-        <template v-slot:item.valor_total="{ item }">
-          <td>
-            <span>
-              {{ 'R$' + item.valor_total.toFixed(2) || 'Indispónivel' }}
-            </span>
-          </td>
-        </template>
+    <!-- Main Content Card -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-card class="content-card" elevation="2">
+          <v-card-title class="d-flex align-center justify-space-between py-4 px-6">
+            <div class="d-flex align-center">
+              <v-icon color="primary" class="mr-2">mdi-history</v-icon>
+              <span class="text-h6 font-weight-medium">Registros de Vendas</span>
+            </div>
+          </v-card-title>
+          <v-divider />
+          <v-card-text class="pa-6">
+            <!-- Search and Filter Section -->
+            <v-row class="mb-4">
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="searchCliente"
+                  label="Filtrar por Cliente"
+                  prepend-inner-icon="mdi-account-search"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="search-field"
+                  placeholder="Digite o nome do cliente..."
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="searchData"
+                  label="Filtrar por Data"
+                  type="date"
+                  prepend-inner-icon="mdi-calendar"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="search-field"
+                  clearable
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="searchPagamento"
+                  :items="metodosPagamento"
+                  label="Filtrar por Método de Pagamento"
+                  prepend-inner-icon="mdi-credit-card"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="search-field"
+                  clearable
+                >
+                  <template v-slot:prepend-item>
+                    <v-list-item ripple @click="searchPagamento = ''">
+                      <v-list-item-content>
+                        <v-list-item-title>Todos</v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
 
-        <template v-slot:item.data="{ item }">
-          <td>{{ formatData(item.data) }}</td>
-        </template>
+            <!-- Data Table -->
+            <v-data-table
+              :headers="headers"
+              :items="filteredVendas"
+              class="elevation-0 rounded-lg"
+              density="comfortable"
+              hover
+              :no-data-text="'Nenhum registro de venda encontrado'"
+              :loading-text="'Carregando vendas...'"
+              :sort-by="sortBy"
+              :sort-desc="sortDesc"
+              :items-per-page="10"
+              :items-per-page-options="[5, 10, 25, 50]"
+              @update:sort-by="handleSortBy"
+              @update:sort-desc="handleSortDesc"
+            >
+              <template v-slot:headers>
+                <tr>
+                  <th v-for="header in headers" :key="header.value" class="text-left font-weight-bold">
+                    <div class="d-flex align-center">
+                      {{ header.text }}
+                      <v-icon
+                        v-if="header.sortable !== false && header.value !== 'status'"
+                        size="small"
+                        color="grey"
+                        class="sort-icon ml-1"
+                        @click="handleSort(header.value)"
+                      >
+                        {{ getSortIcon(header.value) }}
+                      </v-icon>
+                    </div>
+                  </th>
+                </tr>
+              </template>
 
-        <template v-slot:item.status="{ item }">
-          <td>
-            <span>{{ item.status }}</span>
-            <v-icon v-if="item.status === 'pago'" color="green">mdi-check-circle</v-icon>
-          </td>
-        </template>
-      </v-data-table>
-    </v-card>
+              <template v-slot:item.actions="{ item }">
+                <div class="d-flex align-center">
+                  <v-btn
+                    icon="mdi-pencil"
+                    size="small"
+                    color="primary"
+                    variant="text"
+                    @click="openEditarVenda(item)"
+                    class="action-btn"
+                  />
+                  <v-btn
+                    icon="mdi-information-variant"
+                    size="small"
+                    color="info"
+                    variant="text"
+                    @click="openVendaInfo(item)"
+                    class="action-btn"
+                  />
+                  <v-btn
+                    icon="mdi-delete"
+                    size="small"
+                    color="error"
+                    variant="text"
+                    @click="confirmarExclusao(item.id)"
+                    class="action-btn"
+                  />
+                </div>
+              </template>
 
+              <template v-slot:item.itens="{ item }">
+                <div class="d-flex flex-column">
+                  <div v-for="itens in item.itens" :key="itens.produto_id || itens.servico_id" class="mb-1">
+                    <span v-if="itens.produto_id">{{ itens.nome_item }} - R$ {{ itens.valor_unitario }} x {{ itens.quantidade }}</span>
+                    <span v-else>{{ itens.nome_item }} - R$ {{ itens.valor_unitario }} x {{ itens.quantidade }}</span>
+                  </div>
+                </div>
+              </template>
+
+              <template v-slot:item.valor_total="{ item }">
+                <span class="font-weight-bold text-success">
+                  R$ {{ item.valor_total.toFixed(2) || '0.00' }}
+                </span>
+              </template>
+
+              <template v-slot:item.data="{ item }">
+                <div class="d-flex align-center">
+                  <v-icon size="small" color="primary" class="mr-1">mdi-calendar</v-icon>
+                  {{ formatData(item.data) }}
+                </div>
+              </template>
+
+              <template v-slot:item.status="{ item }">
+                <v-chip
+                  :color="item.status === 'pago' ? 'success' : 'warning'"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-medium"
+                >
+                  <v-icon size="small" class="mr-1">
+                    {{ item.status === 'pago' ? 'mdi-check-circle' : 'mdi-clock-outline' }}
+                  </v-icon>
+                  {{ item.status === 'pago' ? 'Pago' : 'Pendente' }}
+                </v-chip>
+              </template>
+
+              <template v-slot:no-data>
+                <div class="text-center py-6">
+                  <v-icon color="grey" size="48" class="mb-2">mdi-cart-off</v-icon>
+                  <div class="text-subtitle-1 text-grey">Nenhum registro de venda encontrado</div>
+                  <div class="text-caption text-grey">Não há vendas registradas no período selecionado</div>
+                </div>
+              </template>
+            </v-data-table>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Modal de Confirmação de Exclusão -->
     <v-dialog v-model="modalConfirmacaoExclusao" max-width="500px">
-      <v-card>
-        <v-card-title class="text-h6">Deseja realmente excluir esse registro de venda?</v-card-title>
-        <v-card-actions>
-          <v-btn @click="modalConfirmacaoExclusao = false" color="grey">Cancelar</v-btn>
-          <v-btn @click="excluirVenda()" color="red" :disabled="excluindoVenda">Excluir</v-btn>
+      <v-card class="modal-card">
+        <v-card-title class="d-flex align-center py-4 px-6">
+          <v-icon color="error" size="32" class="mr-4">mdi-alert-circle</v-icon>
+          <span class="text-h6 font-weight-bold">Confirmar Exclusão</span>
+        </v-card-title>
+        <v-divider />
+        <v-card-text class="pa-6">
+          <p class="text-body-1">Deseja realmente excluir esse registro de venda?</p>
+          <p class="text-caption text-medium-emphasis">Esta ação não pode ser desfeita.</p>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="pa-6">
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="modalConfirmacaoExclusao = false"
+            variant="outlined"
+            color="grey"
+            class="mr-2"
+          >
+            Cancelar
+          </v-btn>
+          <v-btn
+            color="error"
+            variant="flat"
+            @click="excluirVenda"
+            :disabled="excluindoVenda"
+          >
+            <v-icon class="mr-2">mdi-delete</v-icon>
+            Excluir
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
+    <!-- Modal de Informações da Venda -->
     <v-dialog v-model="modalInfo" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="text-h6">Detalhes da Venda</span>
+      <v-card class="modal-card">
+        <v-card-title class="d-flex align-center py-4 px-6">
+          <v-icon color="info" size="32" class="mr-4">mdi-information</v-icon>
+          <span class="text-h6 font-weight-bold">Detalhes da Venda</span>
         </v-card-title>
-        <v-card-text class="mt-n4">
-          <v-list>
+        <v-divider />
+        <v-card-text class="pa-6">
+          <v-list class="bg-transparent">
             <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title class="font-weight-bold">Cliente: {{ vendaInfo?.nome_cliente
-                }}</v-list-item-title>
-                <v-list-item-title>Valor total da venda: <span style="font-weight: bold;">R$ {{
-                  vendaInfo?.valor_total.toFixed(2) || '0.00'
-                    }}</span></v-list-item-title>
-                <v-list-item-title>Valor pago pelo cliente: <span>R$ {{
-                  vendaInfo?.valor_pago.toFixed(2) || '0.00'
-                    }}</span></v-list-item-title>
-                <v-list-item-title v-if="vendaInfo?.data">Data: {{ formatData(vendaInfo?.data)
-                }}</v-list-item-title>
-                <v-list-item-title>Método de pagamento: {{ vendaInfo?.metodo_pagamento }}</v-list-item-title>
-              </v-list-item-content>
+              <template v-slot:prepend>
+                <v-icon color="primary" class="mr-4">mdi-account</v-icon>
+              </template>
+              <v-list-item-title class="font-weight-bold">Cliente: {{ vendaInfo?.nome_cliente }}</v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="success" class="mr-4">mdi-cash</v-icon>
+              </template>
+              <v-list-item-title>Valor total da venda: <span class="font-weight-bold text-success">R$ {{ vendaInfo?.valor_total.toFixed(2) || '0.00' }}</span></v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="info" class="mr-4">mdi-cash-multiple</v-icon>
+              </template>
+              <v-list-item-title>Valor pago pelo cliente: <span class="font-weight-bold">R$ {{ vendaInfo?.valor_pago.toFixed(2) || '0.00' }}</span></v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="primary" class="mr-4">mdi-calendar</v-icon>
+              </template>
+              <v-list-item-title v-if="vendaInfo?.data">Data: {{ formatData(vendaInfo?.data) }}</v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon color="primary" class="mr-4">mdi-credit-card</v-icon>
+              </template>
+              <v-list-item-title>Método de pagamento: {{ vendaInfo?.metodo_pagamento }}</v-list-item-title>
             </v-list-item>
           </v-list>
 
-          <v-divider></v-divider>
+          <v-divider class="my-4"></v-divider>
 
-          <!-- Seção de Dívida Atual -->
-
-          <v-divider></v-divider>
-
-          <v-list dense style="max-height: 200px; overflow-y: auto;">
-            <v-list-item v-for="item in vendaInfo?.itens" :key="item.produto_id || item.servico_id">
-              <v-list-item-content>
-                <v-list-item-title>{{ item.nome_item || 'Item excluído' }} - <span class="font-weight-bold"> {{
-                  item.valor_unitario ? 'R$' +
-                    item.valor_unitario.toFixed(2) : '---' }} -
-                    {{ item.quantidade + ' Unidade(s)' }}</span></v-list-item-title>
-              </v-list-item-content>
-              <v-divider></v-divider>
+          <div class="text-subtitle-1 font-weight-bold mb-2">Itens da Venda</div>
+          <v-list dense class="bg-transparent" style="max-height: 200px; overflow-y: auto;">
+            <v-list-item v-for="item in vendaInfo?.itens" :key="item.produto_id || item.servico_id" class="mb-2">
+              <template v-slot:prepend>
+                <v-icon color="primary" size="small" class="mr-2">
+                  {{ item.produto_id ? 'mdi-package-variant' : 'mdi-tools' }}
+                </v-icon>
+              </template>
+              <v-list-item-title>
+                {{ item.nome_item || 'Item excluído' }} -
+                <span class="font-weight-bold">
+                  {{ item.valor_unitario ? 'R$' + item.valor_unitario.toFixed(2) : '---' }} -
+                  {{ item.quantidade + ' Unidade(s)' }}
+                </span>
+              </v-list-item-title>
             </v-list-item>
           </v-list>
-
-          <v-divider></v-divider>
-
         </v-card-text>
-
-        <v-card-actions class="d-flex justify-end">
-          <v-btn @click="modalInfo = false" class="mr-2" outlined color="grey darken-1">Fechar</v-btn>
+        <v-divider />
+        <v-card-actions class="pa-6">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            variant="flat"
+            @click="modalInfo = false"
+          >
+            <v-icon class="mr-2">mdi-close</v-icon>
+            Fechar
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Modal para editar a venda -->
     <v-dialog v-model="modalEditar" max-width="500px">
-      <v-card>
-        <v-card-title>Editar Venda</v-card-title>
-        <v-card-text>
+      <v-card class="modal-card">
+        <v-card-title class="d-flex align-center py-4 px-6">
+          <v-icon color="primary" size="32" class="mr-4">mdi-pencil</v-icon>
+          <span class="text-h6 font-weight-bold">Editar Venda</span>
+        </v-card-title>
+        <v-divider />
+        <v-card-text class="pa-6">
           <v-form ref="formEditarVenda" v-model="formIsValid">
-            <v-text-field density="compact" v-model="vendaEdicao.valor_total" label="Valor Total" prefix="R$" />
-            <v-text-field density="compact" v-model="vendaEdicao.data" label="Data e Hora" type="datetime-local"
-              :rules="[validaData]" required />
-            <v-select v-model="vendaEdicao.metodo_pagamento" :items="metodosPagamento" label="Método de Pagamento"
-              required />
+            <v-text-field
+              v-model="vendaEdicao.valor_total"
+              label="Valor Total"
+              prepend-inner-icon="mdi-currency-brl"
+              density="compact"
+              variant="outlined"
+              hide-details
+              prefix="R$"
+              class="mb-4"
+            />
+            <v-text-field
+              v-model="vendaEdicao.data"
+              label="Data e Hora"
+              type="datetime-local"
+              prepend-inner-icon="mdi-calendar-clock"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="mb-4"
+              :rules="[validaData]"
+              required
+            />
+            <v-select
+              v-model="vendaEdicao.metodo_pagamento"
+              :items="metodosPagamento"
+              label="Método de Pagamento"
+              prepend-inner-icon="mdi-credit-card"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="mb-4"
+              required
+            />
           </v-form>
         </v-card-text>
-        <v-card-actions>
+        <v-divider />
+        <v-card-actions class="pa-6">
           <v-spacer></v-spacer>
-          <v-btn @click="modalEditar = false">Cancelar</v-btn>
-          <v-btn :disabled="!formIsValid" @click="editarVenda">Salvar</v-btn>
+          <v-btn
+            @click="modalEditar = false"
+            variant="outlined"
+            color="grey"
+            class="mr-2"
+          >
+            Cancelar
+          </v-btn>
+          <v-btn
+            color="primary"
+            variant="flat"
+            :disabled="!formIsValid"
+            @click="editarVenda"
+          >
+            <v-icon class="mr-2">mdi-content-save</v-icon>
+            Salvar
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -163,6 +387,11 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import { VendaEntity } from '@renderer/entities/VendaEntity';
+
+interface SortItem {
+  key: string;
+  order: 'asc' | 'desc';
+}
 
 export default defineComponent({
   name: 'HistoricoVendas',
@@ -183,11 +412,11 @@ export default defineComponent({
 
     // Cabeçalhos da tabela de vendas
     const headers = [
-      { text: 'Cliente', value: 'nome_cliente' },
-      { text: 'Valor Total', value: 'valor_total' },
-      { text: 'Data', value: 'data' },
-      { text: 'Método de Pagamento', value: 'metodo_pagamento' },
-      { text: 'Status', value: 'status' },
+      { text: 'Cliente', value: 'nome_cliente', sortable: true },
+      { text: 'Valor Total', value: 'valor_total', sortable: true },
+      { text: 'Data', value: 'data', sortable: true },
+      { text: 'Método de Pagamento', value: 'metodo_pagamento', sortable: true },
+      { text: 'Status', value: 'status', sortable: true },
       { text: 'Ações', value: 'actions', sortable: false }
     ];
 
@@ -235,7 +464,6 @@ export default defineComponent({
       return true;
     };
 
-
     // Carregar as vendas
     const carregarVendas = async () => {
       try {
@@ -260,7 +488,6 @@ export default defineComponent({
       }
       modalEditar.value = true;
     };
-
 
     const openVendaInfo = (venda: VendaEntity) => {
       const dataFormatada = venda.data ? new Date(venda.data).toISOString().split('T')[0] : '';
@@ -307,6 +534,38 @@ export default defineComponent({
       return `${day}/${month}/${year} - ${hours}:${minutes}`;
     };
 
+    // No setup()
+    const sortBy = ref<SortItem[]>([{ key: 'data', order: 'desc' }]);
+    const sortDesc = ref(true);
+
+    const handleSort = (key: string) => {
+      if (!key) return;
+
+      if (sortBy.value[0]?.key === key) {
+        // Se já está ordenando por esta coluna, inverte a direção
+        sortDesc.value = !sortDesc.value;
+        sortBy.value = [{ key, order: sortDesc.value ? 'desc' : 'asc' }];
+      } else {
+        // Se é uma nova coluna, ordena ascendente
+        sortBy.value = [{ key, order: 'asc' }];
+        sortDesc.value = false;
+      }
+    };
+
+    const getSortIcon = (key: string) => {
+      if (!key) return 'mdi-arrow-up-down';
+      if (sortBy.value[0]?.key !== key) return 'mdi-arrow-up-down';
+      return sortDesc.value ? 'mdi-arrow-down' : 'mdi-arrow-up';
+    };
+
+    const handleSortBy = (value: SortItem[]) => {
+      sortBy.value = value;
+    };
+
+    const handleSortDesc = (value: boolean) => {
+      sortDesc.value = value;
+    };
+
     onMounted(() => {
       carregarVendas();
     });
@@ -334,7 +593,119 @@ export default defineComponent({
       carregarVendas,
       openVendaInfo,
       modalInfo,
+      sortBy,
+      sortDesc,
+      handleSort,
+      handleSortBy,
+      handleSortDesc,
+      getSortIcon,
     };
   }
 });
 </script>
+
+<style scoped>
+.historico-container {
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+.welcome-card {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.welcome-text {
+  color: white;
+}
+
+.welcome-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.content-card {
+  border-radius: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.content-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+}
+
+.search-field {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.search-field:hover, .search-field:focus-within {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.action-btn {
+  min-width: 32px;
+  height: 32px;
+}
+
+.modal-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Vuetify Overrides */
+:deep(.v-data-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.v-data-table th) {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+:deep(.v-data-table td) {
+  padding: 12px 16px;
+}
+
+:deep(.v-btn) {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+:deep(.v-alert) {
+  border-radius: 8px;
+}
+
+.sort-icon {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.sort-icon:hover {
+  opacity: 1;
+}
+</style>
