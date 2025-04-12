@@ -30,6 +30,7 @@
                         <ul class="ml-4 mt-1">
                           <li><strong>Lista:</strong> Visualização em tabela com todas as informações</li>
                           <li><strong>Kanban:</strong> Organização por status (pendente, pago, vencida)</li>
+                          <li><strong>Gráficos:</strong> Visualização em gráficos, mostrando o total de contas pendentes, pago e vencidas</li>
                         </ul>
                       </li>
                       <li>Use os filtros superiores para:
@@ -205,6 +206,10 @@
                 <v-icon class="mr-2">mdi-view-column</v-icon>
                 Kanban
               </v-tab>
+              <v-tab value="graficos">
+                <v-icon class="mr-2">mdi-chart-box</v-icon>
+                Gráficos
+              </v-tab>
             </v-tabs>
 
             <v-window v-model="activeTab">
@@ -356,6 +361,68 @@
                             </template>
                           </v-list-item>
                         </v-list>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-window-item>
+
+              <!-- Vista em Gráficos -->
+              <v-window-item value="graficos">
+                <v-row>
+                  <!-- Gráfico de Status -->
+                  <v-col cols="12" md="4">
+                    <v-card class="graph-card" elevation="2">
+                      <v-card-title class="d-flex align-center py-4 px-6">
+                        <v-icon color="primary" class="mr-2">mdi-chart-pie</v-icon>
+                        <span class="text-h6 font-weight-medium">Distribuição por Status</span>
+                      </v-card-title>
+                      <v-divider />
+                      <v-card-text class="pa-6">
+                        <apexchart
+                          type="pie"
+                          height="300"
+                          :options="statusChartOptions"
+                          :series="statusChartSeries"
+                        />
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+
+                  <!-- Gráfico de Tipos -->
+                  <v-col cols="12" md="8">
+                    <v-card class="graph-card" elevation="2">
+                      <v-card-title class="d-flex align-center py-4 px-6">
+                        <v-icon color="primary" class="mr-2">mdi-chart-bar</v-icon>
+                        <span class="text-h6 font-weight-medium">Valores por Tipo</span>
+                      </v-card-title>
+                      <v-divider />
+                      <v-card-text class="pa-6">
+                        <apexchart
+                          type="bar"
+                          height="300"
+                          :options="tipoChartOptions"
+                          :series="tipoChartSeries"
+                        />
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+
+                  <!-- Gráfico de Evolução -->
+                  <v-col cols="12">
+                    <v-card class="graph-card" elevation="2">
+                      <v-card-title class="d-flex align-center py-4 px-6">
+                        <v-icon color="primary" class="mr-2">mdi-chart-line</v-icon>
+                        <span class="text-h6 font-weight-medium">Evolução das Contas</span>
+                      </v-card-title>
+                      <v-divider />
+                      <v-card-text class="pa-6">
+                        <apexchart
+                          type="line"
+                          height="300"
+                          :options="evolucaoChartOptions"
+                          :series="evolucaoChartSeries"
+                        />
                       </v-card-text>
                     </v-card>
                   </v-col>
@@ -551,7 +618,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent, ref, computed, onMounted, watch } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
 
 // Declare the window interface with the API
 declare global {
@@ -623,6 +691,9 @@ interface SortItem {
 
 export default defineComponent({
   name: 'ContasPagarView',
+  components: {
+    apexchart: VueApexCharts
+  },
   setup() {
     // Estados
     const contas = ref<ContaPagar[]>([]);
@@ -1019,6 +1090,184 @@ export default defineComponent({
       snackbar.value = true;
     };
 
+    // Configurações dos gráficos
+    const statusChartOptions = computed(() => ({
+      chart: {
+        type: 'pie'
+      },
+      labels: ['Pendente', 'Pago', 'Vencida'],
+      colors: ['#FFC107', '#4CAF50', '#F44336'],
+      legend: {
+        position: 'bottom',
+        labels: {
+          colors: '#9CA3AF'
+        }
+      },
+      responsive: [{
+        breakpoint: 480,
+        options: {
+          chart: {
+            width: 200
+          },
+          legend: {
+            position: 'bottom',
+            labels: {
+              colors: '#9CA3AF'
+            }
+          }
+        }
+      }]
+    }));
+
+    const statusChartSeries = computed(() => {
+      const statusData = {
+        pendente: contas.value.filter(c => c.status === 'pendente').length,
+        pago: contas.value.filter(c => c.status === 'pago').length,
+        vencida: contas.value.filter(c => isVencida(c)).length
+      };
+      return [statusData.pendente, statusData.pago, statusData.vencida];
+    });
+
+    const tipoChartOptions = computed(() => ({
+      chart: {
+        type: 'bar'
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '55%',
+          endingShape: 'rounded'
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      xaxis: {
+        categories: tiposContas,
+        labels: {
+          style: {
+            colors: '#9CA3AF'
+          }
+        }
+      },
+      yaxis: {
+        labels: {
+          style: {
+            colors: '#9CA3AF'
+          },
+          formatter: (value: number) => `R$ ${value.toFixed(2)}`
+        }
+      },
+      colors: ['#6366F1'],
+      fill: {
+        opacity: 0.8
+      }
+    }));
+
+    const tipoChartSeries = computed(() => {
+      const tiposData = tiposContas.map(tipo =>
+        contas.value
+          .filter(c => c.tipo === tipo)
+          .reduce((sum, c) => sum + c.valor, 0)
+      );
+      return [{
+        name: 'Valor Total',
+        data: tiposData
+      }];
+    });
+
+    const evolucaoChartOptions = computed(() => ({
+      chart: {
+        type: 'line',
+        toolbar: {
+          show: false
+        }
+      },
+      stroke: {
+        curve: 'smooth',
+        width: 2
+      },
+      xaxis: {
+        categories: Array.from({ length: 6 }, (_, i) => {
+          const data = new Date();
+          data.setMonth(data.getMonth() - i);
+          return data.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+        }).reverse(),
+        labels: {
+          style: {
+            colors: '#9CA3AF'
+          }
+        }
+      },
+      yaxis: {
+        labels: {
+          style: {
+            colors: '#9CA3AF'
+          },
+          formatter: (value: number) => `R$ ${value.toFixed(2)}`
+        }
+      },
+      colors: ['#6366F1', '#4CAF50', '#FFC107'],
+      legend: {
+        position: 'bottom',
+        labels: {
+          colors: '#9CA3AF'
+        }
+      }
+    }));
+
+    const evolucaoChartSeries = computed(() => {
+      const ultimos6Meses = Array.from({ length: 6 }, (_, i) => {
+        const data = new Date();
+        data.setMonth(data.getMonth() - i);
+        return data.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+      }).reverse();
+
+      const evolucaoData = ultimos6Meses.map(mes => {
+        const contasDoMes = contas.value.filter(c => {
+          const dataConta = new Date(c.data_vencimento);
+          return dataConta.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }) === mes;
+        });
+
+        return {
+          total: contasDoMes.reduce((sum, c) => sum + c.valor, 0),
+          pago: contasDoMes
+            .filter(c => c.status === 'pago')
+            .reduce((sum, c) => sum + c.valor, 0),
+          pendente: contasDoMes
+            .filter(c => c.status === 'pendente')
+            .reduce((sum, c) => sum + c.valor, 0)
+        };
+      });
+
+      return [
+        {
+          name: 'Total',
+          data: evolucaoData.map(d => d.total)
+        },
+        {
+          name: 'Pago',
+          data: evolucaoData.map(d => d.pago)
+        },
+        {
+          name: 'Pendente',
+          data: evolucaoData.map(d => d.pendente)
+        }
+      ];
+    });
+
+    // Observar mudanças nas contas para atualizar os gráficos
+    watch(contas, () => {
+      // Não é mais necessário chamar atualizarGraficos() pois os gráficos são reativos
+      // e se atualizam automaticamente quando os dados mudam
+    });
+
+    // Observar mudança de tab para atualizar os gráficos
+    watch(activeTab, (newValue) => {
+      // Não é mais necessário chamar atualizarGraficos() pois os gráficos são reativos
+      // e se atualizam automaticamente quando os dados mudam
+    });
+
     // Lifecycle hooks
     onMounted(loadContas);
 
@@ -1065,7 +1314,13 @@ export default defineComponent({
       getContasPorStatus,
       periodoSelecionado,
       statusSelecionado,
-      fornecedorFilter
+      fornecedorFilter,
+      statusChartOptions,
+      statusChartSeries,
+      tipoChartOptions,
+      tipoChartSeries,
+      evolucaoChartOptions,
+      evolucaoChartSeries
     };
   }
 });
@@ -1274,5 +1529,21 @@ export default defineComponent({
 .day-events-card {
   border-radius: 16px;
   overflow: hidden;
+}
+
+.graph-card {
+  border-radius: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.graph-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -4px rgba(0, 0, 0, 0.06);
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
 }
 </style>
