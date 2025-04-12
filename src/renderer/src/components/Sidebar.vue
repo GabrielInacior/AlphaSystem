@@ -358,13 +358,13 @@ export default defineComponent({
 }
 
 .expand-btn {
-  position: relative;
+  position: fixed;
   top: 50%;
+  left: 60px;
   width: 32px !important;
   z-index: 1001 !important;
   font-size: 20px !important;
   height: 64px !important;
-  margin-left: 60px;
   transform: translateY(-50%);
   background: rgb(var(--v-theme-sidebarbg)) !important;
   border: 1px solid var(--color-border) !important;

@@ -216,8 +216,14 @@ export default defineComponent({
       spawn() {
         if (this.food) this.food.destroy();
 
-        const x = Phaser.Math.Snap.To(Math.floor(Math.random() * GAME_WIDTH), TILE_SIZE);
-        const y = Phaser.Math.Snap.To(Math.floor(Math.random() * GAME_HEIGHT), TILE_SIZE);
+        // Definir margens de segurança para evitar que a comida apareça na borda
+        const margin = TILE_SIZE;
+        const safeWidth = GAME_WIDTH - (2 * margin);
+        const safeHeight = GAME_HEIGHT - (2 * margin);
+
+        // Gerar posição aleatória dentro da área segura
+        const x = Phaser.Math.Snap.To(margin + Math.floor(Math.random() * safeWidth), TILE_SIZE);
+        const y = Phaser.Math.Snap.To(margin + Math.floor(Math.random() * safeHeight), TILE_SIZE);
 
         this.food = this.scene.add.rectangle(x, y, TILE_SIZE, TILE_SIZE, 0xff0000);
       }
