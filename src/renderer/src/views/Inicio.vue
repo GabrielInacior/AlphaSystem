@@ -192,7 +192,7 @@
               </v-col>
             </v-row>
 
-            <v-card class="profit-card mt-4" elevation="0">
+            <v-card class="profit-card mt-4" elevation="0" :class="{'profit-negative': infoGerais?.lucro_total < 0}">
               <v-card-text class="d-flex align-center justify-space-between py-2 px-3">
                 <div class="d-flex align-center">
                   <v-icon color="white" size="24" class="mr-2">mdi-chart-line</v-icon>
@@ -680,6 +680,10 @@ export default defineComponent({
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   border-radius: 8px;
   padding: 12px;
+}
+
+.profit-negative {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
 .birthday-list, .debtors-list {

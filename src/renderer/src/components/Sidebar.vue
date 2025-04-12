@@ -13,6 +13,9 @@
             <v-tooltip activator="parent" location="start">Esconder barra lateral</v-tooltip>
           </v-btn>
         </template>
+        <template v-slot:title>
+          <span class="logo-text">Barbearia Alpha</span>
+        </template>
       </v-list-item>
     </div>
 
@@ -485,5 +488,14 @@ export default defineComponent({
   font-size: 12px !important;
   padding: 8px 12px !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.logo-text {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 </style>
