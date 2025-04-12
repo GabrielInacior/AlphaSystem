@@ -230,7 +230,6 @@ export default defineComponent({
 }
 
 .sidebar-header {
-  padding: 16px 8px;
   border-bottom: 1px solid var(--color-border);
   background: rgb(var(--v-theme-sidebarbg));
   border-radius: 16px 16px 0 0;
@@ -264,7 +263,7 @@ export default defineComponent({
 }
 
 .sidebar-menu {
-  padding: 8px;
+
   background: rgb(var(--v-theme-sidebarbg));
 }
 
@@ -339,7 +338,7 @@ export default defineComponent({
 .rail-menu {
   border-radius: 12px;
   overflow: hidden;
-  margin-left: 8px;
+  margin-left: 2px;
 }
 
 .rail-submenu {
@@ -393,7 +392,7 @@ export default defineComponent({
 
 :deep(.v-navigation-drawer--rail) {
   width: 160px !important;
-  margin-right: 32px !important;
+  margin-right: 12px !important;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -455,7 +454,7 @@ export default defineComponent({
   background: rgb(var(--v-theme-sidebarbg)) !important;
   border: 1px solid var(--color-border) !important;
   border-radius: 12px !important;
-  margin-left: 8px !important;
+  margin-left: 2px !important;
 }
 
 :deep(.v-menu .v-list) {
