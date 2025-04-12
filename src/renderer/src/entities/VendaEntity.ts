@@ -7,6 +7,7 @@ export class VendaEntity {
   metodo_pagamento: string;
   status: string;
   data: string;
+  desconto: number;
   itens?: Array<{
     produto_id: number;
     servico_id: number;
@@ -25,6 +26,7 @@ export class VendaEntity {
     this.metodo_pagamento = data.metodo_pagamento;
     this.status = data.status;
     this.data = data.data;
+    this.desconto = data.desconto ?? 0;
 
     this.itens = data.itens.map((item: any) => ({
       produto_id: item.produto_id,

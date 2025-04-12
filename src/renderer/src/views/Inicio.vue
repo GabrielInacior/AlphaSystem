@@ -46,7 +46,7 @@
                 </v-tooltip>
               </v-btn>
               <v-avatar size="48" class="welcome-avatar">
-                <v-img src="@/assets/logo.png" alt="Logo" />
+                <v-icon size="32" color="white">mdi-home</v-icon>
               </v-avatar>
             </div>
           </v-card-text>
@@ -192,7 +192,7 @@
               </v-col>
             </v-row>
 
-            <v-card class="profit-card mt-4" elevation="0">
+            <v-card class="profit-card mt-4" elevation="0" :class="{'profit-negative': infoGerais?.lucro_total < 0}">
               <v-card-text class="d-flex align-center justify-space-between py-2 px-3">
                 <div class="d-flex align-center">
                   <v-icon color="white" size="24" class="mr-2">mdi-chart-line</v-icon>
@@ -372,7 +372,7 @@ export default defineComponent({
                 show: true,
                 fontSize: '16px',
                 fontFamily: 'Inter, sans-serif',
-                color: '#1a202c',
+                color: '#888888',
                 formatter: function (val: number) {
                   return 'R$ ' + val.toFixed(2);
                 }
@@ -411,6 +411,7 @@ export default defineComponent({
         enabled: true,
         theme: 'dark',
         style: {
+          color: '#888888',
           fontSize: '14px',
           fontFamily: 'Inter, sans-serif'
         },
@@ -679,6 +680,10 @@ export default defineComponent({
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   border-radius: 8px;
   padding: 12px;
+}
+
+.profit-negative {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
 .birthday-list, .debtors-list {

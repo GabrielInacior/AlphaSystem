@@ -727,6 +727,79 @@ export function getLucroTotalPorCategoria(
   });
 }
 
+export function getClientesAtendidosHoje(db: Database): Promise<any> {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const amanha = new Date(hoje);
+  amanha.setDate(amanha.getDate() + 1);
+
+  const query = `
+    SELECT COUNT(DISTINCT v.cliente_id) as total_clientes
+    FROM vendas v
+    JOIN vendas_itens vi ON v.id = vi.venda_id
+    WHERE v.data >= ? AND v.data < ?
+    AND vi.servico_id IS NOT NULL
+  `;
+
+  return new Promise((resolve, reject) => {
+    db.get(query, [hoje.toISOString(), amanha.toISOString()], (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+}
+
+export function getValorAtendimentosHoje(db: Database): Promise<any> {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const amanha = new Date(hoje);
+  amanha.setDate(amanha.getDate() + 1);
+
+  const query = `
+    SELECT SUM(vi.valor_total) as valor_total
+    FROM vendas v
+    JOIN vendas_itens vi ON v.id = vi.venda_id
+    WHERE v.data >= ? AND v.data < ?
+    AND vi.servico_id IS NOT NULL
+  `;
+
+  return new Promise((resolve, reject) => {
+    db.get(query, [hoje.toISOString(), amanha.toISOString()], (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+}
+
+export function getServicoMaisVendidoHoje(db: Database): Promise<any> {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const amanha = new Date(hoje);
+  amanha.setDate(amanha.getDate() + 1);
+
+  const query = `
+    SELECT
+      s.nome AS servico_nome,
+      COUNT(*) AS quantidade_vendida,
+      SUM(vi.valor_total) AS total_vendido
+    FROM vendas_itens vi
+    JOIN servicos s ON vi.servico_id = s.id
+    JOIN vendas v ON vi.venda_id = v.id
+    WHERE v.data >= ? AND v.data < ?
+      AND vi.servico_id IS NOT NULL
+    GROUP BY s.id, s.nome
+    ORDER BY quantidade_vendida DESC
+    LIMIT 1
+  `;
+
+  return new Promise((resolve, reject) => {
+    db.get(query, [hoje.toISOString(), amanha.toISOString()], (err, row) => {
+      if (err) reject(err);
+      else resolve(row || { servico_nome: 'Nenhum serviço', quantidade_vendida: 0, total_vendido: 0 });
+    });
+  });
+}
+
 
 
 

@@ -14,7 +14,7 @@
               </div>
             </div>
             <v-avatar size="64" class="welcome-avatar">
-              <v-img src="@/assets/logo.png" alt="Logo" />
+              <v-icon size="36" color="white">mdi-cash-minus</v-icon>
             </v-avatar>
           </v-card-text>
         </v-card>
@@ -69,16 +69,16 @@
                 />
               </v-col>
               <v-col cols="12" md="4">
-                <v-select
+                <v-text-field
                   v-model="tipoFilter"
                   label="Filtrar por Tipo"
-                  :items="tipoDespesas"
                   prepend-inner-icon="mdi-tag"
                   density="compact"
                   variant="outlined"
                   hide-details
                   class="search-field"
                   clearable
+                  placeholder="Digite o tipo de despesa..."
                 />
               </v-col>
             </v-row>
@@ -207,7 +207,7 @@
               class="mb-4"
               required
             />
-            <v-text-field
+            <v-number-input
               v-model="despesa.valor"
               label="Valor"
               prepend-inner-icon="mdi-currency-brl"
@@ -216,9 +216,8 @@
               hide-details
               class="mb-4"
               prefix="R$"
-              type="number"
-              step="0.01"
-              min="0"
+              :min="0"
+              :precision="2"
               required
             />
             <v-text-field
@@ -232,7 +231,7 @@
               class="mb-4"
               required
             />
-            <v-select
+            <v-combobox
               v-model="despesa.tipo"
               label="Tipo de Despesa"
               :items="tipoDespesas"
@@ -321,7 +320,7 @@ export default defineComponent({
     const despesas = ref<Despesa[]>([]);
     const tipoFilter = ref<string | null>(null);
     const descricaoFilter = ref('');
-    const tipoDespesas = ['Fixo', 'Variável'];
+    const tipoDespesas = ['Loja', 'Barbearia'];
     const dataFilter = ref<string | null>(null);
     const modalOpen = ref(false);
     const editingDespesa = ref<Despesa | null>(null);
@@ -367,7 +366,9 @@ export default defineComponent({
         const dataMatch = dataFilter.value
           ? formatDateForComparison(d.data) === formatDateForComparison(dataFilter.value)
           : true;
-        const tipoMatch = tipoFilter.value ? d.tipo === tipoFilter.value : true;
+        const tipoMatch = tipoFilter.value
+          ? d.tipo.toLowerCase().includes(tipoFilter.value.toLowerCase())
+          : true;
         return descricaoMatch && dataMatch && tipoMatch;
       });
     });
@@ -481,6 +482,18 @@ export default defineComponent({
       sortDesc.value = value;
     };
 
+    const customFilter = (item: any, queryText: string) => {
+      const text = item.text.toLowerCase();
+      const searchText = queryText.toLowerCase();
+      return text.indexOf(searchText) > -1;
+    };
+
+    const handleTypeSearch = (val: string) => {
+      if (val && !tipoDespesas.includes(val)) {
+        tipoDespesas.push(val);
+      }
+    };
+
     onMounted(loadDespesas);
 
     return {
@@ -510,6 +523,8 @@ export default defineComponent({
       handleSortBy,
       handleSortDesc,
       getSortIcon,
+      customFilter,
+      handleTypeSearch,
     };
   }
 });

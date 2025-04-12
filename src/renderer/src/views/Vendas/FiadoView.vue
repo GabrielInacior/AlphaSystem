@@ -14,7 +14,7 @@
               </div>
             </div>
             <v-avatar size="64" class="welcome-avatar">
-              <v-img src="@/assets/logo.png" alt="Logo" />
+              <v-icon size="36" color="white">mdi-account-clock</v-icon>
             </v-avatar>
           </v-card-text>
         </v-card>
@@ -118,6 +118,12 @@
                 </span>
               </template>
 
+              <template v-slot:item.desconto="{ item }">
+                <span class="font-weight-bold text-error">
+                  R$ {{ item.desconto?.toFixed(2) || '0.00' }}
+                </span>
+              </template>
+
               <template v-slot:item.divida="{ item }">
                 <span class="font-weight-bold text-error">
                   R$ {{ (item.valor_total - item.valor_pago).toFixed(2) || '0.00' }}
@@ -197,6 +203,13 @@
 
             <v-list-item>
               <template v-slot:prepend>
+                <v-icon color="error" class="mr-4">mdi-percent</v-icon>
+              </template>
+              <v-list-item-title>Desconto aplicado: <span class="font-weight-bold text-error">R$ {{ fiadoSelecionado?.desconto?.toFixed(2) || '0.00' }}</span></v-list-item-title>
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend>
                 <v-icon color="primary" class="mr-4">mdi-calendar</v-icon>
               </template>
               <v-list-item-title v-if="fiadoSelecionado?.data">Data: {{ formatData(fiadoSelecionado?.data) }}</v-list-item-title>
@@ -270,8 +283,12 @@
             step="0.01"
             min="0"
             :max="(fiadoSelecionado?.valor_total ?? 0) - (fiadoSelecionado?.valor_pago ?? 0)"
-            :rules="[val => val >= 0 || 'Valor deve ser maior que zero']"
+            :rules="[
+              val => val >= 0 || 'Valor deve ser maior que zero',
+              val => val <= ((fiadoSelecionado?.valor_total ?? 0) - (fiadoSelecionado?.valor_pago ?? 0)) || 'Valor não pode ser maior que a dívida'
+            ]"
             :error-messages="valorPagoError"
+            @input="validarValorPago"
             required
           />
         </v-card-text>
@@ -328,6 +345,7 @@ export default defineComponent({
       { text: 'Cliente', value: 'nome_cliente', sortable: true },
       { text: 'Valor Pago', value: 'valor_pago', sortable: true },
       { text: 'Valor Total', value: 'valor_total', sortable: true },
+      { text: 'Desconto', value: 'desconto', sortable: true },
       { text: 'Dívida', value: 'divida', sortable: true },
       { text: 'Tipo Pagamento', value: 'metodo_pagamento', sortable: true },
       { text: 'Data', value: 'data', sortable: true },
@@ -348,7 +366,8 @@ export default defineComponent({
         return filtroCliente && filtroData;
       }).map(f => ({
         ...f,
-        divida: f.valor_total - f.valor_pago
+        desconto: f.desconto || 0,
+        divida: (f.valor_total) - f.valor_pago // valor_total já vem com desconto aplicado
       }))
     );
 
@@ -422,14 +441,27 @@ export default defineComponent({
       if (item) {
         const valorRestante = item.valor_total - item.valor_pago;
         if (valorPago.value >= valorRestante) {
-          await window.api.updateVenda(item.id, item.valor_total, item.valor_pago + valorPago.value, metodoPagamento.value, 'pago', item.data);
+          await window.api.updateVenda(
+            item.id,
+            item.valor_total,
+            item.valor_pago + valorPago.value,
+            metodoPagamento.value,
+            'pago',
+            item.data
+          );
         } else {
-          // Caso contrário, apenas atualiza o valor pago
-          await window.api.updateVenda(item.id, item.valor_total, item.valor_pago + valorPago.value, metodoPagamento.value, 'pendente', item.data);
+          await window.api.updateVenda(
+            item.id,
+            item.valor_total,
+            item.valor_pago + valorPago.value,
+            metodoPagamento.value,
+            'pendente',
+            item.data
+          );
         }
         loadFiados();
         modalOpen.value = false;
-        resetModalFields(); // Chama a função para resetar os campos
+        resetModalFields();
       }
     };
 
@@ -453,6 +485,27 @@ export default defineComponent({
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
       return `${day}/${month}/${year} - ${hours}:${minutes}`;
+    };
+
+    const validarValorPago = () => {
+      if (!fiadoSelecionado.value) return;
+
+      const dividaTotal = fiadoSelecionado.value.valor_total - fiadoSelecionado.value.valor_pago;
+
+      // Verifica se o valor é negativo
+      if (valorPago.value < 0) {
+        valorPago.value = 0;
+        valorPagoError.value = 'Valor não pode ser negativo';
+        return;
+      }
+
+      // Verifica se o valor é maior que a dívida
+      if (valorPago.value > dividaTotal) {
+        valorPago.value = dividaTotal;
+        valorPagoError.value = 'Valor não pode ser maior que a dívida';
+      } else {
+        valorPagoError.value = '';
+      }
     };
 
     onMounted(loadFiados); // Carrega os fiados ao montar o componente
@@ -480,6 +533,7 @@ export default defineComponent({
       handleSortBy,
       handleSortDesc,
       getSortIcon,
+      validarValorPago,
     };
   }
 });
@@ -507,7 +561,6 @@ export default defineComponent({
 }
 
 .content-card {
-  background: white;
   border-radius: 16px;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }

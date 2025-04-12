@@ -45,8 +45,8 @@
                   </div>
                 </v-tooltip>
               </v-btn>
-              <v-avatar size="48" class="welcome-avatar">
-                <v-img src="@/assets/logo.png" alt="Logo" />
+              <v-avatar size="64" class="welcome-avatar">
+                <v-icon size="36" color="white">mdi-store</v-icon>
               </v-avatar>
             </div>
           </v-card-text>
@@ -344,7 +344,7 @@
                   hide-details
                 />
                   </v-col>
-              </v-row>
+                </v-row>
                   <div class="chart-container mt-3">
                     <apexchart
                       type="donut"
@@ -418,159 +418,161 @@
     </v-row>
 
     <!-- Card de Vendas por Categoria -->
-    <v-col cols="12">
-      <v-card class="h-100">
-        <v-card-title class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center">
-            <v-icon color="primary" class="mr-2">mdi-chart-box</v-icon>
-            Vendas por Categoria
-            <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
-                <v-icon
-                  v-bind="props"
-                  size="small"
-                  class="ml-2"
-                  color="grey"
+   <v-row>
+      <v-col cols="12">
+        <v-card class="h-100">
+          <v-card-title class="d-flex align-center justify-space-between">
+            <div class="d-flex align-center">
+              <v-icon color="primary" class="mr-2">mdi-chart-box</v-icon>
+              Vendas por Categoria
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <v-icon
+                    v-bind="props"
+                    size="small"
+                    class="ml-2"
+                    color="grey"
+                  >
+                    mdi-information
+                  </v-icon>
+                </template>
+                Distribuição de vendas por categoria de produtos
+              </v-tooltip>
+            </div>
+            <v-select
+              v-model="periodoVendasCategoria"
+              :items="periodos"
+              item-title="text"
+              item-value="value"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="periodo-select"
+              style="max-width: 200px"
+            ></v-select>
+          </v-card-title>
+
+          <v-card-text>
+            <v-row>
+              <v-col cols="12" md="8">
+                <v-data-table
+                  :headers="headersCategoria"
+                  :items="vendasPorCategoria"
+                  :items-per-page="5"
+                  class="elevation-0 sales-table"
+                  height="400"
                 >
-                  mdi-information
-                </v-icon>
-              </template>
-              Distribuição de vendas por categoria de produtos
-            </v-tooltip>
-          </div>
-          <v-select
-            v-model="periodoVendasCategoria"
-            :items="periodos"
-            item-title="text"
-            item-value="value"
-            density="compact"
-            variant="outlined"
-            hide-details
-            class="periodo-select"
-            style="max-width: 200px"
-          ></v-select>
-        </v-card-title>
+                  <template v-slot:header.percentual>
+                    <div class="d-flex align-center">
+                      <span class="text-subtitle-2 font-weight-bold">Participação</span>
+                      <v-tooltip location="top">
+                        <template v-slot:activator="{ props }">
+                          <v-icon
+                            v-bind="props"
+                            size="small"
+                            class="ml-1"
+                            color="grey"
+                          >
+                            mdi-information
+                          </v-icon>
+                        </template>
+                        Percentual que esta categoria representa do total de vendas. Calculado dividindo o valor total vendido desta categoria pelo valor total de todas as categorias.
+                      </v-tooltip>
+                    </div>
+                  </template>
 
-        <v-card-text>
-          <v-row>
-            <v-col cols="12" md="8">
-              <v-data-table
-                :headers="headersCategoria"
-                :items="vendasPorCategoria"
-                :items-per-page="5"
-                class="elevation-0 sales-table"
-                height="400"
-              >
-                <template v-slot:header.percentual>
-                  <div class="d-flex align-center">
-                    <span class="text-subtitle-2 font-weight-bold">Participação</span>
-                    <v-tooltip location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-icon
-                          v-bind="props"
-                          size="small"
-                          class="ml-1"
-                          color="grey"
-                        >
-                          mdi-information
-                        </v-icon>
-                      </template>
-                      Percentual que esta categoria representa do total de vendas. Calculado dividindo o valor total vendido desta categoria pelo valor total de todas as categorias.
-                    </v-tooltip>
-                  </div>
-                </template>
+                  <template v-slot:item="{ item }">
+                    <tr>
+                      <td class="py-4">
+                        <div class="d-flex align-center">
+                          <v-icon color="primary" class="mr-2">mdi-tag</v-icon>
+                          <span class="font-weight-medium">{{ item.categoria_nome }}</span>
+                        </div>
+                      </td>
+                      <td class="py-4">
+                        <div class="d-flex align-center">
+                          <v-icon color="success" size="small" class="mr-1">mdi-package-variant</v-icon>
+                          <span>{{ item.quantidade_total_vendida }}</span>
+                        </div>
+                      </td>
+                      <td class="py-4">
+                        <div class="d-flex align-center">
+                          <v-icon color="info" size="small" class="mr-1">mdi-currency-usd</v-icon>
+                          <span class="font-weight-bold">R$ {{ item.total_vendido.toFixed(2) }}</span>
+                        </div>
+                      </td>
+                      <td class="py-6">
+                        <div class="d-flex flex-column">
+                          <v-progress-linear
+                            :model-value="item.percentual"
+                            color="primary"
+                            height="12"
+                            rounded
+                            class="mt-1"
+                          >
+                            <template v-slot:default="{ value }">
+                              <span class="text-caption font-weight-bold">{{ Math.ceil(value) }}%</span>
+                            </template>
+                          </v-progress-linear>
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
+                </v-data-table>
+              </v-col>
 
-                <template v-slot:item="{ item }">
-                  <tr>
-                    <td class="py-4">
-                      <div class="d-flex align-center">
-                        <v-icon color="primary" class="mr-2">mdi-tag</v-icon>
-                        <span class="font-weight-medium">{{ item.categoria_nome }}</span>
+              <v-col cols="12" md="4">
+                <v-card class="insights-card h-100" elevation="0">
+                  <v-card-text>
+                    <div class="d-flex flex-column gap-4">
+                      <div class="insight-item">
+                        <div class="d-flex align-center mb-2">
+                          <v-icon color="primary" class="mr-2">mdi-trophy</v-icon>
+                          <div class="text-subtitle-2 text-grey">Categoria Mais Vendida</div>
+                        </div>
+                        <div class="text-h6 font-weight-bold">
+                          {{ vendasPorCategoria[0]?.categoria_nome || '---' }}
+                        </div>
                       </div>
-                    </td>
-                    <td class="py-4">
-                      <div class="d-flex align-center">
-                        <v-icon color="success" size="small" class="mr-1">mdi-package-variant</v-icon>
-                        <span>{{ item.quantidade_total_vendida }}</span>
-                      </div>
-                    </td>
-                    <td class="py-4">
-                      <div class="d-flex align-center">
-                        <v-icon color="info" size="small" class="mr-1">mdi-currency-usd</v-icon>
-                        <span class="font-weight-bold">R$ {{ item.total_vendido.toFixed(2) }}</span>
-                      </div>
-                    </td>
-                    <td class="py-6">
-                      <div class="d-flex flex-column">
-                        <v-progress-linear
-                          :model-value="item.percentual"
-                          color="primary"
-                          height="12"
-                          rounded
-                          class="mt-1"
-                        >
-                          <template v-slot:default="{ value }">
-                            <span class="text-caption font-weight-bold">{{ Math.ceil(value) }}%</span>
-                          </template>
-                        </v-progress-linear>
-                      </div>
-                    </td>
-                  </tr>
-                </template>
-              </v-data-table>
-            </v-col>
 
-            <v-col cols="12" md="4">
-              <v-card class="insights-card h-100" elevation="0">
-                <v-card-text>
-                  <div class="d-flex flex-column gap-4">
-                    <div class="insight-item">
-                      <div class="d-flex align-center mb-2">
-                        <v-icon color="primary" class="mr-2">mdi-trophy</v-icon>
-                        <div class="text-subtitle-2 text-grey">Categoria Mais Vendida</div>
+                      <div class="insight-item">
+                        <div class="d-flex align-center mb-2">
+                          <v-icon color="info" class="mr-2">mdi-tag-multiple</v-icon>
+                          <div class="text-subtitle-2 text-grey">Total de Categorias</div>
+                        </div>
+                        <div class="text-h6 font-weight-bold">
+                          {{ vendasPorCategoria.length }}
+                        </div>
                       </div>
-                      <div class="text-h6 font-weight-bold">
-                        {{ vendasPorCategoria[0]?.categoria_nome || '---' }}
+
+                      <div class="insight-item">
+                        <div class="d-flex align-center mb-2">
+                          <v-icon color="success" class="mr-2">mdi-chart-pie</v-icon>
+                          <div class="text-subtitle-2 text-grey">Participação da Principal</div>
+                        </div>
+                        <div class="text-h6 font-weight-bold text-primary">
+                          {{ (vendasPorCategoria[0]?.percentual || 0).toFixed(1) }}%
+                        </div>
+                      </div>
+
+                      <div class="insight-item">
+                        <div class="d-flex align-center mb-2">
+                          <v-icon color="warning" class="mr-2">mdi-currency-usd</v-icon>
+                          <div class="text-subtitle-2 text-grey">Valor Total Bruto </div>
+                        </div>
+                        <div class="text-h6 font-weight-bold text-success">
+                          R$ {{ vendasPorCategoria.reduce((total, item) => total + (item?.total_vendido || 0), 0).toFixed(2) }}
+                        </div>
                       </div>
                     </div>
-
-                    <div class="insight-item">
-                      <div class="d-flex align-center mb-2">
-                        <v-icon color="info" class="mr-2">mdi-tag-multiple</v-icon>
-                        <div class="text-subtitle-2 text-grey">Total de Categorias</div>
-                      </div>
-                      <div class="text-h6 font-weight-bold">
-                        {{ vendasPorCategoria.length }}
-                      </div>
-                    </div>
-
-                    <div class="insight-item">
-                      <div class="d-flex align-center mb-2">
-                        <v-icon color="success" class="mr-2">mdi-chart-pie</v-icon>
-                        <div class="text-subtitle-2 text-grey">Participação da Principal</div>
-                      </div>
-                      <div class="text-h6 font-weight-bold text-primary">
-                        {{ (vendasPorCategoria[0]?.percentual || 0).toFixed(1) }}%
-                      </div>
-                    </div>
-
-                    <div class="insight-item">
-                      <div class="d-flex align-center mb-2">
-                        <v-icon color="warning" class="mr-2">mdi-currency-usd</v-icon>
-                        <div class="text-subtitle-2 text-grey">Valor Total Bruto </div>
-                      </div>
-                      <div class="text-h6 font-weight-bold text-success">
-                        R$ {{ vendasPorCategoria.reduce((total, item) => total + (item?.total_vendido || 0), 0).toFixed(2) }}
-                      </div>
-                    </div>
-                  </div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-    </v-col>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+   </v-row>
   </v-container>
 </template>
 
@@ -797,13 +799,13 @@ export default defineComponent({
                 show: true,
                 fontSize: '14px',
                 fontFamily: 'Inter, sans-serif',
-                color: '#1a202c'
+                color: '#CBD5E1'
               },
               value: {
                 show: true,
                 fontSize: '16px',
                 fontFamily: 'Inter, sans-serif',
-                color: '#1a202c',
+                color: '#CBD5E1',
                 formatter: function (val: number) {
                   return 'R$ ' + val.toFixed(2);
                 }
@@ -813,7 +815,7 @@ export default defineComponent({
                 label: 'Total',
                 fontSize: '14px',
                 fontFamily: 'Inter, sans-serif',
-                color: '#1a202c',
+                color: '#CBD5E1',
                 formatter: function (w: any) {
                   const total = w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
                   return 'R$ ' + total.toFixed(2);
@@ -827,6 +829,9 @@ export default defineComponent({
         position: 'bottom',
         fontFamily: 'Inter, sans-serif',
         fontSize: '12px',
+        labels: {
+          colors: '#CBD5E1'
+        },
         markers: {
           width: 12,
           height: 12,
@@ -1047,7 +1052,10 @@ export default defineComponent({
         data.push(item.total_vendas);
       });
 
-      chartOptionsPagamento.value.labels = labels;
+      chartOptionsPagamento.value = {
+        ...chartOptionsPagamento.value,
+        labels: labels
+      };
       vendasPorMetodoPagamentoSeries.value = data;
     };
 

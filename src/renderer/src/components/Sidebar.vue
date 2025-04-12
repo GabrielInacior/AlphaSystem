@@ -13,6 +13,9 @@
             <v-tooltip activator="parent" location="start">Esconder barra lateral</v-tooltip>
           </v-btn>
         </template>
+        <template v-slot:title>
+          <span class="logo-text">Barbearia Alpha</span>
+        </template>
       </v-list-item>
     </div>
 
@@ -37,6 +40,7 @@
         <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog" density="compact" class="submenu-item">Visão Geral: Loja</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('produtos')" prepend-icon="mdi-package-variant" class="submenu-item">Gerenciar Produtos</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('categorias')" prepend-icon="mdi-shape" class="submenu-item">Gerenciar Categorias</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('contas-pagar')" prepend-icon="mdi-file-document-multiple" class="submenu-item">Contas a Pagar</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('despesas')" prepend-icon="mdi-cash-remove" class="submenu-item">Gerenciar Despesas</v-list-item>
       </v-list-group>
 
@@ -50,6 +54,7 @@
           <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog" density="compact">Visão Geral: Loja</v-list-item>
           <v-list-item density="compact" @click="navigateToPage('produtos')" prepend-icon="mdi-package-variant">Gerenciar Produtos</v-list-item>
           <v-list-item density="compact" @click="navigateToPage('categorias')" prepend-icon="mdi-shape">Gerenciar Categorias</v-list-item>
+          <v-list-item density="compact" @click="navigateToPage('contas-pagar')" prepend-icon="mdi-file-document-multiple">Contas a Pagar</v-list-item>
           <v-list-item density="compact" @click="navigateToPage('despesas')" prepend-icon="mdi-cash-remove">Gerenciar Despesas</v-list-item>
         </v-list>
       </v-menu>
@@ -113,7 +118,7 @@
         </template>
         <v-list-item density="compact" @click="navigateToPage('vendas')" prepend-icon="mdi-account-cash" class="submenu-item">Registrar Nova Venda</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('historico-vendas')" prepend-icon="mdi-clipboard-text-clock-outline" class="submenu-item">Histórico de Vendas</v-list-item>
-        <v-list-item density="compact" @click="navigateToPage('fiados')" prepend-icon="mdi-account-multiple-minus" class="submenu-item">Vendas Pendentes (Fiado)</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('fiados')" prepend-icon="mdi-account-clock" class="submenu-item">Vendas Pendentes (Fiado)</v-list-item>
       </v-list-group>
 
       <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="vendaOpen" class="rail-menu">
@@ -125,27 +130,21 @@
         <v-list density="compact" class="rail-submenu">
           <v-list-item @click="navigateToPage('vendas')" prepend-icon="mdi-account-cash">Registrar Nova venda</v-list-item>
           <v-list-item @click="navigateToPage('historico-vendas')" prepend-icon="mdi-clipboard-text-clock-outline">Histórico de Vendas</v-list-item>
-          <v-list-item @click="navigateToPage('fiados')" prepend-icon="mdi-account-multiple-minus">Vendas pendentes(Fiado)</v-list-item>
+          <v-list-item @click="navigateToPage('fiados')" prepend-icon="mdi-account-clock">Vendas pendentes(Fiado)</v-list-item>
         </v-list>
       </v-menu>
-    </v-list>
 
-    <!-- Footer Section -->
-    <v-list density="compact" nav class="sidebar-footer">
-      <v-list-item @click="toggleTheme" prepend-icon="mdi-theme-light-dark" title="Alterar Tema" class="footer-item">
+      <!-- Games Section -->
+      <v-list-item v-if="!rail" prepend-icon="mdi-gamepad-variant" title="Jogos" @click="navigateToPage('games')" class="menu-item">
         <template v-slot:prepend>
-          <v-icon :color="currentTheme === 'light' ? 'primary' : 'warning'">
-            {{ currentTheme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night' }}
-          </v-icon>
+          <v-icon color="primary">mdi-gamepad-variant</v-icon>
         </template>
-        <v-tooltip v-if="rail" activator="parent" location="start">Alterar tema</v-tooltip>
       </v-list-item>
-      <v-list-item title="Sair" prepend-icon="mdi-power" @click="logout" class="footer-item">
-        <template v-slot:prepend>
-          <v-icon color="error">mdi-power</v-icon>
-        </template>
-        <v-tooltip v-if="rail" activator="parent" location="start">Sair para a área de trabalho</v-tooltip>
-      </v-list-item>
+
+      <v-btn v-if="rail" class="rail-btn" variant="plain" @click="navigateToPage('games')">
+        <v-icon :size="25" color="primary">mdi-gamepad-variant</v-icon>
+        <v-tooltip activator="parent" location="start">Jogos</v-tooltip>
+      </v-btn>
     </v-list>
   </v-navigation-drawer>
 
@@ -192,20 +191,11 @@ export default defineComponent({
       currentTheme.value = newTheme;
     });
 
-    const toggleTheme = () => {
-      const newTheme = currentTheme.value === 'light' ? 'dark' : 'light';
-      global.name.value = newTheme;
-    };
-
     const toggleRail = () => {
       useUserSideBarStore().toggleRail();
     };
     const navigateToPage = (page: string) => {
       router.push({ name: page });
-    };
-
-    const logout = () => {
-      window.api.closeWindow();
     };
 
     return {
@@ -214,8 +204,6 @@ export default defineComponent({
       toggleRail,
       currentTheme,
       navigateToPage,
-      toggleTheme,
-      logout,
       LogoPreta,
       LogoBranca,
       open,
@@ -245,7 +233,6 @@ export default defineComponent({
 }
 
 .sidebar-header {
-  padding: 16px 8px;
   border-bottom: 1px solid var(--color-border);
   background: rgb(var(--v-theme-sidebarbg));
   border-radius: 16px 16px 0 0;
@@ -279,7 +266,7 @@ export default defineComponent({
 }
 
 .sidebar-menu {
-  padding: 8px;
+
   background: rgb(var(--v-theme-sidebarbg));
 }
 
@@ -354,7 +341,7 @@ export default defineComponent({
 .rail-menu {
   border-radius: 12px;
   overflow: hidden;
-  margin-left: 8px;
+  margin-left: 2px;
 }
 
 .rail-submenu {
@@ -370,38 +357,14 @@ export default defineComponent({
   border-color: var(--color-border) !important;
 }
 
-.sidebar-footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding: 8px;
-  border-top: 1px solid var(--color-border);
-  background: rgb(var(--v-theme-sidebarbg));
-  border-radius: 0 0 16px 16px;
-}
-
-:deep(.v-theme--dark) .sidebar-footer {
-  background: rgb(var(--v-theme-sidebarbg));
-}
-
-.footer-item {
-  border-radius: 12px;
-  margin-bottom: 4px;
-  transition: all 0.3s ease;
-}
-
-.footer-item:hover {
-  background: var(--color-background-mute) !important;
-}
-
 .expand-btn {
-  position: relative;
+  position: fixed;
   top: 50%;
+  left: 60px;
   width: 32px !important;
   z-index: 1001 !important;
   font-size: 20px !important;
   height: 64px !important;
-  margin-left: 60px;
   transform: translateY(-50%);
   background: rgb(var(--v-theme-sidebarbg)) !important;
   border: 1px solid var(--color-border) !important;
@@ -432,7 +395,7 @@ export default defineComponent({
 
 :deep(.v-navigation-drawer--rail) {
   width: 160px !important;
-  margin-right: 32px !important;
+  margin-right: 12px !important;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -494,7 +457,7 @@ export default defineComponent({
   background: rgb(var(--v-theme-sidebarbg)) !important;
   border: 1px solid var(--color-border) !important;
   border-radius: 12px !important;
-  margin-left: 8px !important;
+  margin-left: 2px !important;
 }
 
 :deep(.v-menu .v-list) {
@@ -525,5 +488,14 @@ export default defineComponent({
   font-size: 12px !important;
   padding: 8px 12px !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.logo-text {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 </style>

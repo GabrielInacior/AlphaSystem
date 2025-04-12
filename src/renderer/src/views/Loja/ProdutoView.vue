@@ -14,7 +14,7 @@
               </div>
             </div>
             <v-avatar size="64" class="welcome-avatar">
-              <v-img src="@/assets/logo.png" alt="Logo" />
+              <v-icon size="36" color="white">mdi-package-variant</v-icon>
             </v-avatar>
           </v-card-text>
         </v-card>
@@ -284,7 +284,7 @@
             required
           />
 
-          <v-text-field
+          <v-number-input
             v-model="produto.custo"
             label="Custo de Compra"
             prepend-inner-icon="mdi-currency-usd"
@@ -292,8 +292,9 @@
             variant="outlined"
             :error-messages="custoError"
             class="mb-4"
-            type="number"
             prefix="R$"
+            :min="0"
+            :precision="2"
             required
           />
 
@@ -308,7 +309,7 @@
             Produto será registrado como presente
           </v-alert>
 
-          <v-text-field
+          <v-number-input
             v-model="produto.preco"
             label="Preço de Venda"
             prepend-inner-icon="mdi-currency-brl"
@@ -316,8 +317,9 @@
             variant="outlined"
             :error-messages="precoError"
             class="mb-4"
-            type="number"
             prefix="R$"
+            :min="0"
+            :precision="2"
             required
           />
 

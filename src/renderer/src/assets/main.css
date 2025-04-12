@@ -158,8 +158,8 @@ code {
 }
 
 .versions li:last-child {
-  border: none;
-}
+    border: none;
+  }
 
 /* Modern table styling */
 .v-data-table {

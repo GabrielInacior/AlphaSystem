@@ -7,6 +7,7 @@ import * as Venda from './vendas';
 import * as Despesa from './despesas';
 import * as Fechamento from './fechamentoCaixa';
 import * as Categoria from './categorias';
+import * as ContasPagar from './contasPagar';
 import { Database } from 'sqlite3';
 
 // Função que recebe a instância do banco de dados e registra os handlers IPC
@@ -212,9 +213,9 @@ export const registerIpcHandlers = (db: Database) => {
   });
 
   // Criar venda
-  ipcMain.handle('create-venda', async (_event, cliente_id, valor_total, valor_pago,  metodo_pagamento, status, data, itens) => {
+  ipcMain.handle('create-venda', async (_event, cliente_id, valor_total, valor_pago,  metodo_pagamento, status, data, itens, desconto) => {
     try {
-      return await Venda.createVenda(db, cliente_id, valor_total, valor_pago, metodo_pagamento, status, data, itens);
+      return await Venda.createVenda(db, cliente_id, valor_total, valor_pago, metodo_pagamento, status, data, itens, desconto);
     } catch (error) {
       console.error('Erro ao criar venda:', error);
       throw error;
@@ -504,6 +505,33 @@ export const registerIpcHandlers = (db: Database) => {
     }
   });
 
+  ipcMain.handle('get-clientes-atendidos-hoje', async () => {
+    try {
+      return await Fechamento.getClientesAtendidosHoje(db);
+    } catch (error) {
+      console.error('Erro ao buscar clientes atendidos hoje:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-valor-atendimentos-hoje', async () => {
+    try {
+      return await Fechamento.getValorAtendimentosHoje(db);
+    } catch (error) {
+      console.error('Erro ao buscar valor dos atendimentos de hoje:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-servico-mais-vendido-hoje', async () => {
+    try {
+      return await Fechamento.getServicoMaisVendidoHoje(db);
+    } catch (error) {
+      console.error('Erro ao buscar serviço mais vendido hoje:', error);
+      throw error;
+    }
+  });
+
   ipcMain.handle('get-clientes-com-vendas-pendentes', async (_event) => {
     try {
       return await Fechamento.getClientesComVendasPendentes(db);
@@ -584,6 +612,109 @@ export const registerIpcHandlers = (db: Database) => {
       return await Fechamento.getLucroTotalPorCategoria(db, periodo, categoria_id);
     } catch (error) {
       console.error('Erro ao obter lucro total por categoria:', error);
+      throw error;
+    }
+  });
+
+  // Contas a Pagar
+  ipcMain.handle('create-conta-pagar', async (_event, descricao: string, valor: number, data_vencimento: string, fornecedor: string, tipo: string, observacao?: string, forma_pagamento?: string) => {
+    try {
+      return await ContasPagar.createContaPagar(db, descricao, valor, data_vencimento, fornecedor, tipo, observacao, forma_pagamento);
+    } catch (error) {
+      console.error('Erro ao criar conta a pagar:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-all-contas-pagar', async () => {
+    try {
+      return await ContasPagar.getAllContasPagar(db);
+    } catch (error) {
+      console.error('Erro ao obter todas as contas a pagar:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-conta-pagar-by-id', async (_event, id: number) => {
+    try {
+      return await ContasPagar.getContaPagarById(db, id);
+    } catch (error) {
+      console.error('Erro ao obter conta a pagar:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('update-conta-pagar', async (_event, id: number, descricao: string, valor: number, data_vencimento: string, fornecedor: string, tipo: string, observacao?: string, forma_pagamento?: string) => {
+    try {
+      await ContasPagar.updateContaPagar(db, id, descricao, valor, data_vencimento, fornecedor, tipo, observacao, forma_pagamento);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao atualizar conta a pagar:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('marcar-conta-como-paga', async (_event, id: number, data_pagamento: string, forma_pagamento: string) => {
+    try {
+      await ContasPagar.marcarContaComoPaga(db, id, data_pagamento, forma_pagamento);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao marcar conta como paga:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('delete-conta-pagar', async (_event, id: number) => {
+    try {
+      await ContasPagar.deleteContaPagar(db, id);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao deletar conta a pagar:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-contas-pagar-por-status', async (_event, status: string) => {
+    try {
+      return await ContasPagar.getContasPagarPorStatus(db, status);
+    } catch (error) {
+      console.error('Erro ao obter contas por status:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-contas-pagar-por-periodo', async (_event, dataInicio: string, dataFim: string) => {
+    try {
+      return await ContasPagar.getContasPagarPorPeriodo(db, dataInicio, dataFim);
+    } catch (error) {
+      console.error('Erro ao obter contas por período:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-total-contas-pagar-por-status', async (_event, status: string) => {
+    try {
+      return await ContasPagar.getTotalContasPagarPorStatus(db, status);
+    } catch (error) {
+      console.error('Erro ao obter total de contas por status:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-contas-vencidas', async () => {
+    try {
+      return await ContasPagar.getContasVencidas(db);
+    } catch (error) {
+      console.error('Erro ao obter contas vencidas:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-contas-a-vencer', async (_event, dias: number) => {
+    try {
+      return await ContasPagar.getContasAVencer(db, dias);
+    } catch (error) {
+      console.error('Erro ao obter contas a vencer:', error);
       throw error;
     }
   });
