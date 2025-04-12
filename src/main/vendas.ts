@@ -25,7 +25,7 @@ export function getTodasVendas(db: Database): Promise<any[]> {
 // Obter vendas pagas
 export function getVendasPagas(db: Database): Promise<any[]> {
   const query = `
-    SELECT v.id, v.cliente_id, v.valor_total, v.valor_pago, v.metodo_pagamento, v.status, v.data,
+    SELECT v.id, v.cliente_id, v.valor_total, v.valor_pago, v.metodo_pagamento, v.status, v.data, v.desconto,
            c.nome AS nome_cliente,
            vi.produto_id, vi.servico_id, vi.quantidade, vi.valor_unitario, vi.valor_total AS item_valor_total,
            p.nome AS produto_nome, p.preco AS produto_preco,
@@ -59,6 +59,7 @@ export function getVendasPagas(db: Database): Promise<any[]> {
               metodo_pagamento: row.metodo_pagamento,
               status: row.status,
               data: row.data,
+              desconto: row.desconto || 0,
               itens: []
             });
           }
@@ -83,7 +84,7 @@ export function getVendasPagas(db: Database): Promise<any[]> {
 // Obter vendas fiado (não pagas)
 export function getVendasFiado(db: Database): Promise<any[]> {
   const query = `
-    SELECT v.id, v.cliente_id, v.valor_total, v.valor_pago, v.metodo_pagamento, v.status, v.data,
+    SELECT v.id, v.cliente_id, v.valor_total, v.valor_pago, v.desconto, v.metodo_pagamento, v.status, v.data,
            c.nome AS nome_cliente,
            vi.produto_id, vi.servico_id, vi.quantidade, vi.valor_unitario, vi.valor_total AS item_valor_total,
            p.nome AS produto_nome, p.preco AS produto_preco,
@@ -118,6 +119,7 @@ export function getVendasFiado(db: Database): Promise<any[]> {
               metodo_pagamento: row.metodo_pagamento,
               status: row.status,
               data: row.data,
+              desconto: row.desconto || 0,
               itens: []
             });
           }
@@ -186,12 +188,11 @@ export function getItensVendidos(db: Database): Promise<any[]> {
 }
 
 // Criar venda
-export function createVenda(db: Database, cliente_id: number, valor_total: number, valor_pago: number, metodo_pagamento: string, status:
-  string, data: string, itens: any[]): Promise<any> {
+export function createVenda(db: Database, cliente_id: number, valor_total: number, valor_pago: number, metodo_pagamento: string, status: string, data: string, itens: any[], desconto: number = 0): Promise<any> {
   return new Promise((resolve, reject) => {
     try {
-      const queryVenda = `INSERT INTO vendas (cliente_id, valor_total, valor_pago, metodo_pagamento, status, data) VALUES (?, ?, ?, ?, ?, ?)`;
-      db.run(queryVenda, [cliente_id, valor_total, valor_pago, metodo_pagamento, status, data], function (err) {
+      const queryVenda = `INSERT INTO vendas (cliente_id, valor_total, valor_pago, metodo_pagamento, status, data, desconto) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+      db.run(queryVenda, [cliente_id, valor_total, valor_pago, metodo_pagamento, status, data, desconto], function (err) {
         if (err) {
           console.error('Erro ao criar venda:', err.message);
           return reject(err);
@@ -328,9 +329,9 @@ export function getVendasPorData(db: Database, data: string): Promise<any[]> {
 }
 
 
-export function updateVenda(db: Database, venda_id: number, valor_total: number, valor_pago: number, metodo_pagamento: string, status: string, data: string): void {
-  const query = `UPDATE vendas SET valor_total = ?, valor_pago = ?, metodo_pagamento = ?, status = ?, data = ? WHERE id = ?`;
-  db.run(query, [valor_total, valor_pago, metodo_pagamento, status, data, venda_id], function (err) {
+export function updateVenda(db: Database, venda_id: number, valor_total: number, valor_pago: number, metodo_pagamento: string, status: string, data: string, desconto: number = 0): void {
+  const query = `UPDATE vendas SET valor_total = ?, valor_pago = ?, metodo_pagamento = ?, status = ?, data = ?, desconto = ? WHERE id = ?`;
+  db.run(query, [valor_total, valor_pago, metodo_pagamento, status, data, desconto, venda_id], function (err) {
     if (err) {
       console.error('Erro ao atualizar venda:', err.message);
     } else {

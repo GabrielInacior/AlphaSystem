@@ -107,6 +107,21 @@ export async function createTables(db: sqlite3.Database): Promise<void> {
       );
     `)
 
+    db.run(`
+      CREATE TABLE IF NOT EXISTS contas_pagar (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        descricao TEXT NOT NULL,
+        valor REAL NOT NULL,
+        data_vencimento DATE NOT NULL,
+        data_pagamento DATE,
+        status TEXT DEFAULT 'pendente',
+        observacao TEXT,
+        fornecedor TEXT,
+        tipo TEXT,
+        forma_pagamento TEXT
+      );
+    `)
+
   })
 }
 
@@ -137,6 +152,28 @@ export async function checkAndUpdateDatabase(db: sqlite3.Database): Promise<void
         } else {
           console.log('Coluna categoria_id já existe na tabela produtos.');
           resolve();
+        }
+      });
+
+      // Verificar se a coluna desconto existe na tabela vendas
+      db.get("SELECT * FROM pragma_table_info('vendas') WHERE name='desconto'", (err, row) => {
+        if (err) {
+          console.error('Erro ao verificar coluna desconto:', err);
+          return;
+        }
+
+        // Se a coluna não existir, adicionar
+        if (!row) {
+          console.log('Adicionando coluna desconto à tabela vendas...');
+          db.run("ALTER TABLE vendas ADD COLUMN desconto REAL DEFAULT 0", (err) => {
+            if (err) {
+              console.error('Erro ao adicionar coluna desconto:', err);
+              return;
+            }
+            console.log('Coluna desconto adicionada com sucesso.');
+          });
+        } else {
+          console.log('Coluna desconto já existe na tabela vendas.');
         }
       });
     });

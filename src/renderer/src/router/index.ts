@@ -12,6 +12,7 @@ import DespesaView from '@renderer/views/Loja/DespesaView.vue'
 import HistoricoVendas from '@renderer/views/Vendas/HistoricoVendas.vue'
 import VendasView from '@renderer/views/Vendas/VendasView.vue'
 import CategoriaView from '@renderer/views/Loja/CategoriaView.vue'
+import ContasPagarView from '../views/Barbearia/ContasPagar.vue'
 
 const routes = [
   {
@@ -81,6 +82,11 @@ const routes = [
         path: 'loja',
         name: 'loja',
         component: LojaView, // Home do módulo Loja
+      },
+      {
+        path: 'contas-pagar',
+        name: 'contas-pagar',
+        component: ContasPagarView
       },
     ]
   }

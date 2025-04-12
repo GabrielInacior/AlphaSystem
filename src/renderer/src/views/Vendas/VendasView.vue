@@ -717,23 +717,21 @@ export default defineComponent({
     }
 
     const finalizarVenda = async () => {
-      try {
-        // Verifica se precisa mostrar o modal de fiado
-        if (valorPago.value < totalComDesconto.value) {
-          modalConfirmacaoFiado.value = true;
-          return;
-        }
+      // Calcula o valor total com desconto para comparação
+      const valorTotalComDesconto = totalVenda.value - desconto.value;
 
-        await processarVenda();
-      } catch (error) {
-        console.error("Erro ao finalizar venda:", error);
+      if (valorPago.value < valorTotalComDesconto) {
+        modalConfirmacaoFiado.value = true;
+        return;
       }
+
+      processarVenda();
     };
 
     const processarVenda = async () => {
       try {
         if (!clienteSelecionado.value) {
-          console.error("Nenhum cliente selecionado.");
+          alert('Selecione um cliente antes de finalizar a venda.');
           return;
         }
 
@@ -755,7 +753,7 @@ export default defineComponent({
                 nome_item: item.nome,
                 quantidade: item.quantidade,
                 valor_unitario: item.preco,
-                valor_total: item.preco,
+                valor_total: item.preco * item.quantidade,
               };
             }
             return null;
@@ -764,14 +762,17 @@ export default defineComponent({
 
         atualizarTotalVenda();
 
+        // Calcula o valor total final (já com desconto)
+        const valorTotalComDesconto = totalVenda.value - desconto.value;
+
         const venda: VendaEntity = {
           id: 0,
           cliente_id: clienteSelecionado.value,
           nome_cliente: "",
           metodo_pagamento: metodoPagamento.value,
-          status: valorPago.value >= totalComDesconto.value ? "pago" : "pendente",
+          status: valorPago.value >= valorTotalComDesconto ? "pago" : "pendente",
           valor_pago: valorPago.value,
-          valor_total: totalComDesconto.value,
+          valor_total: valorTotalComDesconto, // Valor total já com desconto
           desconto: desconto.value,
           data: new Date().toISOString(),
           itens: itensComValorTotal as any,
@@ -779,21 +780,21 @@ export default defineComponent({
 
         await window.api.createVenda(
           venda.cliente_id,
-          venda.valor_total,
+          venda.valor_total, // Valor total já com desconto
           venda.valor_pago,
           venda.metodo_pagamento,
           venda.status,
           venda.data,
-          venda.itens as any,
+          venda.itens,
           venda.desconto
         );
 
-        showModalSucesso.value = true;
         resetarVenda();
         carregarProdutosServicos();
         carregarClientes();
+        showModalSucesso.value = true;
       } catch (error) {
-        console.error("Erro ao processar venda:", error);
+        console.error('Erro ao finalizar venda:', error);
       }
     };
 

@@ -48,8 +48,8 @@ const api = {
   atualizarEstoqueProduto: (id: number, quantidadeVendida: number) =>
     ipcRenderer.invoke('atualizar-estoque-produto', id, quantidadeVendida),
 
-  createVenda: (cliente_id: number, valor_total: number, valor_pago: number, metodo_pagamento: string, status: string, data: string, itens: any[]) => {
-    ipcRenderer.invoke('create-venda', cliente_id, valor_total, valor_pago, metodo_pagamento, status, data, itens);
+  createVenda: (cliente_id: number, valor_total: number, valor_pago: number, metodo_pagamento: string, status: string, data: string, itens: any[], desconto: number = 0) => {
+    return ipcRenderer.invoke('create-venda', cliente_id, valor_total, valor_pago, metodo_pagamento, status, data, itens, desconto);
   },
 
   getTodasVendas: () =>
@@ -175,6 +175,49 @@ const api = {
   getClientesComVendasPendentes: () => ipcRenderer.invoke("get-clientes-com-vendas-pendentes"),
 
   getQuantidadeEReceitaServicos: (periodo: string) => ipcRenderer.invoke("get-quantidade-e-receita-servicos", periodo),
+
+  // Contas a Pagar
+  createContaPagar: (
+    descricao: string,
+    valor: number,
+    data_vencimento: string,
+    fornecedor: string,
+    tipo: string,
+    observacao?: string,
+    forma_pagamento?: string
+  ) => ipcRenderer.invoke('create-conta-pagar', descricao, valor, data_vencimento, fornecedor, tipo, observacao, forma_pagamento),
+
+  getAllContasPagar: () => ipcRenderer.invoke('get-all-contas-pagar'),
+
+  getContaPagarById: (id: number) => ipcRenderer.invoke('get-conta-pagar-by-id', id),
+
+  updateContaPagar: (
+    id: number,
+    descricao: string,
+    valor: number,
+    data_vencimento: string,
+    fornecedor: string,
+    tipo: string,
+    observacao?: string,
+    forma_pagamento?: string
+  ) => ipcRenderer.invoke('update-conta-pagar', id, descricao, valor, data_vencimento, fornecedor, tipo, observacao, forma_pagamento),
+
+  marcarContaComoPaga: (id: number, data_pagamento: string, forma_pagamento: string) =>
+    ipcRenderer.invoke('marcar-conta-como-paga', id, data_pagamento, forma_pagamento),
+
+  deleteContaPagar: (id: number) => ipcRenderer.invoke('delete-conta-pagar', id),
+
+  getContasPagarPorStatus: (status: string) => ipcRenderer.invoke('get-contas-pagar-por-status', status),
+
+  getContasPagarPorPeriodo: (dataInicio: string, dataFim: string) =>
+    ipcRenderer.invoke('get-contas-pagar-por-periodo', dataInicio, dataFim),
+
+  getTotalContasPagarPorStatus: (status: string) =>
+    ipcRenderer.invoke('get-total-contas-pagar-por-status', status),
+
+  getContasVencidas: () => ipcRenderer.invoke('get-contas-vencidas'),
+
+  getContasAVencer: (dias: number) => ipcRenderer.invoke('get-contas-a-vencer', dias),
 
   // Métodos para categorias
   createCategoria: (nome: string, descricao: string) =>

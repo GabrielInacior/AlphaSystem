@@ -162,6 +162,12 @@
                 </span>
               </template>
 
+              <template v-slot:item.desconto="{ item }">
+                <span class="font-weight-bold text-error">
+                  R$ {{ item.desconto.toFixed(2) || '0.00' }}
+                </span>
+              </template>
+
               <template v-slot:item.data="{ item }">
                 <div class="d-flex align-center">
                   <v-icon size="small" color="primary" class="mr-1">mdi-calendar</v-icon>
@@ -414,6 +420,7 @@ export default defineComponent({
     const headers = [
       { text: 'Cliente', value: 'nome_cliente', sortable: true },
       { text: 'Valor Total', value: 'valor_total', sortable: true },
+      { text: 'Desconto', value: 'desconto', sortable: true },
       { text: 'Data', value: 'data', sortable: true },
       { text: 'Método de Pagamento', value: 'metodo_pagamento', sortable: true },
       { text: 'Status', value: 'status', sortable: true },

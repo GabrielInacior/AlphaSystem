@@ -37,6 +37,7 @@
         <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog" density="compact" class="submenu-item">Visão Geral: Loja</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('produtos')" prepend-icon="mdi-package-variant" class="submenu-item">Gerenciar Produtos</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('categorias')" prepend-icon="mdi-shape" class="submenu-item">Gerenciar Categorias</v-list-item>
+        <v-list-item density="compact" @click="navigateToPage('contas-pagar')" prepend-icon="mdi-file-document-multiple" class="submenu-item">Contas a Pagar</v-list-item>
         <v-list-item density="compact" @click="navigateToPage('despesas')" prepend-icon="mdi-cash-remove" class="submenu-item">Gerenciar Despesas</v-list-item>
       </v-list-group>
 
@@ -50,6 +51,7 @@
           <v-list-item @click="navigateToPage('loja')" prepend-icon="mdi-store-cog" density="compact">Visão Geral: Loja</v-list-item>
           <v-list-item density="compact" @click="navigateToPage('produtos')" prepend-icon="mdi-package-variant">Gerenciar Produtos</v-list-item>
           <v-list-item density="compact" @click="navigateToPage('categorias')" prepend-icon="mdi-shape">Gerenciar Categorias</v-list-item>
+          <v-list-item density="compact" @click="navigateToPage('contas-pagar')" prepend-icon="mdi-file-document-multiple">Contas a Pagar</v-list-item>
           <v-list-item density="compact" @click="navigateToPage('despesas')" prepend-icon="mdi-cash-remove">Gerenciar Despesas</v-list-item>
         </v-list>
       </v-menu>

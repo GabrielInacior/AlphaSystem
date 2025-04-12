@@ -162,14 +162,14 @@
           <v-number-input
             v-model="servico.preco"
             label="Preço"
-            prefix="R$"
-            :precision="2"
-            :min="0"
+            prepend-inner-icon="mdi-currency-usd"
             density="compact"
             variant="outlined"
             :error-messages="precoError"
             class="mb-4"
-            prepend-inner-icon="mdi-currency-brl"
+            prefix="R$"
+            :min="0"
+            :precision="2"
             required
           />
         </v-card-text>
