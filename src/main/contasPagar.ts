@@ -1,5 +1,24 @@
 import { Database } from 'sqlite3';
 
+// Interface para a conta a pagar
+interface ContaPagar {
+  id: number;
+  descricao: string;
+  valor: number;
+  data_vencimento: string;
+  data_pagamento?: string;
+  fornecedor: string;
+  tipo: string;
+  observacao?: string;
+  forma_pagamento?: string;
+  status: string;
+}
+
+// Interface para o resultado do total
+interface TotalResult {
+  total: number;
+}
+
 // Criar conta a pagar
 export function createContaPagar(
   db: Database,
@@ -126,21 +145,78 @@ export function marcarContaComoPaga(
   forma_pagamento: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const query = `
-      UPDATE contas_pagar
-      SET status = 'pago',
-          data_pagamento = ?,
-          forma_pagamento = ?
-      WHERE id = ?
-    `;
+    // Iniciar uma transação para garantir que ambas as operações sejam concluídas
+    db.serialize(() => {
+      db.run('BEGIN TRANSACTION');
 
-    db.run(query, [data_pagamento, forma_pagamento, id], (err) => {
-      if (err) {
-        console.error('Erro ao marcar conta como paga:', err.message);
-        reject(err);
-      } else {
-        resolve();
-      }
+      // Primeiro, buscar os dados da conta
+      const queryBusca = 'SELECT * FROM contas_pagar WHERE id = ?';
+      db.get(queryBusca, [id], (err, conta: ContaPagar) => {
+        if (err) {
+          db.run('ROLLBACK');
+          console.error('Erro ao buscar conta:', err.message);
+          reject(err);
+          return;
+        }
+
+        if (!conta) {
+          db.run('ROLLBACK');
+          reject(new Error('Conta não encontrada'));
+          return;
+        }
+
+        // Atualizar o status da conta para pago
+        const queryUpdate = `
+          UPDATE contas_pagar
+          SET status = 'pago',
+              data_pagamento = ?,
+              forma_pagamento = ?
+          WHERE id = ?
+        `;
+
+        db.run(queryUpdate, [data_pagamento, forma_pagamento, id], (err) => {
+          if (err) {
+            db.run('ROLLBACK');
+            console.error('Erro ao marcar conta como paga:', err.message);
+            reject(err);
+            return;
+          }
+
+          // Criar uma nova despesa com os dados da conta
+          const queryDespesa = `
+            INSERT INTO despesas (descricao, valor, data, tipo, origem)
+            VALUES (?, ?, ?, ?, ?)
+          `;
+
+          // Usar a data atual para a despesa
+          const dataAtual = new Date().toISOString().split('T')[0];
+          const descricaoDespesa = `Pagamento de Conta: ${conta.fornecedor} - ${conta.descricao}`;
+
+          db.run(queryDespesa, [
+            descricaoDespesa,
+            conta.valor,
+            dataAtual,  // Usando a data atual
+            'Conta',    // Tipo fixo como 'Conta'
+            'Outro'     // Origem fixa como 'Outro'
+          ], (err) => {
+            if (err) {
+              db.run('ROLLBACK');
+              console.error('Erro ao criar despesa:', err.message);
+              reject(err);
+              return;
+            }
+
+            db.run('COMMIT', (err) => {
+              if (err) {
+                db.run('ROLLBACK');
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          });
+        });
+      });
     });
   });
 }
@@ -214,7 +290,7 @@ export function getTotalContasPagarPorStatus(db: Database, status: string): Prom
       WHERE status = ?
     `;
 
-    db.get(query, [status], (err, row) => {
+    db.get(query, [status], (err, row: TotalResult) => {
       if (err) {
         console.error('Erro ao calcular total de contas a pagar:', err.message);
         reject(err);

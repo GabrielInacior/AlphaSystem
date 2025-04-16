@@ -645,7 +645,11 @@ declare global {
         observacao?: string,
         forma_pagamento?: string
       ) => Promise<void>;
-      marcarContaComoPaga: (id: number) => Promise<void>;
+      marcarContaComoPaga: (
+        id: number,
+        data_pagamento: string,
+        forma_pagamento: string
+      ) => Promise<void>;
       deleteContaPagar: (id: number) => Promise<void>;
     };
   }
@@ -756,7 +760,9 @@ export default defineComponent({
     const periodos = [
       'Hoje',
       'Esta Semana',
+      'Próxima Semana',
       'Este Mês',
+      'Próximo Mês',
       'Este Ano',
       'Todas'
     ];
@@ -952,7 +958,9 @@ export default defineComponent({
         if (!contaPagamento.value) return;
 
         await window.api.marcarContaComoPaga(
-          contaPagamento.value.id
+          contaPagamento.value.id,
+          contaPagamento.value.data_pagamento,
+          contaPagamento.value.forma_pagamento
         );
 
         modalPagamento.value = false;
@@ -1050,6 +1058,7 @@ export default defineComponent({
       switch (periodoSelecionado.value) {
         case 'Hoje':
           return mesmodia(dataVencimento, hoje);
+
         case 'Esta Semana': {
           const inicioSemana = new Date(hoje);
           inicioSemana.setDate(hoje.getDate() - hoje.getDay());
@@ -1061,11 +1070,49 @@ export default defineComponent({
 
           return dataVencimento >= inicioSemana && dataVencimento <= fimSemana;
         }
-        case 'Este Mês':
-          return dataVencimento.getMonth() === hoje.getMonth() &&
-                 dataVencimento.getFullYear() === hoje.getFullYear();
-        case 'Este Ano':
-          return dataVencimento.getFullYear() === hoje.getFullYear();
+
+        case 'Próxima Semana': {
+          const inicioProximaSemana = new Date(hoje);
+          inicioProximaSemana.setDate(hoje.getDate() - hoje.getDay() + 7);
+          inicioProximaSemana.setHours(12, 0, 0, 0);
+
+          const fimProximaSemana = new Date(inicioProximaSemana);
+          fimProximaSemana.setDate(fimProximaSemana.getDate() + 6);
+          fimProximaSemana.setHours(12, 0, 0, 0);
+
+          return dataVencimento >= inicioProximaSemana && dataVencimento <= fimProximaSemana;
+        }
+
+        case 'Este Mês': {
+          const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+          inicioMes.setHours(12, 0, 0, 0);
+
+          const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+          fimMes.setHours(12, 0, 0, 0);
+
+          return dataVencimento >= inicioMes && dataVencimento <= fimMes;
+        }
+
+        case 'Próximo Mês': {
+          const inicioProximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+          inicioProximoMes.setHours(12, 0, 0, 0);
+
+          const fimProximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0);
+          fimProximoMes.setHours(12, 0, 0, 0);
+
+          return dataVencimento >= inicioProximoMes && dataVencimento <= fimProximoMes;
+        }
+
+        case 'Este Ano': {
+          const inicioAno = new Date(hoje.getFullYear(), 0, 1);
+          inicioAno.setHours(12, 0, 0, 0);
+
+          const fimAno = new Date(hoje.getFullYear(), 11, 31);
+          fimAno.setHours(12, 0, 0, 0);
+
+          return dataVencimento >= inicioAno && dataVencimento <= fimAno;
+        }
+
         default:
           return true;
       }
@@ -1229,7 +1276,7 @@ export default defineComponent({
           return dataConta.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }) === mes;
         });
 
-    return {
+        return {
           total: contasDoMes.reduce((sum, c) => sum + c.valor, 0),
           pago: contasDoMes
             .filter(c => c.status === 'pago')

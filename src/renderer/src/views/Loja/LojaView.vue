@@ -14,23 +14,11 @@
               </div>
             </div>
             <div class="d-flex align-center">
-              <v-btn
-                color="white"
-                variant="tonal"
-                class="mr-4"
-                prepend-icon="mdi-file-pdf-box"
-                @click="gerarRelatorioProdutos"
-                :loading="gerandoRelatorio"
-              >
+              <v-btn color="white" variant="tonal" class="mr-4" prepend-icon="mdi-file-pdf-box"
+                @click="gerarRelatorioProdutos" :loading="gerandoRelatorio">
                 Gerar Relatório
               </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                color="white"
-                class="mr-4"
-                size="small"
-              >
+              <v-btn icon variant="text" color="white" class="mr-4" size="small">
                 <v-icon>mdi-information</v-icon>
                 <v-tooltip activator="parent" location="bottom">
                   <div class="tooltip-content">
@@ -41,7 +29,8 @@
                       <li>O arquivo será salvo automaticamente no seu computador</li>
                       <li>Você pode compartilhar este PDF com sua equipe ou clientes</li>
                     </ol>
-                    <p class="mt-2 mb-0 text-caption">Dica: Ajuste os filtros de período antes de gerar o relatório para obter dados específicos.</p>
+                    <p class="mt-2 mb-0 text-caption">Dica: Ajuste os filtros de período antes de gerar o relatório para
+                      obter dados específicos.</p>
                   </div>
                 </v-tooltip>
               </v-btn>
@@ -74,50 +63,29 @@
           <v-card-text class="pa-3">
             <v-row>
               <v-col cols="12">
-                <v-select
-                  v-model="periodoVClientesCompraram"
-                  :items="periodos"
-                  item-title="text"
-                  item-value="value"
-                  label="Selecione o Período"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                />
-            </v-col>
+                <v-select v-model="periodoVClientesCompraram" :items="periodos" item-title="text" item-value="value"
+                  label="Selecione o Período" density="compact" variant="outlined" hide-details />
+              </v-col>
               <v-col cols="12">
-              <v-select
-                v-model="categoriaClientesMaisCompraram"
-                :items="categorias"
-                  item-title="nome"
-                  item-value="id"
-                label="Filtrar por Categoria"
-                density="compact"
-                  variant="outlined"
-                clearable
-                  hide-details
-              />
-            </v-col>
-          </v-row>
+                <v-select v-model="categoriaClientesMaisCompraram" :items="categorias" item-title="nome" item-value="id"
+                  label="Filtrar por Categoria" density="compact" variant="outlined" clearable hide-details />
+              </v-col>
+            </v-row>
             <v-list class="mt-3" style="max-height: 250px; overflow-y: auto;">
-              <v-list-item
-                v-for="(cliente, index) in melhoresClientes"
-                :key="index"
-                class="mb-1 rounded-lg"
-                :class="{'bg-primary-lighten-5': index % 2 === 0}"
-              >
+              <v-list-item v-for="(cliente, index) in melhoresClientes" :key="index" class="mb-1 rounded-lg"
+                :class="{ 'bg-primary-lighten-5': index % 2 === 0 }">
                 <template v-slot:prepend>
                   <v-avatar :color="getRankingColor(index)" size="32">
                     <span class="text-subtitle-2 text-white">{{ index + 1 }}</span>
                   </v-avatar>
-                          </template>
+                </template>
                 <v-list-item-title class="text-body-2 font-weight-medium">{{ cliente.cliente_nome }}</v-list-item-title>
                 <v-list-item-subtitle class="d-flex align-center text-caption">
                   <v-icon size="small" color="primary" class="mr-1">mdi-package-variant</v-icon>
                   {{ cliente.quantidade_produtos_comprados }} Produtos comprados
                 </v-list-item-subtitle>
               </v-list-item>
-          </v-list>
+            </v-list>
           </v-card-text>
         </v-card>
       </v-col>
@@ -135,38 +103,16 @@
           <v-card-text class="pa-3">
             <v-row>
               <v-col cols="12">
-                <v-select
-                  v-model="periodoLucroGasto"
-                  :items="periodos"
-                  item-title="text"
-                  item-value="value"
-                  label="Selecione o Período"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                />
-            </v-col>
+                <v-select v-model="periodoLucroGasto" :items="periodos" item-title="text" item-value="value"
+                  label="Selecione o Período" density="compact" variant="outlined" hide-details />
+              </v-col>
               <v-col cols="12">
-              <v-select
-                v-model="categoriaLucroGasto"
-                :items="categorias"
-                  item-title="nome"
-                  item-value="id"
-                label="Filtrar por Categoria"
-                density="compact"
-                  variant="outlined"
-                clearable
-                  hide-details
-              />
-            </v-col>
-          </v-row>
+                <v-select v-model="categoriaLucroGasto" :items="categorias" item-title="nome" item-value="id"
+                  label="Filtrar por Categoria" density="compact" variant="outlined" clearable hide-details />
+              </v-col>
+            </v-row>
             <div class="chart-container mt-3">
-              <apexchart
-                type="donut"
-                :options="chartOptionsLucroGasto"
-                :series="lucroVsGastoSeries"
-                height="250"
-              />
+              <apexchart type="donut" :options="chartOptionsLucroGasto" :series="lucroVsGastoSeries" height="250" />
             </div>
             <v-card class="profit-card mt-3" elevation="0">
               <v-card-text class="d-flex align-center justify-space-between py-2 px-3">
@@ -174,13 +120,13 @@
                   <v-icon :color="lucroTotal.cor" size="24" class="mr-2">mdi-chart-line</v-icon>
                   <span class="text-subtitle-1 font-weight-bold" :style="{ color: lucroTotal.cor }">
                     {{ lucroTotal.lucroTotal >= 0 ? 'Lucro Total' : 'Prejuízo Total' }}
-              </span>
+                  </span>
                 </div>
                 <span class="text-h5 font-weight-bold" :style="{ color: lucroTotal.cor }">
                   R$ {{ lucroTotal.lucroTotal.toFixed(2) }}
                 </span>
               </v-card-text>
-          </v-card>
+            </v-card>
           </v-card-text>
         </v-card>
       </v-col>
@@ -204,43 +150,22 @@
           <v-card-text class="pa-3">
             <v-row>
               <v-col cols="12">
-              <v-select
-                v-model="periodoMaisVendidos"
-                :items="periodos"
-                  item-title="text"
-                  item-value="value"
-                label="Selecione o Período"
-                density="compact"
-                  variant="outlined"
-                  hide-details
-              />
-            </v-col>
+                <v-select v-model="periodoMaisVendidos" :items="periodos" item-title="text" item-value="value"
+                  label="Selecione o Período" density="compact" variant="outlined" hide-details />
+              </v-col>
               <v-col cols="12">
-              <v-select
-                v-model="categoriaProdutosMaisVendidos"
-                :items="categorias"
-                  item-title="nome"
-                  item-value="id"
-                label="Filtrar por Categoria"
-                density="compact"
-                  variant="outlined"
-                clearable
-                  hide-details
-              />
-            </v-col>
-          </v-row>
+                <v-select v-model="categoriaProdutosMaisVendidos" :items="categorias" item-title="nome" item-value="id"
+                  label="Filtrar por Categoria" density="compact" variant="outlined" clearable hide-details />
+              </v-col>
+            </v-row>
             <v-list class="mt-3" style="max-height: 250px; overflow-y: auto;">
-              <v-list-item
-                v-for="(produto, index) in produtosMaisVendidos"
-                :key="index"
-                class="mb-1 rounded-lg"
-                :class="{'bg-primary-lighten-5': index % 2 === 0}"
-              >
+              <v-list-item v-for="(produto, index) in produtosMaisVendidos" :key="index" class="mb-1 rounded-lg"
+                :class="{ 'bg-primary-lighten-5': index % 2 === 0 }">
                 <template v-slot:prepend>
                   <v-avatar :color="getRankingColor(index)" size="32">
                     <span class="text-subtitle-2 text-white">{{ index + 1 }}</span>
                   </v-avatar>
-                        </template>
+                </template>
                 <v-list-item-title class="text-body-2 font-weight-medium">{{ produto.produto_nome }}</v-list-item-title>
                 <v-list-item-subtitle class="d-flex align-center justify-space-between text-caption">
                   <span>
@@ -252,7 +177,7 @@
                   </span>
                 </v-list-item-subtitle>
               </v-list-item>
-          </v-list>
+            </v-list>
           </v-card-text>
         </v-card>
       </v-col>
@@ -270,38 +195,16 @@
           <v-card-text class="pa-3">
             <v-row>
               <v-col cols="12" sm="6">
-            <v-select
-                  v-model="periodoVendasProdutos"
-                  :items="periodos"
-                  item-title="text"
-                  item-value="value"
-                  label="Selecione o Período"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                />
+                <v-select v-model="periodoVendasProdutos" :items="periodosGraficos" item-title="text" item-value="value"
+                  label="Selecione o Período" density="compact" variant="outlined" hide-details />
               </v-col>
               <v-col cols="12" sm="6">
-                <v-select
-              v-model="categoriaVendasProdutos"
-              :items="categorias"
-                  item-title="nome"
-                  item-value="id"
-              label="Filtrar por Categoria"
-              density="compact"
-                  variant="outlined"
-              clearable
-                  hide-details
-            />
+                <v-select v-model="categoriaVendasProdutos" :items="categorias" item-title="nome" item-value="id"
+                  label="Filtrar por Categoria" density="compact" variant="outlined" clearable hide-details />
               </v-col>
-          </v-row>
+            </v-row>
             <div class="chart-container mt-3">
-              <apexchart
-                type="line"
-                :options="chartOptionsVendas"
-                :series="vendasProdutosSeries"
-                height="300"
-              />
+              <apexchart type="line" :options="chartOptionsVendas" :series="vendasProdutosSeries" height="300" />
             </div>
           </v-card-text>
         </v-card>
@@ -320,97 +223,73 @@
               <v-card-text class="pa-3">
                 <v-row>
                   <v-col cols="12">
-                <v-select
-                      v-model="periogoPagamentos"
-                      :items="periodos"
-                      item-title="text"
-                      item-value="value"
-                      label="Selecione o Período"
-                      density="compact"
-                      variant="outlined"
-                      hide-details
-                    />
+                    <v-select v-model="periogoPagamentos" :items="periodos" item-title="text" item-value="value"
+                      label="Selecione o Período" density="compact" variant="outlined" hide-details />
                   </v-col>
                   <v-col cols="12">
-                    <v-select
-                  v-model="categoriaMetodoPagamento"
-                  :items="categorias"
-                      item-title="nome"
-                      item-value="id"
-                  label="Filtrar por Categoria"
-                  density="compact"
-                      variant="outlined"
-                  clearable
-                  hide-details
-                />
+                    <v-select v-model="categoriaMetodoPagamento" :items="categorias" item-title="nome" item-value="id"
+                      label="Filtrar por Categoria" density="compact" variant="outlined" clearable hide-details />
                   </v-col>
                 </v-row>
-                  <div class="chart-container mt-3">
-                    <apexchart
-                      type="donut"
-                      :options="chartOptionsPagamento"
-                      :series="vendasPorMetodoPagamentoSeries"
-                      height="250"
-                    />
-                  </div>
-                </v-card-text>
+                <div class="chart-container mt-3">
+                  <apexchart type="donut" :options="chartOptionsPagamento" :series="vendasPorMetodoPagamentoSeries"
+                    height="250" />
+                </div>
+              </v-card-text>
             </v-col>
 
-              <v-divider vertical />
+            <v-divider vertical />
 
-              <v-col cols="12" md="6">
-                <v-card-title class="d-flex align-center py-3 px-4">
-                  <v-icon color="primary" class="mr-2">mdi-information</v-icon>
-                  <span class="text-subtitle-1 font-weight-medium">Informações Adicionais</span>
+            <v-col cols="12" md="6">
+              <v-card-title class="d-flex align-center py-3 px-4">
+                <v-icon color="primary" class="mr-2">mdi-information</v-icon>
+                <span class="text-subtitle-1 font-weight-medium">Informações Adicionais</span>
               </v-card-title>
-                <v-divider />
-                <v-card-text class="pa-3">
-                  <v-list>
-                <v-list-item>
-                      <template v-slot:prepend>
-                        <v-icon color="error" class="mr-2">mdi-alert-circle</v-icon>
-                      </template>
-                      <v-list-item-title class="text-body-2 font-weight-medium">Produtos sem Estoque</v-list-item-title>
-                      <template v-slot:append>
-                        <v-btn
-                          variant="text"
-                          color="error"
-                          class="font-weight-bold"
-                          @click="goToProdutos"
-                        >
-                          {{ produtosSemEstoque.length }}
-                          <v-icon class="ml-1">mdi-arrow-right</v-icon>
-                        </v-btn>
-                      </template>
-                </v-list-item>
+              <v-divider />
+              <v-card-text class="pa-3">
+                <v-list>
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="error" class="mr-2">mdi-alert-circle</v-icon>
+                    </template>
+                    <v-list-item-title class="text-body-2 font-weight-medium">Produtos sem Estoque</v-list-item-title>
+                    <template v-slot:append>
+                      <v-btn variant="text" color="error" class="font-weight-bold" @click="goToProdutos">
+                        {{ produtosSemEstoque.length }}
+                        <v-icon class="ml-1">mdi-arrow-right</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-list-item>
 
-                <v-list-item>
-                      <template v-slot:prepend>
-                        <v-icon color="success" class="mr-2">mdi-package-variant</v-icon>
-                      </template>
-                      <v-list-item-title class="text-body-2 font-weight-medium">Produtos Vendidos no Total</v-list-item-title>
-                      <template v-slot:append>
-                        <span class="text-subtitle-1 font-weight-bold">
-                          {{ quantidadeReceitaProdutos.total_produtos_vendidos || '---' }}
-                        </span>
-                      </template>
-                </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="success" class="mr-2">mdi-package-variant</v-icon>
+                    </template>
+                    <v-list-item-title class="text-body-2 font-weight-medium">Produtos Vendidos no
+                      Total</v-list-item-title>
+                    <template v-slot:append>
+                      <span class="text-subtitle-1 font-weight-bold">
+                        {{ quantidadeReceitaProdutos.total_produtos_vendidos || '---' }}
+                      </span>
+                    </template>
+                  </v-list-item>
 
-                <v-list-item>
-                      <template v-slot:prepend>
-                        <v-icon color="info" class="mr-2">mdi-cash</v-icon>
-                      </template>
-                      <v-list-item-title class="text-body-2 font-weight-medium">Receita Total com Produtos</v-list-item-title>
-                      <template v-slot:append>
-                        <span class="text-subtitle-1 font-weight-bold text-success">
-                          {{ quantidadeReceitaProdutos.receita_total_produtos ?
-                             'R$ ' + quantidadeReceitaProdutos.receita_total_produtos.toFixed(2) :
-                             '---' }}
-                        </span>
-                      </template>
-                </v-list-item>
-              </v-list>
-                </v-card-text>
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="info" class="mr-2">mdi-cash</v-icon>
+                    </template>
+                    <v-list-item-title class="text-body-2 font-weight-medium">Receita Total com
+                      Produtos</v-list-item-title>
+                    <template v-slot:append>
+                      <span class="text-subtitle-1 font-weight-bold text-success">
+                        {{ quantidadeReceitaProdutos.receita_total_produtos ?
+                          'R$ ' + quantidadeReceitaProdutos.receita_total_produtos.toFixed(2) :
+                          '---' }}
+                      </span>
+                    </template>
+                  </v-list-item>
+                </v-list>
+              </v-card-text>
             </v-col>
           </v-row>
         </v-card>
@@ -418,7 +297,7 @@
     </v-row>
 
     <!-- Card de Vendas por Categoria -->
-   <v-row>
+    <v-row>
       <v-col cols="12">
         <v-card class="h-100">
           <v-card-title class="d-flex align-center justify-space-between">
@@ -427,56 +306,35 @@
               Vendas por Categoria
               <v-tooltip location="top">
                 <template v-slot:activator="{ props }">
-                  <v-icon
-                    v-bind="props"
-                    size="small"
-                    class="ml-2"
-                    color="grey"
-                  >
+                  <v-icon v-bind="props" size="small" class="ml-2" color="grey">
                     mdi-information
                   </v-icon>
                 </template>
                 Distribuição de vendas por categoria de produtos
               </v-tooltip>
             </div>
-            <v-select
-              v-model="periodoVendasCategoria"
-              :items="periodos"
-              item-title="text"
-              item-value="value"
-              density="compact"
-              variant="outlined"
-              hide-details
-              class="periodo-select"
-              style="max-width: 200px"
-            ></v-select>
+            <v-select v-model="periodoVendasCategoria" :items="periodos" item-title="text" item-value="value"
+              density="compact" variant="outlined" hide-details class="periodo-select"
+              style="max-width: 200px"></v-select>
           </v-card-title>
 
           <v-card-text>
             <v-row>
               <v-col cols="12" md="8">
-                <v-data-table
-                  :headers="headersCategoria"
-                  :items="vendasPorCategoria"
-                  :items-per-page="5"
-                  class="elevation-0 sales-table"
-                  height="400"
-                >
+                <v-data-table :headers="headersCategoria" :items="vendasPorCategoria" :items-per-page="5"
+                  class="elevation-0 sales-table" height="400">
                   <template v-slot:header.percentual>
                     <div class="d-flex align-center">
                       <span class="text-subtitle-2 font-weight-bold">Participação</span>
                       <v-tooltip location="top">
                         <template v-slot:activator="{ props }">
-                          <v-icon
-                            v-bind="props"
-                            size="small"
-                            class="ml-1"
-                            color="grey"
-                          >
+                          <v-icon v-bind="props" size="small" class="ml-1" color="grey">
                             mdi-information
                           </v-icon>
                         </template>
-                        Percentual que esta categoria representa do total de vendas. Calculado dividindo o valor total vendido desta categoria pelo valor total de todas as categorias.
+                        Percentual que esta categoria representa do total de vendas. Calculado dividindo o valor total
+                        vendido
+                        desta categoria pelo valor total de todas as categorias.
                       </v-tooltip>
                     </div>
                   </template>
@@ -503,13 +361,8 @@
                       </td>
                       <td class="py-6">
                         <div class="d-flex flex-column">
-                          <v-progress-linear
-                            :model-value="item.percentual"
-                            color="primary"
-                            height="12"
-                            rounded
-                            class="mt-1"
-                          >
+                          <v-progress-linear :model-value="item.percentual" color="primary" height="12" rounded
+                            class="mt-1">
                             <template v-slot:default="{ value }">
                               <span class="text-caption font-weight-bold">{{ Math.ceil(value) }}%</span>
                             </template>
@@ -561,7 +414,9 @@
                           <div class="text-subtitle-2 text-grey">Valor Total Bruto </div>
                         </div>
                         <div class="text-h6 font-weight-bold text-success">
-                          R$ {{ vendasPorCategoria.reduce((total, item) => total + (item?.total_vendido || 0), 0).toFixed(2) }}
+                          R$ {{vendasPorCategoria.reduce((total, item) => total + (item?.total_vendido || 0),
+                            0).toFixed(2)
+                          }}
                         </div>
                       </div>
                     </div>
@@ -572,7 +427,7 @@
           </v-card-text>
         </v-card>
       </v-col>
-   </v-row>
+    </v-row>
   </v-container>
 </template>
 
@@ -580,9 +435,10 @@
 import { defineComponent, ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import VueApexCharts from 'vue3-apexcharts';
+import { format, parseISO } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { format } from 'date-fns';
 
 export default defineComponent({
   name: 'LojaView',
@@ -617,12 +473,20 @@ export default defineComponent({
     const categoriaLucroGasto = ref<number | null>(null);
 
     const periodos = [
-      { value: 'dia', text: 'Últimas 24 horas' },
+      { value: 'dia', text: 'Hoje' },
       { value: 'semana', text: 'Última Semana' },
       { value: 'mes', text: 'Último Mês' },
       { value: 'ano', text: 'Último Ano' },
       { value: 'todos', text: 'Todos' },
     ];
+
+    const periodosGraficos = [
+      { value: 'dia', text: 'Hoje' },
+      { value: 'semana', text: 'Última Semana' },
+      { value: 'mes', text: 'Último Mês' },
+      { value: 'ano', text: 'Último Ano' },
+    ];
+
     const categorias = ref<any[]>([]);
     const vendasPorCategoria = ref<any[]>([]);
 
@@ -950,71 +814,183 @@ export default defineComponent({
       return '#42A5F5'; // Azul padrão
     };
 
+
     const getVendasProdutosPorData = async (periodo: string) => {
       try {
         const vendasProdutosResponse = await window.api.getVendasProdutosPorData(periodo, categoriaVendasProdutos.value);
         console.log('[VENDAS RESPONSE]', vendasProdutosResponse);
 
-        console.log(vendasProdutosResponse)
-
         const labels: string[] = [];
         const dataQuantidade: number[] = [];
         const dataTotalVendido: number[] = [];
+        const hoje = new Date();
 
-        vendasProdutosResponse.forEach((item: any) => {
-          let label = '';
+        switch (periodo) {
+          case 'dia': {
+            // Mostrar apenas as horas que tiveram vendas
+            vendasProdutosResponse.forEach(item => {
+              const dataHora = new Date(item.periodo);
 
-          switch (periodo) {
-            case 'dia':
-              label = new Date(item.periodo + ':00').toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
+              // Ajustando a data para o fuso horário 'America/Sao_Paulo'
+              const dataHoraLocal = fromZonedTime(dataHora, 'America/Sao_Paulo');
+
+              // Subtrair 3 horas da data
+              dataHoraLocal.setHours(dataHoraLocal.getHours() - 3);
+
+              // Formatar a hora no formato correto
+              const horaFormatada = format(dataHoraLocal, 'HH:mm', { timeZone: 'America/Sao_Paulo' });
+
+              labels.push(horaFormatada);
+              dataQuantidade.push(Number(item.quantidade_total_vendida));
+              dataTotalVendido.push(Number(item.total_vendido));
+            });
+
+            // Ordenar por hora
+            const dados = labels.map((label, index) => ({
+              hora: parseInt(label.split(':')[0]), // extrair apenas a hora
+              label,
+              quantidade: dataQuantidade[index],
+              total: dataTotalVendido[index]
+            })).sort((a, b) => a.hora - b.hora);
+
+            labels.splice(0, labels.length, ...dados.map(d => d.label));
+            dataQuantidade.splice(0, dataQuantidade.length, ...dados.map(d => d.quantidade));
+            dataTotalVendido.splice(0, dataTotalVendido.length, ...dados.map(d => d.total));
+            break;
+          }
+          case 'semana': {
+            // Manter os 7 dias da semana
+            const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const dataInicio = new Date(hoje);
+            dataInicio.setDate(hoje.getDate() - 6);
+
+            // Mapear os dados existentes
+            const dadosExistentes = new Map();
+            vendasProdutosResponse.forEach(item => {
+              const data = new Date(item.periodo);
+              dadosExistentes.set(data.getDay(), {
+                quantidade: Number(item.quantidade_total_vendida),
+                total: Number(item.total_vendido)
               });
-              break;
-            case 'semana':
-              let diaSemana = new Date(item.periodo).getDay();
-              diaSemana = (diaSemana + 1) % 7;
-              label = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][diaSemana];
-              break;
-            case 'mes':
-              const dataInicio = new Date(item.periodo);
-              const dataFim = new Date(dataInicio);
-              dataFim.setDate(dataFim.getDate() + 1);
-              const formatarData = (data: Date) =>
-                data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-              label = `${formatarData(dataInicio)} a ${formatarData(dataFim)}`;
-              break;
-            case 'ano':
-              const mesAno = new Date(item.periodo);
-              label = mesAno.toLocaleString('default', { month: 'long' });
-              break;
-            case 'todos':
-              label = item.periodo;
-              break;
-            default:
-              label = new Date(item.periodo).toLocaleDateString();
+            });
+
+            for (let i = 0; i < 7; i++) {
+              const data = new Date(dataInicio);
+              data.setDate(dataInicio.getDate() + i);
+              const dados = dadosExistentes.get(data.getDay()) || { quantidade: 0, total: 0 };
+
+              labels.push(diasSemana[data.getDay()]);
+              dataQuantidade.push(dados.quantidade);
+              dataTotalVendido.push(dados.total);
+            }
+            break;
+          }
+          case 'mes': {
+            const dadosAgrupados = new Map<string, { quantidade: number, total: number }>();
+
+            vendasProdutosResponse.forEach(item => {
+              const data = new Date(item.periodo);
+              const dataFormatada = format(data, 'dd/MM', { timeZone: 'America/Sao_Paulo' });
+
+              const atual = dadosAgrupados.get(dataFormatada) || { quantidade: 0, total: 0 };
+              dadosAgrupados.set(dataFormatada, {
+                quantidade: atual.quantidade + Number(item.quantidade_total_vendida),
+                total: atual.total + Number(item.total_vendido)
+              });
+            });
+
+            const dadosOrdenados = Array.from(dadosAgrupados.entries()).sort((a, b) => {
+              const [diaA, mesA] = a[0].split('/').map(Number);
+              const [diaB, mesB] = b[0].split('/').map(Number);
+              const dataA = new Date(2024, mesA - 1, diaA); // Usar um ano genérico só pra ordenar
+              const dataB = new Date(2024, mesB - 1, diaB);
+              return dataA.getTime() - dataB.getTime();
+            });
+
+            dadosOrdenados.forEach(([label, dados]) => {
+              labels.push(label);
+              dataQuantidade.push(dados.quantidade);
+              dataTotalVendido.push(dados.total);
+            });
+
+            break;
           }
 
-          labels.push(label);
-          dataQuantidade.push(Number(item.quantidade_total_vendida));
-          dataTotalVendido.push(Number(item.total_vendido));
-        });
+          case 'ano': {
+            const meses = [
+              'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+              'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
 
-        chartOptionsVendas.value.xaxis.categories = labels;
+            // Inicializa o Map com todos os meses (de 0 a 11) com valor inicial 0
+            const dadosPorMes = new Map<number, { quantidade: number; total: number }>();
+            for (let i = 0; i < 12; i++) {
+              dadosPorMes.set(i, { quantidade: 0, total: 0 });
+            }
+
+            // Agrupa os dados por mês
+            vendasProdutosResponse.forEach(item => {
+              const [ano, mes] = item.periodo.split('-').map(Number); // ex: ['2025', '04']
+              const dateObj = new Date(ano, mes - 1); // mês de 0 a 11
+              const mesIndex = dateObj.getMonth();
+
+              const atual = dadosPorMes.get(mesIndex)!;
+              dadosPorMes.set(mesIndex, {
+                quantidade: atual.quantidade + Number(item.quantidade_total_vendida),
+                total: atual.total + Number(item.total_vendido)
+              });
+            });
+
+
+            // Preenche os arrays na ordem correta dos meses
+            for (let i = 0; i < 12; i++) {
+              const dados = dadosPorMes.get(i)!;
+              labels.push(meses[i]);
+              dataQuantidade.push(dados.quantidade);
+              dataTotalVendido.push(dados.total);
+            }
+
+            break;
+          }
+        }
+
+        // Atualizar o gráfico
+        chartOptionsVendas.value = {
+          ...chartOptionsVendas.value,
+          xaxis: {
+            ...chartOptionsVendas.value.xaxis,
+            categories: labels
+          }
+        };
+
         vendasProdutosSeries.value = [
-            {
+          {
             name: 'Quantidade Vendida',
-              data: dataQuantidade,
+            data: dataQuantidade,
             color: '#FF6B6B'
           },
           {
             name: 'Valor Total Vendido (R$)',
-              data: dataTotalVendido,
+            data: dataTotalVendido,
             color: '#4CAF50'
           }
         ];
+
       } catch (error) {
         console.error('Erro ao buscar dados de vendas:', error);
+        chartOptionsVendas.value.xaxis.categories = [];
+        vendasProdutosSeries.value = [
+          {
+            name: 'Quantidade Vendida',
+            data: [],
+            color: '#FF6B6B'
+          },
+          {
+            name: 'Valor Total Vendido (R$)',
+            data: [],
+            color: '#4CAF50'
+          }
+        ];
       }
     };
 
@@ -1081,10 +1057,10 @@ export default defineComponent({
           lucroVsGastoResponse.total_custo_produtos || 0
         ];
 
-      lucroTotal.value = {
-        lucroTotal: lucroTotalValor,
-        cor: lucroTotalCor,
-      };
+        lucroTotal.value = {
+          lucroTotal: lucroTotalValor,
+          cor: lucroTotalCor,
+        };
       } catch (error) {
         console.error('Erro ao buscar dados de lucro vs gasto:', error);
         lucroVsGastoSeries.value = [0, 0];
@@ -1303,6 +1279,7 @@ export default defineComponent({
       periogoPagamentos,
       categorias,
       categoriaVendasProdutos,
+      periodosGraficos,
       categoriaProdutosMaisVendidos,
       categoriaClientesMaisCompraram,
       categoriaMetodoPagamento,
@@ -1408,8 +1385,8 @@ export default defineComponent({
   }
 
   .chart-container {
-  min-height: 200px;
-}
+    min-height: 200px;
+  }
 
   :deep(.v-select .v-field) {
     font-size: 0.875rem;

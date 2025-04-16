@@ -1,9 +1,9 @@
 import { Database } from 'sqlite3';
 
 // Criar despesa
-export function createDespesa(db: Database, descricao: string, valor: number, data: string, tipo : string): void {
-  const query = `INSERT INTO despesas (descricao, valor, data, tipo) VALUES (?, ?, ?, ?)`;
-  db.run(query, [descricao, valor, data, tipo], function (err) {
+export function createDespesa(db: Database, descricao: string, valor: number, data: string, tipo: string, origem: string): void {
+  const query = `INSERT INTO despesas (descricao, valor, data, tipo, origem) VALUES (?, ?, ?, ?, ?)`;
+  db.run(query, [descricao, valor, data, tipo, origem], function (err) {
     if (err) {
       console.error('Erro ao criar despesa:', err.message);
     } else {
@@ -24,9 +24,9 @@ export function getAllDespesas(db: Database): Promise<any[]> {
 }
 
 // Atualizar despesa
-export function updateDespesa(db: Database, id: number, descricao: string, valor: number, data: string, tipo: string): void {
-  const query = `UPDATE despesas SET descricao = ?, valor = ?, data = ?, tipo = ? WHERE id = ?`;
-  db.run(query, [descricao, valor, data, tipo, id], function (err) {
+export function updateDespesa(db: Database, id: number, descricao: string, valor: number, data: string, tipo: string, origem: string): void {
+  const query = `UPDATE despesas SET descricao = ?, valor = ?, data = ?, tipo = ?, origem = ? WHERE id = ?`;
+  db.run(query, [descricao, valor, data, tipo, origem, id], function (err) {
     if (err) {
       console.error('Erro ao atualizar despesa:', err.message);
     } else {

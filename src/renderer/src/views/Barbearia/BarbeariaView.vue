@@ -17,7 +17,7 @@
               <v-btn color="white" variant="tonal" class="mr-4" prepend-icon="mdi-file-pdf-box"
                 @click="gerarRelatorioServicos" :loading="gerandoRelatorio">
                 Gerar Relatório
-            </v-btn>
+              </v-btn>
               <v-btn icon variant="text" color="white" class="mr-4" size="small">
                 <v-icon>mdi-information</v-icon>
                 <v-tooltip activator="parent" location="bottom">
@@ -40,8 +40,8 @@
             </div>
           </v-card-text>
         </v-card>
-            </v-col>
-          </v-row>
+      </v-col>
+    </v-row>
 
     <v-row class="mt-2">
       <!-- Dashboard Cards -->
@@ -65,7 +65,7 @@
             </div>
           </v-card-text>
         </v-card>
-                    </v-col>
+      </v-col>
 
       <v-col cols="12" md="4">
         <v-card class="dashboard-card" elevation="2" color="success">
@@ -87,7 +87,7 @@
             </div>
           </v-card-text>
         </v-card>
-                    </v-col>
+      </v-col>
 
       <v-col cols="12" md="4">
         <v-card class="dashboard-card" elevation="2" color="primary">
@@ -110,7 +110,7 @@
           </v-card-text>
         </v-card>
       </v-col>
-                  </v-row>
+    </v-row>
 
     <v-row class="mt-4">
       <!-- Top Clientes - Serviços -->
@@ -143,7 +143,7 @@
                   {{ cliente.quantidade_servicos_comprados }} Serviços comprados
                 </v-list-item-subtitle>
               </v-list-item>
-          </v-list>
+            </v-list>
             <v-alert v-if="melhoresClientes.length === 0" type="info" variant="tonal" class="mt-3"
               icon="mdi-information">
               Nenhum cliente encontrado neste período
@@ -180,7 +180,7 @@
                     <div class="text-caption text-medium-emphasis">Serviços Vendidos</div>
                   </v-card-text>
                 </v-card>
-            </v-col>
+              </v-col>
 
               <v-col cols="6">
                 <v-card class="stat-card" elevation="0">
@@ -208,13 +208,13 @@
                         ?
                         'R$ ' + (quantidadeReceitaServicos.receita_total_servicos /
                           quantidadeReceitaServicos.total_servicos_vendidos).toFixed(2) :
-                      'R$ 0,00' }}
+                        'R$ 0,00' }}
                     </span>
                   </v-card-text>
                 </v-card>
-            </v-col>
+              </v-col>
 
-          </v-row>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
@@ -261,8 +261,8 @@
             </v-alert>
           </v-card-text>
         </v-card>
-            </v-col>
-          </v-row>
+      </v-col>
+    </v-row>
 
     <v-row class="mt-4">
       <!-- Quantidade de Serviços Vendidos -->
@@ -275,7 +275,7 @@
                 <span class="text-h6 font-weight-medium">Quantidade de Serviços Vendidos</span>
               </div>
             </div>
-            <v-select v-model="periodoVendasServicos" :items="periodos" item-title="text" item-value="value"
+            <v-select v-model="periodoVendasServicos" :items="periodosGraficos" item-title="text" item-value="value"
               label="Período" density="compact" class="period-select" variant="outlined" hide-details
               style="max-width: 200px" />
           </v-card-title>
@@ -286,7 +286,7 @@
             </div>
           </v-card-text>
         </v-card>
-                    </v-col>
+      </v-col>
 
 
       <!-- Vendas por Método de Pagamento e Informações -->
@@ -312,7 +312,7 @@
                     height="250" />
                 </div>
               </v-card-text>
-                    </v-col>
+            </v-col>
 
             <v-divider vertical />
 
@@ -339,7 +339,7 @@
                         {{ chartOptionsPagamento.labels[0] || '---' }}
                       </span>
                     </template>
-              </v-list-item>
+                  </v-list-item>
 
                   <v-list-item>
                     <template v-slot:prepend>
@@ -365,11 +365,11 @@
                         {{vendasPorMetodoPagamentoSeries.length > 0 && chartOptionsPagamento.labels.length > 0 ?
                           Math.round((vendasPorMetodoPagamentoSeries[0] / vendasPorMetodoPagamentoSeries.reduce((a, b) =>
                             a + b, 0)) * 100) + '%' :
-                        '---' }}
+                          '---'}}
                       </span>
                     </template>
                   </v-list-item>
-          </v-list>
+                </v-list>
 
                 <v-card class="payment-insights-card mt-3" elevation="0">
                   <v-card-text class="d-flex flex-column py-2 px-3">
@@ -383,7 +383,7 @@
                         '---'}}
                     </span>
                   </v-card-text>
-        </v-card>
+                </v-card>
               </v-card-text>
             </v-col>
           </v-row>
@@ -471,11 +471,18 @@ export default defineComponent({
     const periodoLucroGasto = ref('semana');
 
     const periodos = [
-      { value: 'dia', text: 'Últimas 24 horas' },
+      { value: 'dia', text: 'Hoje' },
       { value: 'semana', text: 'Última Semana' },
       { value: 'mes', text: 'Último Mês' },
       { value: 'ano', text: 'Último Ano' },
       { value: 'todos', text: 'Todos' },
+    ];
+
+    const periodosGraficos = [
+      { value: 'dia', text: 'Hoje' },
+      { value: 'semana', text: 'Última Semana' },
+      { value: 'mes', text: 'Último Mês' },
+      { value: 'ano', text: 'Último Ano' },
     ];
 
     // Opções dos gráficos ApexCharts
@@ -700,12 +707,12 @@ export default defineComponent({
 
     const getVendasServicosPorMetodoPagamento = async (periodo: string) => {
       try {
-      const vendasResponse = await window.api.getVendasServicosPorMetodoPagamento(periodo);
-      const labels: string[] = [];
-      const data: number[] = [];
+        const vendasResponse = await window.api.getVendasServicosPorMetodoPagamento(periodo);
+        const labels: string[] = [];
+        const data: number[] = [];
 
         if (vendasResponse && Array.isArray(vendasResponse)) {
-      vendasResponse.forEach((item: any) => {
+          vendasResponse.forEach((item: any) => {
             if (item && item.metodo && typeof item.total_vendas === 'number') {
               labels.push(item.metodo);
               data.push(item.total_vendas);
@@ -725,138 +732,188 @@ export default defineComponent({
     const getVendasServicosPorData = async (periodo: string) => {
       try {
         const vendasServicosResponse = await window.api.getVendasServicosPorData(periodo);
-        console.log('[VENDAS RESPONSE]', vendasServicosResponse);
+        console.log('[VENDAS SERVIÇOS RESPONSE]', vendasServicosResponse);
 
         const labels: string[] = [];
         const dataQuantidade: number[] = [];
         const dataTotalVendido: number[] = [];
+        const hoje = new Date();
 
-        if (vendasServicosResponse && Array.isArray(vendasServicosResponse)) {
-          // Ordenar os dados por período
-          vendasServicosResponse.sort((a, b) => {
-            return new Date(a.periodo).getTime() - new Date(b.periodo).getTime();
-          });
+        switch (periodo) {
+          case 'dia': {
+            vendasServicosResponse.forEach(item => {
+              const dataHora = new Date(item.periodo);
 
-          // Agrupar dados por período
-          const dadosPorPeriodo = new Map();
+              // Subtrair 3 horas
+              dataHora.setHours(dataHora.getHours() - 3);
 
-          vendasServicosResponse.forEach((item: any) => {
-            if (!item || !item.periodo) return;
-
-            const data = new Date(item.periodo);
-            const periodoKey = data.toISOString().split('T')[0];
-
-            if (!dadosPorPeriodo.has(periodoKey)) {
-              dadosPorPeriodo.set(periodoKey, {
-                quantidade: 0,
-                total: 0
+              // Formatar a hora no formato correto
+              const horaFormatada = dataHora.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
               });
+
+              labels.push(horaFormatada);
+              dataQuantidade.push(Number(item.quantidade_vendida));
+              dataTotalVendido.push(Number(item.total_vendido));
+            });
+
+            const dados = labels.map((label, index) => ({
+              hora: parseInt(label),
+              label,
+              quantidade: dataQuantidade[index],
+              total: dataTotalVendido[index]
+            })).sort((a, b) => a.hora - b.hora);
+
+            labels.splice(0, labels.length, ...dados.map(d => d.label));
+            dataQuantidade.splice(0, dataQuantidade.length, ...dados.map(d => d.quantidade));
+            dataTotalVendido.splice(0, dataTotalVendido.length, ...dados.map(d => d.total));
+            break;
+          }
+
+
+          case 'semana': {
+            const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const dataInicio = new Date(hoje);
+            dataInicio.setDate(hoje.getDate() - 6);
+            const dadosExistentes = new Map();
+
+            vendasServicosResponse.forEach(item => {
+              const data = new Date(item.periodo);
+              dadosExistentes.set(data.getDay(), {
+                quantidade: Number(item.quantidade_vendida),
+                total: Number(item.total_vendido)
+              });
+            });
+
+            for (let i = 0; i < 7; i++) {
+              const data = new Date(dataInicio);
+              data.setDate(dataInicio.getDate() + i);
+              const dados = dadosExistentes.get(data.getDay()) || { quantidade: 0, total: 0 };
+
+              labels.push(diasSemana[data.getDay()]);
+              dataQuantidade.push(dados.quantidade);
+              dataTotalVendido.push(dados.total);
             }
 
-            const dados = dadosPorPeriodo.get(periodoKey);
-            dados.quantidade += Number(item.quantidade_vendida) || 0;
-            dados.total += Number(item.total_vendido) || 0;
-          });
+            break;
+          }
 
-          // Converter para arrays
-          dadosPorPeriodo.forEach((dados, periodo) => {
-            const data = new Date(periodo);
-            let label = '';
+          case 'mes': {
+            // Criar um Map para agrupar os dados por data
+            const dadosPorData = new Map<string, { quantidade: number; total: number }>();
 
-            switch (periodo) {
-              case 'dia':
-                label = data.toLocaleTimeString('pt-BR', {
-                  hour: '2-digit',
-                  minute: '2-digit'
+            vendasServicosResponse.forEach(item => {
+              const data = new Date(item.periodo);
+              const dataFormatada = data.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit'
+              });
+
+              if (!dadosPorData.has(dataFormatada)) {
+                dadosPorData.set(dataFormatada, {
+                  quantidade: 0,
+                  total: 0
                 });
-                break;
-              case 'semana':
-                label = data.toLocaleDateString('pt-BR', {
-                  weekday: 'short',
-                  day: '2-digit'
-                });
-                break;
-              case 'mes':
-                label = data.toLocaleDateString('pt-BR', {
-                  day: '2-digit',
-                  month: '2-digit'
-                });
-                break;
-              case 'ano':
-                label = data.toLocaleDateString('pt-BR', {
-                  month: 'short'
-                });
-                break;
-              case 'todos':
-                label = data.toLocaleDateString('pt-BR', {
-                  day: '2-digit',
-                  month: '2-digit'
-                });
-                break;
-              default:
-                label = data.toLocaleDateString('pt-BR');
+              }
+
+              const dadosAtuais = dadosPorData.get(dataFormatada)!;
+              dadosPorData.set(dataFormatada, {
+                quantidade: dadosAtuais.quantidade + Number(item.quantidade_vendida),
+                total: dadosAtuais.total + Number(item.total_vendido)
+              });
+            });
+
+            // Converter o Map para arrays ordenados
+            const dadosOrdenados = Array.from(dadosPorData.entries())
+              .map(([data, valores]) => ({
+                data: new Date(`2024-${data.split('/')[1]}-${data.split('/')[0]}`),
+                label: data,
+                quantidade: valores.quantidade,
+                total: valores.total
+              }))
+              .sort((a, b) => a.data.getTime() - b.data.getTime());
+
+            // Atualizar os arrays de dados
+            labels.splice(0, labels.length, ...dadosOrdenados.map(d => d.label));
+            dataQuantidade.splice(0, dataQuantidade.length, ...dadosOrdenados.map(d => d.quantidade));
+            dataTotalVendido.splice(0, dataTotalVendido.length, ...dadosOrdenados.map(d => d.total));
+            break;
+          }
+
+          case 'ano': {
+            const meses = [
+              'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+              'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+
+            const dadosPorMes = new Map<number, { quantidade: number; total: number }>();
+            for (let i = 0; i < 12; i++) {
+              dadosPorMes.set(i, { quantidade: 0, total: 0 });
             }
 
-            labels.push(label);
-            dataQuantidade.push(dados.quantidade);
-            dataTotalVendido.push(dados.total);
-          });
+            vendasServicosResponse.forEach(item => {
+              const [ano, mes] = item.periodo.split('-').map(Number);
+              const dateObj = new Date(ano, mes - 1);
+              const mesIndex = dateObj.getMonth();
+
+              const atual = dadosPorMes.get(mesIndex)!;
+              dadosPorMes.set(mesIndex, {
+                quantidade: atual.quantidade + Number(item.quantidade_vendida),
+                total: atual.total + Number(item.total_vendido)
+              });
+            });
+
+            for (let i = 0; i < 12; i++) {
+              const dados = dadosPorMes.get(i)!;
+              labels.push(meses[i]);
+              dataQuantidade.push(dados.quantidade);
+              dataTotalVendido.push(dados.total);
+            }
+
+            break;
+          }
         }
 
-        // Atualizar as opções do gráfico
         chartOptionsVendas.value = {
           ...chartOptionsVendas.value,
           xaxis: {
             ...chartOptionsVendas.value.xaxis,
-            categories: labels,
-            labels: {
-              ...chartOptionsVendas.value.xaxis.labels,
-              rotate: -45,
-              style: {
-                colors: '#94A3B8',
-                fontSize: '12px',
-                fontFamily: 'Inter, sans-serif'
-              }
-            }
+            categories: labels
           }
         };
 
-        // Atualizar as séries do gráfico
         vendasServicosSeries.value = [
           {
             name: 'Quantidade Vendida',
             data: dataQuantidade,
-            color: '#8B5CF6'
+            color: '#2196F3'
           },
           {
             name: 'Valor Total Vendido (R$)',
             data: dataTotalVendido,
-            color: '#10B981'
+            color: '#4CAF50'
           }
         ];
 
-        console.log('[CHART DATA]', {
-          labels,
-          dataQuantidade,
-          dataTotalVendido
-        });
       } catch (error) {
-        console.error('Erro ao buscar dados de vendas:', error);
+        console.error('Erro ao buscar dados de serviços:', error);
         chartOptionsVendas.value.xaxis.categories = [];
         vendasServicosSeries.value = [
           {
             name: 'Quantidade Vendida',
             data: [],
-            color: '#8B5CF6'
+            color: '#2196F3'
           },
           {
             name: 'Valor Total Vendido (R$)',
             data: [],
-            color: '#10B981'
+            color: '#4CAF50'
           }
         ];
       }
     };
+
 
     const getClientesAtendidosHoje = async () => {
       try {
@@ -1069,6 +1126,7 @@ export default defineComponent({
       gerandoRelatorio,
       clientesAtendidosHoje,
       valorAtendimentosHoje,
+      periodosGraficos,
       servicoMaisVendidoHoje
     };
   }
@@ -1196,7 +1254,7 @@ export default defineComponent({
   }
 
   .chart-container {
-  min-height: 200px;
+    min-height: 200px;
   }
 
   :deep(.v-select .v-field) {

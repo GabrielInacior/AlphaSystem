@@ -8,6 +8,7 @@ import * as Despesa from './despesas';
 import * as Fechamento from './fechamentoCaixa';
 import * as Categoria from './categorias';
 import * as ContasPagar from './contasPagar';
+import * as CreditosClientes from './creditosClientes';
 import { Database } from 'sqlite3';
 
 // Função que recebe a instância do banco de dados e registra os handlers IPC
@@ -286,18 +287,18 @@ export const registerIpcHandlers = (db: Database) => {
 
 
   // Despesas
-  ipcMain.handle('create-despesa', async (_event, descricao: string, valor: number, data: string, tipo: string) => {
+  ipcMain.handle('create-despesa', async (_event, descricao: string, valor: number, data: string, tipo: string, origem: string) => {
     try {
-      await Despesa.createDespesa(db, descricao, valor, data, tipo);
+      await Despesa.createDespesa(db, descricao, valor, data, tipo, origem);
     } catch (error) {
       console.error('Erro ao criar despesa:', error);
       throw error;
     }
   });
 
-  ipcMain.handle('update-despesa', async (_event, id: number, descricao: string, valor: number, data: string, tipo: string) => {
+  ipcMain.handle('update-despesa', async (_event, id: number, descricao: string, valor: number, data: string, tipo: string, origem: string) => {
     try {
-      await Despesa.updateDespesa(db, id, descricao, valor, data, tipo);
+      await Despesa.updateDespesa(db, id, descricao, valor, data, tipo, origem);
     } catch (error) {
       console.error('Erro ao criar despesa:', error);
       throw error;
@@ -715,6 +716,73 @@ export const registerIpcHandlers = (db: Database) => {
       return await ContasPagar.getContasAVencer(db, dias);
     } catch (error) {
       console.error('Erro ao obter contas a vencer:', error);
+      throw error;
+    }
+  });
+
+  // Handlers para Créditos de Clientes
+  ipcMain.handle('create-credito-cliente', async (_event, cliente_id: number, valor: number, data_credito: string, observacao?: string) => {
+    try {
+      return await CreditosClientes.createCreditoCliente(db, cliente_id, valor, data_credito, observacao);
+    } catch (error) {
+      console.error('Erro ao criar crédito para cliente:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-all-creditos-clientes', async () => {
+    try {
+      return await CreditosClientes.getAllCreditosClientes(db);
+    } catch (error) {
+      console.error('Erro ao obter todos os créditos:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-creditos-cliente-by-id', async (_event, cliente_id: number) => {
+    try {
+      return await CreditosClientes.getCreditosClienteById(db, cliente_id);
+    } catch (error) {
+      console.error('Erro ao obter créditos do cliente:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-saldo-credito-cliente', async (_event, cliente_id: number) => {
+    try {
+      return await CreditosClientes.getSaldoCreditoCliente(db, cliente_id);
+    } catch (error) {
+      console.error('Erro ao obter saldo de crédito do cliente:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('utilizar-credito-cliente', async (_event, credito_id: number, data_utilizacao: string) => {
+    try {
+      await CreditosClientes.utilizarCreditoCliente(db, credito_id, data_utilizacao);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao utilizar crédito:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('estornar-credito-cliente', async (_event, credito_id: number) => {
+    try {
+      await CreditosClientes.estornarCreditoCliente(db, credito_id);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao estornar crédito:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('delete-credito-cliente', async (_event, credito_id: number) => {
+    try {
+      await CreditosClientes.deleteCreditoCliente(db, credito_id);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao deletar crédito:', error);
       throw error;
     }
   });
