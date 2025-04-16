@@ -98,6 +98,15 @@
                 </tr>
               </template>
 
+
+              <template v-slot:item.nome_cliente="{ item }">
+                <div style="width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {{ item.nome_cliente }}
+                </div>
+
+              </template>
+
+
               <template v-slot:item.status="{ item }">
                 <v-chip
                   :color="item.status === 'pago' ? 'success' : 'error'"
@@ -347,7 +356,6 @@ export default defineComponent({
       { text: 'Valor Total', value: 'valor_total', sortable: true },
       { text: 'Desconto', value: 'desconto', sortable: true },
       { text: 'Dívida', value: 'divida', sortable: true },
-      { text: 'Tipo Pagamento', value: 'metodo_pagamento', sortable: true },
       { text: 'Data', value: 'data', sortable: true },
       { text: 'Status', value: 'status', sortable: false },
       { text: 'Ações', value: 'actions', sortable: false }
