@@ -178,7 +178,7 @@
               :items-per-page="10"
             >
               <template v-slot:item.cliente_nome="{ item }">
-                <div class="d-flex align-center">
+                <div class="d-flex align-center" style="width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                   <v-icon size="small" color="primary" class="mr-2">mdi-account</v-icon>
                   {{ item.cliente_nome }}
                 </div>
@@ -379,6 +379,19 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import jsPDF from 'jspdf';
+
+declare global {
+  interface Window {
+    api: {
+      getAllCreditosClientes: () => Promise<Credito[]>;
+      getAllClientes: () => Promise<Cliente[]>;
+      createCreditoCliente: (clienteId: number, valor: number, data: string, observacao?: string) => Promise<void>;
+      utilizarCreditoCliente: (id: number, dataUtilizacao: string) => Promise<void>;
+      estornarCreditoCliente: (id: number) => Promise<void>;
+      deleteCreditoCliente: (id: number) => Promise<void>;
+    }
+  }
+}
 
 interface Credito {
   id?: number;
@@ -608,6 +621,18 @@ export default defineComponent({
       }
     };
 
+    const openModal = (action: string) => {
+      if (action === 'create') {
+        credito.value = {
+          cliente_id: 0,
+          valor: 0,
+          data_credito: new Date().toISOString().split('T')[0],
+          status: 'disponivel'
+        };
+        modalOpen.value = true;
+      }
+    };
+
     onMounted(async () => {
       await loadClientes();
       await loadCreditos();
@@ -638,7 +663,8 @@ export default defineComponent({
       getStatusColor,
       getStatusIcon,
       gerarRelatorioCreditos,
-      gerandoRelatorio
+      gerandoRelatorio,
+      openModal
     };
   }
 });

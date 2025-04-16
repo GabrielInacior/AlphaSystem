@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="historico-container pa-6">
     <!-- Header Section with Parallax Effect -->
-    <v-row>
+    <v-row>''
       <v-col cols="12">
         <v-card class="welcome-card" elevation="0">
           <v-card-text class="d-flex align-center justify-space-between">
@@ -189,6 +189,19 @@
                 </v-chip>
               </template>
 
+              <template v-slot:item.nome_cliente="{ item }">
+                <div class="d-flex align-center" style="width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <v-icon size="small" color="primary" class="mr-2">mdi-account</v-icon>
+                  {{ item.nome_cliente }}
+                </div>
+              </template>
+
+              <template v-slot:item.metodo_pagamento="{ item }">
+                <div style="width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {{ item.metodo_pagamento }}
+                </div>
+              </template>
+
               <template v-slot:no-data>
                 <div class="text-center py-6">
                   <v-icon color="grey" size="48" class="mb-2">mdi-cart-off</v-icon>
@@ -252,7 +265,7 @@
               <template v-slot:prepend>
                 <v-icon color="primary" class="mr-4">mdi-account</v-icon>
               </template>
-              <v-list-item-title class="font-weight-bold">Cliente: {{ vendaInfo?.nome_cliente }}</v-list-item-title>
+              <v-list-item-title class="font-weight-bold" >Cliente: {{ vendaInfo?.nome_cliente }}</v-list-item-title>
             </v-list-item>
 
             <v-list-item>
