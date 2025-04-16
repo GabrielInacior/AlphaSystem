@@ -94,6 +94,7 @@
           </v-list-item>
         </template>
         <v-list-item @click="navigateToPage('clientes')" prepend-icon="mdi-account-multiple-plus" class="submenu-item">Gerenciar Clientes</v-list-item>
+        <v-list-item @click="navigateToPage('creditos')" prepend-icon="mdi-wallet-plus" class="submenu-item">Créditos de Clientes</v-list-item>
       </v-list-group>
 
       <v-menu v-if="rail" :location="'end'" transition="slide-x-transition" v-model="clientesOpen" class="rail-menu">
@@ -104,6 +105,7 @@
         </template>
         <v-list density="compact" class="rail-submenu">
           <v-list-item @click="navigateToPage('clientes')" prepend-icon="mdi-account-multiple-plus">Gerenciar Clientes</v-list-item>
+          <v-list-item @click="navigateToPage('creditos')" prepend-icon="mdi-wallet-plus">Créditos de Clientes</v-list-item>
         </v-list>
       </v-menu>
 

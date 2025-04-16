@@ -1,40 +1,54 @@
 import { Database } from 'sqlite3';
+import { startOfDay, endOfDay, subDays, format } from 'date-fns';
+import { fromZonedTime, toDate } from 'date-fns-tz'; // Importando as funções corretas
 
 // Função para calcular o intervalo de datas com base no período
 function calcularPeriodo(periodo: string) {
+  const timeZone = 'America/Sao_Paulo'; // Definindo o fuso horário
+
+  // Obter a data e hora atual no fuso horário desejado
   const agora = new Date();
-  const hoje = new Date(agora.getTime() - 3 * 60 * 60 * 1000); // ajustando -3 horas
+  const hoje = fromZonedTime(agora, timeZone); // Converte a data para o fuso horário específico
 
   let dataInicio = new Date();
   let dataFim = new Date(hoje);
 
-  dataFim.setDate(dataFim.getDate() + 1);
-
   switch (periodo) {
     case 'dia':
-      dataInicio = new Date(hoje.getTime() - 24 * 60 * 60 * 1000); // últimas 24h a partir do horário ajustado
+      // Definir início e fim do dia com o fuso horário ajustado
+      dataInicio = startOfDay(hoje); // Início do dia (00:00)
+      dataFim = endOfDay(hoje); // Fim do dia (23:59:59.999)
       break;
     case 'semana':
-      dataInicio = new Date(hoje.getTime() - 7 * 24 * 60 * 60 * 1000);
+      dataInicio = subDays(hoje, 7); // 7 dias atrás
+      dataFim = hoje; // Fim do dia de hoje
       break;
     case 'mes':
-      dataInicio = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
+      dataInicio = subDays(hoje, 30); // 30 dias atrás
+      dataFim = hoje; // Fim do dia de hoje
       break;
     case 'ano':
-      dataInicio.setFullYear(hoje.getFullYear() - 1);
+      dataInicio.setFullYear(hoje.getFullYear() - 1); // 1 ano atrás
+      dataFim = hoje; // Fim do dia de hoje
       break;
     case 'todos':
-      dataInicio = new Date(1970, 0, 1);
+      dataInicio = new Date(1970, 0, 1); // Data de início desde 1970
+      dataFim = hoje; // Fim do dia de hoje
       break;
     default:
       throw new Error('Período inválido');
   }
 
+  // Convertendo as datas para UTC, ajustadas para o fuso horário
+  const dataInicioUTC = toDate(dataInicio); // Converte para UTC
+  const dataFimUTC = toDate(dataFim); // Converte para UTC
+
   return {
-    dataInicio: dataInicio.toISOString().split('T')[0],
-    dataFim: dataFim.toISOString().split('T')[0]
+    dataInicio: dataInicioUTC.toISOString(),
+    dataFim: dataFimUTC.toISOString()
   };
 }
+
 
 // Função para retornar as vendas de serviços por data
 export function getVendasServicosPorData(
@@ -47,7 +61,7 @@ export function getVendasServicosPorData(
 
   switch (periodo) {
     case 'dia':
-      groupBy = 'strftime("%Y-%m-%d", v.data)';
+      groupBy = 'strftime("%Y-%m-%d %H:00:00", datetime(v.data))';
       break;
     case 'semana':
       groupBy = 'strftime("%Y-%m-%d", v.data)';
@@ -59,7 +73,7 @@ export function getVendasServicosPorData(
       groupBy = 'strftime("%Y-%m", v.data)';
       break;
     case 'todos':
-      groupBy = 'strftime("%Y-%m-%d", v.data)';
+      groupBy = 'strftime("%Y", v.data)';  // Agrupar por ano para "todos"
       break;
   }
 
@@ -72,7 +86,7 @@ export function getVendasServicosPorData(
     FROM vendas_itens vi
     JOIN vendas v ON vi.venda_id = v.id
     JOIN servicos s ON vi.servico_id = s.id
-    WHERE v.data BETWEEN ? AND ?
+    WHERE datetime(v.data) BETWEEN datetime(?) AND datetime(?)
       AND vi.servico_id IS NOT NULL
       AND vi.produto_id IS NULL
     GROUP BY periodo, s.id
@@ -98,19 +112,19 @@ export function getVendasProdutosPorData(
   let formatStr = '';
   switch (periodo) {
     case 'dia':
-     groupBy = 'strftime("%Y-%m-%d %H", datetime(v.data, "-3 hours"))'
+      groupBy = 'strftime("%Y-%m-%d %H:00:00", datetime(v.data))';
       break;
     case 'semana':
-      groupBy = 'strftime("%Y-%m-%d", v.data)'; // por dia
+      groupBy = 'strftime("%Y-%m-%d", v.data)';
       break;
     case 'mes':
-      groupBy = `date(v.data, '-' || ((cast(strftime('%d', v.data) as integer)) % 2) || ' days')`;
+      groupBy = 'strftime("%Y-%m-%d", v.data)';
       break;
     case 'ano':
-      groupBy = 'strftime("%Y-%m", v.data)'; // por mês
+      groupBy = 'strftime("%Y-%m", v.data)';
       break;
     case 'todos':
-      groupBy = 'strftime("%Y", v.data)'; // por ano
+      groupBy = 'strftime("%Y", v.data)';  // Agrupar por ano para "todos"
       break;
   }
 
@@ -124,7 +138,7 @@ export function getVendasProdutosPorData(
     JOIN vendas v ON vi.venda_id = v.id
     JOIN produtos p ON vi.produto_id = p.id
     LEFT JOIN categorias c ON p.categoria_id = c.id
-    WHERE v.data BETWEEN ? AND ?
+    WHERE datetime(v.data) BETWEEN datetime(?) AND datetime(?)
     AND vi.produto_id IS NOT NULL
     AND vi.servico_id IS NULL
     ${categoria_id ? 'AND p.categoria_id = ?' : ''}

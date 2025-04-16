@@ -82,12 +82,12 @@ const api = {
   getVendasPorData: (data: string) =>
     ipcRenderer.invoke('get-vendas-por-data', data),
 
-  createDespesa: (descricao: string, valor: number, data: string, tipo: string) =>
-    ipcRenderer.invoke('create-despesa', descricao, valor, data, tipo),
+  createDespesa: (descricao: string, valor: number, data: string, tipo: string, origem: string) =>
+    ipcRenderer.invoke('create-despesa', descricao, valor, data, tipo, origem),
   getAllDespesas: () => ipcRenderer.invoke('get-all-despesas'),
 
-  updateDespesa: (id: number, descricao: string, valor: number, data: string, tipo: string) =>
-    ipcRenderer.invoke('update-despesa', id, descricao, valor, data, tipo),
+  updateDespesa: (id: number, descricao: string, valor: number, data: string, tipo: string, origem: string) =>
+    ipcRenderer.invoke('update-despesa', id, descricao, valor, data, tipo, origem),
 
   deleteDespesa: (id: number) => ipcRenderer.invoke('delete-despesa', id),
 
@@ -244,6 +244,27 @@ const api = {
   getValorAtendimentosHoje: () => ipcRenderer.invoke("get-valor-atendimentos-hoje"),
 
   getServicoMaisVendidoHoje: () => ipcRenderer.invoke("get-servico-mais-vendido-hoje"),
+
+  // Créditos de Clientes
+  createCreditoCliente: (cliente_id: number, valor: number, data_credito: string, observacao?: string) =>
+    ipcRenderer.invoke('create-credito-cliente', cliente_id, valor, data_credito, observacao),
+
+  getAllCreditosClientes: () => ipcRenderer.invoke('get-all-creditos-clientes'),
+
+  getCreditosClienteById: (cliente_id: number) =>
+    ipcRenderer.invoke('get-creditos-cliente-by-id', cliente_id),
+
+  getSaldoCreditoCliente: (cliente_id: number) =>
+    ipcRenderer.invoke('get-saldo-credito-cliente', cliente_id),
+
+  utilizarCreditoCliente: (credito_id: number, data_utilizacao: string) =>
+    ipcRenderer.invoke('utilizar-credito-cliente', credito_id, data_utilizacao),
+
+  estornarCreditoCliente: (credito_id: number) =>
+    ipcRenderer.invoke('estornar-credito-cliente', credito_id),
+
+  deleteCreditoCliente: (credito_id: number) =>
+    ipcRenderer.invoke('delete-credito-cliente', credito_id),
 };
 
 if (process.contextIsolated) {

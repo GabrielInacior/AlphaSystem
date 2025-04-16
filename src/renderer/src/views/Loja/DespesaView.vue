@@ -13,9 +13,67 @@
                 Gerencie suas despesas e mantenha o controle financeiro
               </div>
             </div>
-            <v-avatar size="64" class="welcome-avatar">
-              <v-icon size="36" color="white">mdi-cash-minus</v-icon>
-            </v-avatar>
+            <div class="d-flex align-center">
+              <v-btn color="white" variant="tonal" class="mr-4" prepend-icon="mdi-file-pdf-box"
+                @click="gerarRelatorioDespesas" :loading="gerandoRelatorio">
+                Gerar Relatório
+              </v-btn>
+              <v-btn icon variant="text" color="white" class="mr-4" size="small">
+                <v-icon>mdi-information</v-icon>
+                <v-tooltip activator="parent" location="bottom">
+                  <div class="tooltip-content">
+                    <p class="font-weight-bold mb-1">Como gerar um relatório:</p>
+                    <ol class="mb-0">
+                      <li>Clique no botão "Gerar Relatório"</li>
+                      <li>O sistema criará um PDF com os dados atuais da tela</li>
+                      <li>O arquivo será salvo automaticamente no seu computador</li>
+                      <li>Você pode compartilhar este PDF com sua equipe ou contador</li>
+                    </ol>
+                    <p class="mt-2 mb-0 text-caption">Dica: Ajuste os filtros antes de gerar o relatório para obter dados específicos.</p>
+                  </div>
+                </v-tooltip>
+              </v-btn>
+              <v-avatar size="64" class="welcome-avatar">
+                <v-icon size="36" color="white">mdi-cash-minus</v-icon>
+              </v-avatar>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Origem Filter -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-card class="filter-card" elevation="2">
+          <v-card-text class="pa-4">
+            <div class="d-flex align-center">
+              <v-icon color="primary" class="mr-2">mdi-filter-variant</v-icon>
+              <span class="text-subtitle-1 font-weight-medium mr-4">Filtrar por Origem:</span>
+              <v-btn-toggle
+                v-model="origemFilter"
+                mandatory
+                color="primary"
+                class="rounded-lg"
+              >
+                <v-btn value="todos" class="px-4">
+                  <v-icon left>mdi-filter</v-icon>
+                  Todos
+                </v-btn>
+                <v-btn value="Loja" class="px-4">
+                  <v-icon left>mdi-store</v-icon>
+                  Loja
+                </v-btn>
+                <v-btn value="Barbearia" class="px-4">
+                  <v-icon left>mdi-content-cut</v-icon>
+                  Barbearia
+                </v-btn>
+                <v-btn value="Outro" class="px-4">
+                  <v-icon left>mdi-dots-horizontal</v-icon>
+                  Outro
+                </v-btn>
+              </v-btn-toggle>
+            </div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -41,6 +99,87 @@
           </v-card-title>
           <v-divider />
           <v-card-text class="pa-6">
+            <!-- Estatísticas de Despesas -->
+            <v-row class="mb-4">
+              <v-col cols="12" sm="3" md="3">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="d-flex align-center py-2 px-3">
+                    <v-icon color="error" size="24" class="mr-2">mdi-cash-minus</v-icon>
+                    <div class="stat-content">
+                      <div class="text-subtitle-2 text-medium-emphasis d-flex align-center">
+                        Total de Despesas
+                        <v-tooltip location="top" text="Valor total de todas as despesas registradas">
+                          <template v-slot:activator="{ props }">
+                            <v-icon size="16" class="ml-1" v-bind="props">mdi-information</v-icon>
+                          </template>
+                        </v-tooltip>
+                      </div>
+                      <div class="text-h6 font-weight-bold text-error">R$ {{ totalDespesas.toFixed(2) }}</div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="d-flex align-center py-2 px-3">
+                    <v-icon color="info" size="24" class="mr-2">mdi-calendar</v-icon>
+                    <div class="stat-content">
+                      <div class="text-subtitle-2 text-medium-emphasis d-flex align-center">
+                        Despesas do Mês
+                        <v-tooltip location="top" text="Valor total das despesas do mês atual">
+                          <template v-slot:activator="{ props }">
+                            <v-icon size="16" class="ml-1" v-bind="props">mdi-information</v-icon>
+                          </template>
+                        </v-tooltip>
+                      </div>
+                      <div class="text-h6 font-weight-bold text-info">R$ {{ despesasMesAtual.toFixed(2) }}</div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="d-flex align-center py-2 px-3">
+                    <v-icon color="warning" size="24" class="mr-2">mdi-cash-multiple</v-icon>
+                    <div class="stat-content">
+                      <div class="text-subtitle-2 text-medium-emphasis d-flex align-center">
+                        Média Mensal
+                        <v-tooltip location="top" text="Média de despesas por mês">
+                          <template v-slot:activator="{ props }">
+                            <v-icon size="16" class="ml-1" v-bind="props">mdi-information</v-icon>
+                          </template>
+                        </v-tooltip>
+                      </div>
+                      <div class="text-h6 font-weight-bold text-warning">R$ {{ mediaMensalDespesas.toFixed(2) }}</div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+              <v-col cols="12" sm="3" md="3">
+                <v-card class="stat-card" elevation="0">
+                  <v-card-text class="d-flex align-center py-2 px-3">
+                    <v-icon color="primary" size="24" class="mr-2">mdi-tag-multiple</v-icon>
+                    <div class="stat-content">
+                      <div class="text-subtitle-2 text-medium-emphasis d-flex align-center">
+                        Maior Gasto por Tipo
+                        <v-tooltip location="top" text="Tipo de despesa com maior valor total">
+                          <template v-slot:activator="{ props }">
+                            <v-icon size="16" class="ml-1" v-bind="props">mdi-information</v-icon>
+                          </template>
+                        </v-tooltip>
+                      </div>
+                      <div class="text-h6 font-weight-bold text-primary">
+                        {{ tipoMaiorGasto.tipo }}
+                        <div class="text-caption text-medium-emphasis">
+                          R$ {{ tipoMaiorGasto.valor.toFixed(2) }}
+                        </div>
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+
             <!-- Search and Filter Section -->
             <v-row class="mb-4">
               <v-col cols="12" md="4">
@@ -119,7 +258,7 @@
               </template>
 
               <template v-slot:item.descricao="{ item }">
-                <div class="text-truncate" style="max-width: 300px;" :title="item.descricao">
+                <div class="text-truncate" style="max-width: 280px;" :title="item.descricao">
                   {{ item.descricao }}
                 </div>
               </template>
@@ -148,6 +287,21 @@
                     {{ item.tipo === 'Fixo' ? 'mdi-clock-outline' : 'mdi-chart-line' }}
                   </v-icon>
                   {{ item.tipo }}
+                </v-chip>
+              </template>
+
+              <template v-slot:item.origem="{ item }">
+                <v-chip
+                  :color="getOrigemColor(item.origem)"
+                  variant="tonal"
+                  size="small"
+                  style="width: 90px;"
+                  class="font-weight-medium"
+                >
+                  <v-icon size="small" class="mr-1">
+                    {{ getOrigemIcon(item.origem) }}
+                  </v-icon>
+                  {{ item.origem }}
                 </v-chip>
               </template>
 
@@ -242,6 +396,17 @@
               class="mb-4"
               required
             />
+            <v-select
+              v-model="despesa.origem"
+              label="Origem"
+              :items="['Loja', 'Barbearia', 'Outro']"
+              prepend-inner-icon="mdi-domain"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="mb-4"
+              required
+            />
           </v-form>
         </v-card-text>
         <v-divider />
@@ -290,7 +455,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent, ref, computed, onMounted, watch } from 'vue';
+import jsPDF from 'jspdf';
 
 interface Despesa {
   id: number
@@ -298,6 +464,7 @@ interface Despesa {
   valor: number
   data: string
   tipo: string
+  origem: string
 }
 
 interface TableHeader {
@@ -318,9 +485,31 @@ export default defineComponent({
   name: 'DespesaView',
   setup() {
     const despesas = ref<Despesa[]>([]);
+    const allDespesas = ref<Despesa[]>([]); // Store all despesas
+    const origemFilter = ref('todos');
     const tipoFilter = ref<string | null>(null);
     const descricaoFilter = ref('');
-    const tipoDespesas = ['Loja', 'Barbearia'];
+    const tipoDespesas = [
+      'Aluguel',
+      'Água',
+      'Luz',
+      'Internet',
+      'Telefone',
+      'Funcionários',
+      'Produtos',
+      'Manutenção',
+      'Limpeza',
+      'Marketing',
+      'Impostos',
+      'Seguros',
+      'Equipamentos',
+      'Móveis',
+      'Decoração',
+      'Treinamento',
+      'Viagens',
+      'Alimentação',
+      'Outros'
+    ];
     const dataFilter = ref<string | null>(null);
     const modalOpen = ref(false);
     const editingDespesa = ref<Despesa | null>(null);
@@ -329,7 +518,8 @@ export default defineComponent({
       descricao: '',
       valor: 0,
       data: '',
-      tipo: ''
+      tipo: '',
+      origem: 'Loja'
     });
     const formIsValid = ref(false);
     const deleteModalOpen = ref(false);
@@ -338,21 +528,58 @@ export default defineComponent({
     const snackbarColor = ref('');
     const sortBy = ref<SortItem[]>([{ key: 'data', order: 'desc' }]);
     const sortDesc = ref(true);
+    const gerandoRelatorio = ref(false);
 
     const headers: TableHeader[] = [
       { title: 'Descrição', key: 'descricao', sortable: true, value: 'descricao', text: 'Descrição', width: '300px' },
       { title: 'Valor', key: 'valor', sortable: true, value: 'valor', text: 'Valor', width: '120px' },
       { title: 'Data', key: 'data', sortable: true, value: 'data', text: 'Data', width: '120px' },
       { title: 'Tipo', key: 'tipo', sortable: true, value: 'tipo', text: 'Tipo', width: '120px' },
+      { title: 'Origem', key: 'origem', sortable: true, value: 'origem', text: 'Origem', width: '50px' },
       { title: 'Ações', key: 'actions', sortable: false, value: 'actions', text: 'Ações', width: '120px' }
     ];
 
     const getTipoColor = (tipo: string) => {
       const colors: { [key: string]: string } = {
-        'Fixo': 'info',
-        'Variável': 'success',
+        'Aluguel': 'error',
+        'Água': 'info',
+        'Luz': 'warning',
+        'Internet': 'primary',
+        'Telefone': 'secondary',
+        'Funcionários': 'error',
+        'Produtos': 'success',
+        'Manutenção': 'warning',
+        'Limpeza': 'info',
+        'Marketing': 'primary',
+        'Impostos': 'error',
+        'Seguros': 'info',
+        'Equipamentos': 'secondary',
+        'Móveis': 'warning',
+        'Decoração': 'primary',
+        'Treinamento': 'success',
+        'Viagens': 'info',
+        'Alimentação': 'warning',
+        'Outros': 'grey'
       };
       return colors[tipo] || 'grey';
+    };
+
+    const getOrigemColor = (origem: string) => {
+      const colors: { [key: string]: string } = {
+        'Loja': 'primary',
+        'Barbearia': 'success',
+        'Outro': 'warning'
+      };
+      return colors[origem] || 'grey';
+    };
+
+    const getOrigemIcon = (origem: string) => {
+      const icons: { [key: string]: string } = {
+        'Loja': 'mdi-store',
+        'Barbearia': 'mdi-content-cut',
+        'Outro': 'mdi-dots-horizontal'
+      };
+      return icons[origem] || 'mdi-help';
     };
 
     const formatDateForComparison = (data: string | null): string => {
@@ -360,8 +587,16 @@ export default defineComponent({
       return new Date(data).toISOString().split('T')[0];
     };
 
+    // Filter by origem first, then apply other filters
     const filteredDespesas = computed(() => {
-      return despesas.value.filter((d) => {
+      // First filter by origem
+      let filtered = allDespesas.value;
+      if (origemFilter.value !== 'todos') {
+        filtered = filtered.filter(d => d.origem === origemFilter.value);
+      }
+
+      // Then apply other filters
+      return filtered.filter((d) => {
         const descricaoMatch = d.descricao.toLowerCase().includes(descricaoFilter.value.toLowerCase());
         const dataMatch = dataFilter.value
           ? formatDateForComparison(d.data) === formatDateForComparison(dataFilter.value)
@@ -379,8 +614,23 @@ export default defineComponent({
     };
 
     const loadDespesas = async () => {
-      despesas.value = await window.api.getAllDespesas();
+      allDespesas.value = await window.api.getAllDespesas();
+      // Apply origem filter
+      if (origemFilter.value !== 'todos') {
+        despesas.value = allDespesas.value.filter(d => d.origem === origemFilter.value);
+      } else {
+        despesas.value = allDespesas.value;
+      }
     };
+
+    // Watch for origem filter changes
+    watch(origemFilter, () => {
+      if (origemFilter.value !== 'todos') {
+        despesas.value = allDespesas.value.filter(d => d.origem === origemFilter.value);
+      } else {
+        despesas.value = allDespesas.value;
+      }
+    });
 
     const openModal = (type: 'create' | 'edit', item?: Despesa) => {
       if (type === 'edit' && item) {
@@ -391,15 +641,14 @@ export default defineComponent({
         despesa.value = { ...editingDespesa.value }
       } else {
         editingDespesa.value = null
-        despesa.value = { id: 0, descricao: '', valor: 0, data: '', tipo: '' }
+        despesa.value = { id: 0, descricao: '', valor: 0, data: '', tipo: '', origem: 'Loja' }
       }
       modalOpen.value = true
     };
 
     const saveDespesa = async () => {
       try {
-        // Validação dos campos obrigatórios
-        if (!despesa.value.descricao || !despesa.value.valor || !despesa.value.data || !despesa.value.tipo) {
+        if (!despesa.value.descricao || !despesa.value.valor || !despesa.value.data || !despesa.value.tipo || !despesa.value.origem) {
           snackbarText.value = 'Preencha todos os campos obrigatórios';
           snackbarColor.value = 'error';
           snackbar.value = true;
@@ -412,7 +661,8 @@ export default defineComponent({
             despesa.value.descricao,
             Number(despesa.value.valor),
             despesa.value.data,
-            despesa.value.tipo
+            despesa.value.tipo,
+            despesa.value.origem
           );
           snackbarText.value = 'Despesa atualizada com sucesso!';
         } else {
@@ -420,7 +670,8 @@ export default defineComponent({
             despesa.value.descricao,
             Number(despesa.value.valor),
             despesa.value.data,
-            despesa.value.tipo
+            despesa.value.tipo,
+            despesa.value.origem
           );
           snackbarText.value = 'Despesa criada com sucesso!';
         }
@@ -451,7 +702,9 @@ export default defineComponent({
       }
     };
 
-    const handleSort = (key: string) => {
+    const handleSort = (key: string | undefined) => {
+      if (!key) return;
+
       const header = headers.find(h => h.value === key);
       if (!header || !header.sortable) return;
 
@@ -466,7 +719,9 @@ export default defineComponent({
       }
     };
 
-    const getSortIcon = (key: string) => {
+    const getSortIcon = (key: string | undefined) => {
+      if (!key) return '';
+
       const header = headers.find(h => h.value === key);
       if (!header || !header.sortable) return '';
 
@@ -494,10 +749,233 @@ export default defineComponent({
       }
     };
 
+    // Estatísticas de Despesas
+    const totalDespesas = computed(() => {
+      return despesas.value.reduce((total, despesa) => total + despesa.valor, 0);
+    });
+
+    const despesasMesAtual = computed(() => {
+      const hoje = new Date();
+      const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      return despesas.value
+        .filter(despesa => new Date(despesa.data) >= primeiroDiaMes)
+        .reduce((total, despesa) => total + despesa.valor, 0);
+    });
+
+    const mediaMensalDespesas = computed(() => {
+      if (despesas.value.length === 0) return 0;
+
+      const hoje = new Date();
+      const primeiroDiaAno = new Date(hoje.getFullYear(), 0, 1);
+      const mesesPassados = hoje.getMonth() + 1; // +1 porque getMonth() retorna 0-11
+
+      const despesasAno = despesas.value
+        .filter(despesa => new Date(despesa.data) >= primeiroDiaAno)
+        .reduce((total, despesa) => total + despesa.valor, 0);
+
+      return despesasAno / mesesPassados;
+    });
+
+    const maiorDespesa = computed(() => {
+      if (despesas.value.length === 0) return 0;
+      return Math.max(...despesas.value.map(despesa => despesa.valor));
+    });
+
+    const tipoMaiorGasto = computed(() => {
+      if (despesas.value.length === 0) return { tipo: 'Nenhuma', valor: 0 };
+
+      // Agrupa as despesas por tipo e soma os valores
+      const gastosPorTipo = despesas.value.reduce((acc, despesa) => {
+        acc[despesa.tipo] = (acc[despesa.tipo] || 0) + despesa.valor;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Encontra o tipo com maior gasto
+      const tipoMaiorGasto = Object.entries(gastosPorTipo).reduce((maior, [tipo, valor]) => {
+        return valor > (maior.valor || 0) ? { tipo, valor } : maior;
+      }, { tipo: '', valor: 0 });
+
+      return tipoMaiorGasto;
+    });
+
+    const gerarRelatorioDespesas = async () => {
+      try {
+        gerandoRelatorio.value = true;
+
+        // Criar um novo documento PDF
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+
+        // Título do relatório
+        pdf.setFontSize(20);
+        pdf.setTextColor(99, 102, 241); // Cor roxa
+        pdf.text('Relatório de Despesas', pageWidth / 2, 20, { align: 'center' });
+
+        // Data e hora da geração
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 100, 100);
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        const horaAtual = new Date().toLocaleTimeString('pt-BR');
+        pdf.text(`Gerado em: ${dataAtual} às ${horaAtual}`, pageWidth / 2, 30, { align: 'center' });
+
+        // Informações de filtros aplicados
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Filtros Aplicados:', 20, 45);
+
+        // Adicionar informações de filtros
+        pdf.setFontSize(10);
+        pdf.text(`Origem: ${origemFilter.value === 'todos' ? 'Todas' : origemFilter.value}`, 30, 55);
+
+        if (descricaoFilter.value) {
+          pdf.text(`Descrição: ${descricaoFilter.value}`, 30, 62);
+        }
+
+        if (dataFilter.value) {
+          pdf.text(`Data: ${formatDateForDisplay(dataFilter.value)}`, 30, 69);
+        }
+
+        if (tipoFilter.value) {
+          pdf.text(`Tipo: ${tipoFilter.value}`, 30, 76);
+        }
+
+        // Resumo de despesas
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Resumo de Despesas', 20, 90);
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Total de Despesas: R$ ${totalDespesas.value.toFixed(2)}`, 30, 100);
+        pdf.text(`Despesas do Mês Atual: R$ ${despesasMesAtual.value.toFixed(2)}`, 30, 107);
+        pdf.text(`Média Mensal: R$ ${mediaMensalDespesas.value.toFixed(2)}`, 30, 114);
+        pdf.text(`Maior Gasto por Tipo: ${tipoMaiorGasto.value.tipo} (R$ ${tipoMaiorGasto.value.valor.toFixed(2)})`, 30, 121);
+
+        // Despesas por origem
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Despesas por Origem', 20, 135);
+
+        // Calcular totais por origem
+        const despesasPorOrigem = filteredDespesas.value.reduce((acc, despesa) => {
+          acc[despesa.origem] = (acc[despesa.origem] || 0) + despesa.valor;
+          return acc;
+        }, {} as Record<string, number>);
+
+        let yPos = 145;
+        Object.entries(despesasPorOrigem).forEach(([origem, valor]) => {
+          pdf.setFontSize(10);
+          pdf.setTextColor(0, 0, 0);
+          pdf.text(`${origem}: R$ ${valor.toFixed(2)}`, 30, yPos);
+          yPos += 7;
+        });
+
+        // Despesas por tipo
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Despesas por Tipo', 20, yPos + 10);
+
+        // Calcular totais por tipo
+        const despesasPorTipo = filteredDespesas.value.reduce((acc, despesa) => {
+          acc[despesa.tipo] = (acc[despesa.tipo] || 0) + despesa.valor;
+          return acc;
+        }, {} as Record<string, number>);
+
+        yPos += 20;
+        Object.entries(despesasPorTipo).forEach(([tipo, valor]) => {
+          pdf.setFontSize(10);
+          pdf.setTextColor(0, 0, 0);
+          pdf.text(`${tipo}: R$ ${valor.toFixed(2)}`, 30, yPos);
+          yPos += 7;
+        });
+
+        // Lista de despesas
+        pdf.setFontSize(14);
+        pdf.setTextColor(99, 102, 241);
+        pdf.text('Lista de Despesas', 20, yPos + 10);
+
+        // Cabeçalho da tabela
+        pdf.setFontSize(10);
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFillColor(99, 102, 241);
+        pdf.rect(20, yPos + 15, 170, 7, 'F');
+        pdf.text('Descrição', 25, yPos + 19);
+        pdf.text('Valor', 90, yPos + 19);
+        pdf.text('Data', 120, yPos + 19);
+        pdf.text('Tipo', 150, yPos + 19);
+
+        // Dados da tabela
+        yPos += 22;
+        pdf.setTextColor(0, 0, 0);
+
+        let rowCount = 0;
+        let pageCount = 1;
+
+        filteredDespesas.value.forEach((despesa, index) => {
+          // Verificar se precisa de uma nova página
+          if (yPos > 270) {
+            pdf.addPage();
+            pageCount++;
+            yPos = 20;
+
+            // Cabeçalho da tabela na nova página
+            pdf.setFontSize(10);
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFillColor(99, 102, 241);
+            pdf.rect(20, yPos, 170, 7, 'F');
+            pdf.text('Descrição', 25, yPos + 4);
+            pdf.text('Valor', 90, yPos + 4);
+            pdf.text('Data', 120, yPos + 4);
+            pdf.text('Tipo', 150, yPos + 4);
+
+            yPos += 7;
+          }
+
+          // Alternar cores das linhas
+          if (rowCount % 2 === 0) {
+            pdf.setFillColor(245, 245, 245);
+            pdf.rect(20, yPos, 170, 7, 'F');
+          }
+
+          // Dados da linha
+          pdf.setTextColor(0, 0, 0);
+          pdf.setFontSize(8);
+
+          // Truncar descrição se necessário
+          const descricao = despesa.descricao.length > 30 ? despesa.descricao.substring(0, 27) + '...' : despesa.descricao;
+
+          pdf.text(descricao, 25, yPos + 4);
+          pdf.text(`R$ ${despesa.valor.toFixed(2)}`, 90, yPos + 4);
+          pdf.text(formatDateForDisplay(despesa.data), 120, yPos + 4);
+          pdf.text(despesa.tipo, 150, yPos + 4);
+
+          yPos += 7;
+          rowCount++;
+        });
+
+        // Adicionar número da página
+        for (let i = 1; i <= pageCount; i++) {
+          pdf.setPage(i);
+          pdf.setFontSize(8);
+          pdf.setTextColor(100, 100, 100);
+          pdf.text(`Página ${i} de ${pageCount}`, pageWidth / 2, 290, { align: 'center' });
+        }
+
+        // Salvar o PDF
+        pdf.save('relatorio-despesas.pdf');
+
+        gerandoRelatorio.value = false;
+      } catch (error) {
+        console.error('Erro ao gerar relatório de despesas:', error);
+        gerandoRelatorio.value = false;
+      }
+    };
+
     onMounted(loadDespesas);
 
     return {
       despesas,
+      origemFilter,
       descricaoFilter,
       dataFilter,
       modalOpen,
@@ -525,6 +1003,15 @@ export default defineComponent({
       getSortIcon,
       customFilter,
       handleTypeSearch,
+      totalDespesas,
+      despesasMesAtual,
+      mediaMensalDespesas,
+      maiorDespesa,
+      tipoMaiorGasto,
+      getOrigemColor,
+      getOrigemIcon,
+      gerarRelatorioDespesas,
+      gerandoRelatorio,
     };
   }
 });
@@ -641,5 +1128,90 @@ export default defineComponent({
 
 .sort-icon:hover {
   opacity: 1;
+}
+
+.stat-card {
+  background: rgb(var(--v-theme-surface));
+  border-radius: 12px;
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1);
+}
+
+.stat-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.stat-content .text-subtitle-2 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-content .text-h6 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-content .text-caption {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 960px) {
+  .stat-card .v-card-text {
+    padding: 8px !important;
+  }
+
+  .stat-content .text-subtitle-2 {
+    font-size: 0.75rem !important;
+  }
+
+  .stat-content .text-h6 {
+    font-size: 0.9rem !important;
+  }
+
+  .stat-content .text-caption {
+    font-size: 0.7rem !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .stat-card {
+    margin-bottom: 8px;
+  }
+
+  .stat-card .v-card-text {
+    padding: 12px !important;
+  }
+
+  .stat-content .text-subtitle-2 {
+    font-size: 0.8rem !important;
+  }
+
+  .stat-content .text-h6 {
+    font-size: 1rem !important;
+  }
+
+  .stat-content .text-caption {
+    font-size: 0.75rem !important;
+  }
+}
+
+.filter-card {
+  border-radius: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.filter-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1);
 }
 </style>

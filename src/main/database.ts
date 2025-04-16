@@ -122,6 +122,19 @@ export async function createTables(db: sqlite3.Database): Promise<void> {
       );
     `)
 
+    db.run(`
+      CREATE TABLE IF NOT EXISTS creditos_clientes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cliente_id INTEGER NOT NULL,
+        valor REAL NOT NULL,
+        data_credito DATE NOT NULL,
+        data_utilizacao DATE,
+        status TEXT DEFAULT 'disponivel',
+        observacao TEXT,
+        FOREIGN KEY(cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+      );
+    `)
+
   })
 }
 
@@ -152,6 +165,28 @@ export async function checkAndUpdateDatabase(db: sqlite3.Database): Promise<void
         } else {
           console.log('Coluna categoria_id já existe na tabela produtos.');
           resolve();
+        }
+      });
+
+      // Verificar se a coluna origem existe na tabela despesas
+      db.get("SELECT * FROM pragma_table_info('despesas') WHERE name='origem'", (err, row) => {
+        if (err) {
+          console.error('Erro ao verificar coluna origem:', err);
+          return;
+        }
+
+        // Se a coluna não existir, adicionar
+        if (!row) {
+          console.log('Adicionando coluna origem à tabela despesas...');
+          db.run("ALTER TABLE despesas ADD COLUMN origem TEXT DEFAULT 'Loja'", (err) => {
+            if (err) {
+              console.error('Erro ao adicionar coluna origem:', err);
+              return;
+            }
+            console.log('Coluna origem adicionada com sucesso.');
+          });
+        } else {
+          console.log('Coluna origem já existe na tabela despesas.');
         }
       });
 

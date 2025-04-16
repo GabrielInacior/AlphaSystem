@@ -14,6 +14,7 @@ import VendasView from '@renderer/views/Vendas/VendasView.vue'
 import CategoriaView from '@renderer/views/Loja/CategoriaView.vue'
 import ContasPagarView from '../views/Barbearia/ContasPagar.vue'
 import GamesView from '../views/Games/games.vue'
+import CreditoView from '@renderer/views/Clientes/CreditoView.vue'
 
 const routes = [
   {
@@ -31,6 +32,11 @@ const routes = [
         path: 'clientes',
         name: 'clientes',
         component: ClienteView,
+      },
+      {
+        path: 'creditos',
+        name: 'creditos',
+        component: CreditoView
       },
       {
         path: 'categorias',

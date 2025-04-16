@@ -439,7 +439,7 @@ export default defineComponent({
     const periodoVendasXServicos = ref('dia');
     const periodoInfoGerais = ref('dia');
     const periodos = [
-      { value: 'dia', text: 'Últimas 24 horas' },
+      { value: 'dia', text: 'Hoje' },
       { value: 'semana', text: 'Última Semana' },
       { value: 'mes', text: 'Último Mês' },
       { value: 'ano', text: 'Último Ano' },
